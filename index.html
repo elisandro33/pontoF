@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Hora Extra Fácil</title>
+<style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    body { background-color: #f8f9fa; padding-bottom: 70px; }
+    .header { background: #1e88e5; color: white; padding: 15px; text-align: center; font-weight: bold; }
+    .container { padding: 15px; }
+    .card { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px; }
+    label { font-size: 12px; color: #666; font-weight: bold; display: block; margin-top: 8px; }
+    input { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+    button { width: 100%; padding: 12px; background: #1e88e5; color: white; border: none; border-radius: 4px; font-weight: bold; margin-top: 15px; cursor: pointer; }
+    button.btn-success { background: #2e7d32; }
+    button.btn-danger { background: #d32f2f; margin-top: 5px; }
+    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #ddd; height: 60px; }
+    .tab { flex: 1; text-align: center; padding: 10px; font-size: 12px; color: #757575; cursor: pointer; }
+    .tab.active { color: #1e88e5; font-weight: bold; }
+    .log-item { background: white; border: 1px solid #ddd; padding: 12px; border-radius: 6px; margin-bottom: 10px; font-size: 14px; line-height: 1.4; }
+</style>
+  </head>
+  <body>
+
+	<div class="header">Hora Extra</div>
+
+	<!-- ABA 1: REGISTRO DE PONTO -->
+	<div id="abaPonto" class="container">
+	  <div class="card">
+		<h3>Batida Manual / Ponto</h3>
+		<label>Data</label>
+		<input type="date" id="inputData">
+		<label>Entrada</label>
+		<input type="time" id="inputEntrada">
+		<label>Saída Almoço</label>
+		<input type="time" id="inputSaiAlm">
+		<label>Volta Almoço</label>
+		<input type="time" id="inputVoltAlm">
+		<label>Saída Final</label>
+		<input type="time" id="inputSaidaFin">
+
+		<button onclick="salvarPonto()">SALVAR PONTO</button>
+	  </div>
+	</div>
+
+	<!-- ABA 2: RELATÓRIO E EXPORTAÇÃO -->
+	<div id="abaRelatorio" class="container" style="display: none;">
+	  <div class="card">
+		<h3>Resumo do Mês</h3>
+		<label>Filtro (MM/AAAA)</label>
+		<input type="text" id="filtroMesAno" placeholder="Ex: 08/2026" oninput="carregarRelatorio()">
+		<p style="margin-top:10px;">Total Horas: <b id="lblTotalHoras" style="color:#2e7d32;">00:00</b></p>
+		<button class="btn-success" onclick="exportarCsv()">EXPORTAR CSV</button>
+	  </div>
+
+	  <div id="containerLogs"></div>
+	</div>
+
+	<!-- BARRA DE NAVEGAÇÃO -->
+	<div class="tab-bar">
+	  <div id="btnTabPonto" class="tab active" onclick="mudarAba('ponto')">🕒<br>Ponto</div>
+	  <div id="btnTabRelatorio" class="tab" onclick="mudarAba('relatorio')">📊<br>Relatório</div>
+	</div>
+
+<script>
+    // Inicialização da data
+    document.getElementById('inputData').valueAsDate = new Date();
+
+    function mudarAba(aba) {
+      if(aba === 'ponto') {
+        document.getElementById('abaPonto').style.display = 'block';
+        document.getElementById('abaRelatorio').style.display = 'none';
+        document.getElementById('btnTabPonto').classList.add('active');
+        document.getElementById('btnTabRelatorio').classList.remove('active');
+      } else {
+        document.getElementById('abaPonto').style.display = 'none';
+        document.getElementById('abaRelatorio').style.display = 'block';
+        document.getElementById('btnTabPonto').classList.remove('active');
+        document.getElementById('btnTabRelatorio').classList.add('active');
+        carregarRelatorio();
+      }
+    }
+
+    function timeToMinutes(timeStr) {
+      if (!timeStr) return null;
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    function salvarPonto() {
+      const dataVal = document.getElementById('inputData').value;
+      if (!dataVal) { alert('Selecione a data'); return; }
+
+      const [ano, mes, dia] = dataVal.split('-');
+      const dataFormatada = `${dia}/${mes}/${ano}`;
+
+      const registro = {
+        id: Date.now(),
+        data: dataFormatada,
+        entrada: document.getElementById('inputEntrada').value,
+        saiAlm: document.getElementById('inputSaiAlm').value,
+        voltAlm: document.getElementById('inputVoltAlm').value,
+        saidaFin: document.getElementById('inputSaidaFin').value
+      };
+
+      let pontos = JSON.parse(localStorage.getItem('pontos') || '[]');
+      // Substitui se já existir registro na mesma data
+      pontos = pontos.filter(p => p.data !== dataFormatada);
+      pontos.push(registro);
+      localStorage.setItem('pontos', JSON.stringify(pontos));
+
+      alert('Ponto salvo com sucesso!');
+    }
+
+    function carregarRelatorio() {
+      const container = document.getElementById('containerLogs');
+      container.innerHTML = '';
+      const filtro = document.getElementById('filtroMesAno').value.trim();
+      
+      let pontos = JSON.parse(localStorage.getItem('pontos') || '[]');
+      let totalMinutosAcumulado = 0;
+
+      pontos.forEach(p => {
+        if (filtro && !p.data.includes(filtro)) return;
+
+        let extrasTexto = '';
+        let minExtraManha = 0;
+        let minExtraTarde = 0;
+
+        if (p.entrada && p.saidaFin) {
+          const minEnt = timeToMinutes(p.entrada);
+          const minSaiFin = timeToMinutes(p.saidaFin);
+
+          // Identifica dia da semana (0=Dom, 1=Seg, ..., 5=Sex, 6=Sáb)
+          const [dia, mes, ano] = p.data.split('/');
+          const d = new Date(ano, mes - 1, dia);
+          const diaSemana = d.getDay();
+
+          // Regra Manhã (Entrada antes de 07:30 = 450 min)
+          if (minEnt < 450) {
+            minExtraManha = 450 - minEnt;
+          }
+
+          // Regra Tarde (Seg-Qui: 17:30 = 1050 min | Sex: 16:30 = 990 min)
+          let limiteTarde = (diaSemana === 5) ? 990 : 1050;
+          if (diaSemana >= 1 && diaSemana <= 5) {
+            if (minSaiFin > limiteTarde) minExtraTarde = minSaiFin - limiteTarde;
+          } else {
+            minExtraTarde = minSaiFin - minEnt; // Fim de semana
+          }
+
+          // Aplicação da Regra de Tolerância de 30 minutos
+          if (minExtraManha >= 30) {
+            extrasTexto += `<br>🌅 Extra Manhã: ${p.entrada} - 07:30`;
+            totalMinutosAcumulado += minExtraManha;
+          }
+          if (minExtraTarde >= 30) {
+            const horaCorte = (diaSemana === 5) ? "16:30" : "17:30";
+            extrasTexto += `<br>🌆 Extra Tarde: ${horaCorte} - ${p.saidaFin}`;
+            totalMinutosAcumulado += minExtraTarde;
+          }
+        }
+
+        const div = document.createElement('div');
+        div.className = 'log-item';
+        div.innerHTML = `
+          <b>📅 Data: ${p.data}</b><br>
+          📥 Ent: ${p.entrada || '--:--'} | Sai Almoço: ${p.saiAlm || '--:--'}<br>
+          📤 Vol Almoço: ${p.voltAlm || '--:--'} | Fim: ${p.saidaFin || '--:--'}
+          ${extrasTexto}
+          <button class="btn-danger" onclick="deletarPonto(${p.id})">Excluir</button>
+        `;
+        container.appendChild(div);
+      });
+
+      const hTotal = Math.floor(totalMinutosAcumulado / 60);
+      const mTotal = totalMinutosAcumulado % 60;
+      document.getElementById('lblTotalHoras').innerText = 
+        `${String(hTotal).padStart(2, '0')}:${String(mTotal).padStart(2, '0')}`;
+    }
+
+    function deletarPonto(id) {
+      let pontos = JSON.parse(localStorage.getItem('pontos') || '[]');
+      pontos = pontos.filter(p => p.id !== id);
+      localStorage.setItem('pontos', JSON.stringify(pontos));
+      carregarRelatorio();
+    }
+
+    function exportarCsv() {
+      let pontos = JSON.parse(localStorage.getItem('pontos') || '[]');
+      let csvContent = "data:text/csv;charset=utf-8,Data;inicio;saída\n";
+
+      pontos.forEach(p => {
+        if (p.entrada && p.saidaFin) {
+          const minEnt = timeToMinutes(p.entrada);
+          const minSaiFin = timeToMinutes(p.saidaFin);
+
+          const [dia, mes, ano] = p.data.split('/');
+          const dataAbreviada = `${dia}/${mes}`;
+          const d = new Date(ano, mes - 1, dia);
+          const diaSemana = d.getDay();
+
+          // Regra Manhã (30 min)
+          if ((450 - minEnt) >= 30) {
+            csvContent += `${dataAbreviada};${p.entrada};07:30\n`;
+          }
+
+          // Regra Tarde (30 min)
+          let limiteTarde = (diaSemana === 5) ? 990 : 1050;
+          let horaCorte = (diaSemana === 5) ? "16:30" : "17:30";
+
+          if (diaSemana >= 1 && diaSemana <= 5) {
+            if ((minSaiFin - limiteTarde) >= 30) {
+              csvContent += `${dataAbreviada};${horaCorte};${p.saidaFin}\n`;
+            }
+          } else {
+            if ((minSaiFin - minEnt) >= 30) {
+              csvContent += `${dataAbreviada};${p.entrada};${p.saidaFin}\n`;
+            }
+          }
+        }
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "Relatorio_Ponto.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+</script>
+  </body>
+</html>
