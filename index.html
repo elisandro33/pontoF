@@ -19,13 +19,43 @@
       justify-content: space-between;
       align-items: center;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
     }
-    .app-bar .menu-icon { font-size: 20px; cursor: pointer; opacity: 0.9; }
+    .app-bar .menu-icon { font-size: 22px; cursor: pointer; opacity: 0.9; padding: 4px 8px; }
+
+    /* MENU 3 PONTINHOS (DROPDOWN) */
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 10px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      width: 250px;
+      z-index: 200;
+      overflow: hidden;
+    }
+    .dropdown-menu.active { display: block; }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      font-size: 15px;
+      color: #333;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.2s;
+    }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-item:hover { background-color: #f5f5f5; }
+    .menu-item .icon { font-size: 18px; width: 24px; text-align: center; }
 
     /* CONTÊINER PRINCIPAL */
     .main-container { padding: 14px; }
 
-    /* --- ESTILOS DA ABA PONTO --- */
+    /* ABA PONTO */
     .perimeter-alert {
       color: #d32f2f;
       font-size: 16px;
@@ -51,9 +81,8 @@
       background-color: #3f51b5; color: white; width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; margin-right: 10px;
     }
 
-    /* --- ESTILOS DA ABA RELATÓRIO --- */
+    /* ABA RELATÓRIO */
     .report-title { font-size: 20px; color: #2196f3; font-weight: 500; margin-bottom: 12px; }
-    
     .filter-box { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
     .filter-input {
       flex: 1; border: none; border-bottom: 1px solid #757575; padding: 4px 0; font-size: 18px; color: #333; background: transparent; outline: none;
@@ -66,7 +95,6 @@
     .checkbox-container input { width: 16px; height: 16px; cursor: pointer; }
     .checkbox-container label { font-size: 14px; color: #424242; font-weight: normal; margin: 0; cursor: pointer; }
 
-    /* CARD DE TOTAL DE HORAS */
     .summary-card {
       background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
@@ -78,7 +106,6 @@
       width: 100%; background-color: #2e7d32; color: white; border: none; padding: 12px; font-size: 15px; font-weight: 500; border-radius: 4px; cursor: pointer; text-align: center;
     }
 
-    /* CARDS DOS LOGS DE CADA DIA */
     .day-card {
       background: #fff; border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); cursor: pointer;
     }
@@ -86,17 +113,14 @@
     .day-row b { font-size: 15px; }
     .day-icon { font-size: 16px; min-width: 20px; text-align: center; }
 
-    /* FORMULÁRIO MANUAL DA TOOLBAR */
-    .card-panel { background: white; padding: 14px; border-radius: 8px; border: 1px solid #e0e0e0; margin-top: 14px; }
+    /* ESTILOS DE MODAIS GENERALIZADOS */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 300; }
+    .modal-content { background: white; padding: 16px; border-radius: 8px; width: 85%; max-width: 380px; }
     label { font-size: 12px; color: #757575; font-weight: bold; display: block; margin-top: 8px; }
-    input[type="text"], input[type="date"], input[type="time"] { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; }
+    input[type="text"], input[type="date"], input[type="time"], input[type="number"] { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; }
     .btn { width: 100%; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 10px; }
     .btn-primary { background: #3f51b5; color: white; }
     .btn-danger { background: #d32f2f; color: white; }
-
-    /* MODAL EDIÇÃO */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100; }
-    .modal-content { background: white; padding: 16px; border-radius: 8px; width: 85%; max-width: 380px; }
 
     /* BOTTOM NAV BAR */
     .tab-bar {
@@ -112,8 +136,23 @@
   <!-- BARRA SUPERIOR -->
   <div class="app-bar">
     <span>Ponto Fácil</span>
-    <span class="menu-icon" onclick="toggleFormManual()" title="Ajuste Manual">⋮</span>
+    <span class="menu-icon" onclick="toggleMenu(event)">⋮</span>
+
+    <!-- MENU DROPDOWN -->
+    <div class="dropdown-menu" id="dropdownMenu">
+      <div class="menu-item" onclick="recalcularHistorico()"><span class="icon">🔄</span> Recalcular Histórico</div>
+      <div class="menu-item" onclick="abrirModalManual()"><span class="icon">📝</span> Adicionar Ponto Manual</div>
+      <div class="menu-item" onclick="abrirModalJornada()"><span class="icon">⚙️</span> Configurar Horário/Jornada</div>
+      <div class="menu-item" onclick="abrirModalLocal()"><span class="icon">📡</span> Configurar Local</div>
+      <div class="menu-item" onclick="abrirModalSalario()"><span class="icon">🤑</span> Configurar Salário</div>
+      <div class="menu-item" onclick="fazerBackupJSON()"><span class="icon">💾</span> Fazer Backup JSON</div>
+      <div class="menu-item" onclick="document.getElementById('fileInputJSON').click()"><span class="icon">📁</span> Importar JSON</div>
+      <div class="menu-item" onclick="sincronizarTudo()"><span class="icon">🔄</span> Sincronizar Tudo</div>
+      <div class="menu-item" onclick="sairApp()"><span class="icon">❌</span> Sair</div>
+    </div>
   </div>
+
+  <input type="file" id="fileInputJSON" accept=".json" style="display:none" onchange="importarJSON(event)">
 
   <!-- ABA 1: PONTO -->
   <div id="abaPonto" class="main-container">
@@ -137,37 +176,22 @@
       <div class="mark-item"><span class="mark-num">3</span><span>Volta Intervalo: <b id="dispVI" style="color:#333;">--:--</b></span></div>
       <div class="mark-item"><span class="mark-num">4</span><span>Saída Final: <b id="dispSF" style="color:#333;">--:--</b></span></div>
     </div>
-
-    <!-- FORMULÁRIO MANUAL OCULTO -->
-    <div id="panelAjusteManual" class="card-panel" style="display:none; text-align:left;">
-      <div style="font-weight:bold; color:#3f51b5; margin-bottom:8px; font-size:14px;">Ajuste Manual dos Campos</div>
-      <label>Data</label><input type="date" id="inputData">
-      <label>Entrada</label><input type="time" id="inputEntrada">
-      <label>Saída Intervalo</label><input type="time" id="inputSaiAlm">
-      <label>Volta Intervalo</label><input type="time" id="inputVoltAlm">
-      <label>Saída Final</label><input type="time" id="inputSaidaFin">
-      <button class="btn btn-primary" onclick="salvarPontoManualmente()">SALVAR / SINCRONIZAR</button>
-    </div>
   </div>
 
   <!-- ABA 2: RELATÓRIO -->
   <div id="abaRelatorio" class="main-container" style="display: none;">
-    
     <div class="report-title">Filtros do Relatório</div>
 
-    <!-- FILTRO MM/AAAA -->
     <div class="filter-box">
       <input type="text" id="filtroMesAno" class="filter-input" value="08/2026">
       <button class="btn-filtrar" onclick="carregarRelatorio()">FILTRAR</button>
     </div>
 
-    <!-- CHECKBOX FALTAS -->
     <div class="checkbox-container">
       <input type="checkbox" id="chkFaltas" onchange="carregarRelatorio()">
       <label for="chkFaltas">Visualizar apenas faltas/incompletos</label>
     </div>
 
-    <!-- CARD TOTAL -->
     <div class="summary-card">
       <div class="summary-label">TOTAL ACUMULADO DE HORAS EXTRAS</div>
       <div class="summary-hours-val" id="lblTotalHoras">00:00</div>
@@ -175,14 +199,73 @@
       <button class="btn-export" onclick="exportarCSV()">EXPORTAR CSV</button>
     </div>
 
-    <!-- LISTA DE CARDS DIÁRIOS -->
     <div id="containerLogs"></div>
+  </div>
+
+  <!-- MODAL: ADICIONAR PONTO MANUAL -->
+  <div id="modalManual" class="modal">
+    <div class="modal-content">
+      <h3 style="margin-bottom: 12px; color: #3f51b5;">Adicionar Ponto Manual</h3>
+      <label>Data</label><input type="date" id="manData">
+      <label>Entrada</label><input type="time" id="manE">
+      <label>Saída Intervalo</label><input type="time" id="manSI">
+      <label>Volta Intervalo</label><input type="time" id="manVI">
+      <label>Saída Final</label><input type="time" id="manSF">
+      <button class="btn btn-primary" onclick="salvarPontoManual()">SALVAR PONTO</button>
+      <button class="btn" style="background:#888; color:white;" onclick="fecharModais()">CANCELAR</button>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIGURAR JORNADA -->
+  <div id="modalJornada" class="modal">
+    <div class="modal-content">
+      <h3 style="margin-bottom: 12px; color: #3f51b5;">Configurar Jornada</h3>
+      <label>Entrada Padrão Manhã</label><input type="time" id="cfgHoraEntrada" value="07:30">
+      <label>Saída Padrão (Seg-Qui)</label><input type="time" id="cfgHoraSaida" value="17:30">
+      <label>Saída Padrão (Sexta)</label><input type="time" id="cfgHoraSaidaSex" value="16:30">
+      <label>Minutos Tolerância Extra</label><input type="number" id="cfgTolerancia" value="30">
+      <button class="btn btn-primary" onclick="salvarConfigJornada()">GUARDAR JORNADA</button>
+      <button class="btn" style="background:#888; color:white;" onclick="fecharModais()">CANCELAR</button>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIGURAR LOCAL -->
+  <div id="modalLocal" class="modal">
+    <div class="modal-content">
+      <h3 style="margin-bottom: 12px; color: #3f51b5;">Configurar Local GPS</h3>
+      
+      <label>Latitude Empresa</label>
+      <input type="text" id="cfgLat" placeholder="Buscando GPS...">
+      
+      <label>Longitude Empresa</label>
+      <input type="text" id="cfgLng" placeholder="Buscando GPS...">
+      
+      <label>Raio Máximo (Metros)</label>
+      <input type="number" id="cfgRaio" value="100">
+      
+      <button class="btn" style="background:#0288d1; color:white;" onclick="obterGPSAtual(true)">
+        📍 OBTER LOCALIZAÇÃO ATUAL
+      </button>
+      
+      <button class="btn btn-primary" onclick="salvarConfigLocal()">SALVAR COORDENADAS</button>
+      <button class="btn" style="background:#888; color:white;" onclick="fecharModais()">CANCELAR</button>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIGURAR SALÁRIO -->
+  <div id="modalSalario" class="modal">
+    <div class="modal-content">
+      <h3 style="margin-bottom: 12px; color: #3f51b5;">Configurar Salário</h3>
+      <label>Valor Hora Base (R$)</label><input type="number" step="0.01" id="cfgValorHora" value="27.19">
+      <button class="btn btn-primary" onclick="salvarConfigSalario()">SALVAR VALOR HORA</button>
+      <button class="btn" style="background:#888; color:white;" onclick="fecharModais()">CANCELAR</button>
+    </div>
   </div>
 
   <!-- MODAL DE EDIÇÃO -->
   <div id="modalEdicao" class="modal">
     <div class="modal-content">
-      <h3 style="margin-bottom: 12px; color: #1e88e5; font-size:16px;">Editar Registro</h3>
+      <h3 style="margin-bottom: 12px; color: #1e88e5;">Editar Registro</h3>
       <input type="hidden" id="editData">
       <label>Entrada</label><input type="time" id="editE">
       <label>Saída Intervalo</label><input type="time" id="editSI">
@@ -190,7 +273,7 @@
       <label>Saída Final</label><input type="time" id="editSF">
       <button class="btn btn-primary" onclick="salvarEdicaoModal()">ATUALIZAR PLANILHA</button>
       <button class="btn btn-danger" onclick="excluirDoModal()">DELETAR REGISTRO</button>
-      <button class="btn" style="background:#888; color:white;" onclick="fecharModal()">CANCELAR</button>
+      <button class="btn" style="background:#888; color:white;" onclick="fecharModais()">CANCELAR</button>
     </div>
   </div>
 
@@ -200,7 +283,7 @@
       <div class="tab-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
+          <polyline points="12 6 12 16 14"></polyline>
         </svg>
       </div>
       <span>Ponto</span>
@@ -219,13 +302,13 @@
 
   <script>
     const SHEETDB_URL = "https://sheetdb.io/api/v1/ujlpc27gcszbc";
-    const VALOR_HORA_BASE = 27.19;
+    let VALOR_HORA_BASE = parseFloat(localStorage.getItem('cfg_valor_hora')) || 27.19;
     let pontosCarregados = [];
 
-    // Coordenadas para teste GPS
-    const EMPRESA_LAT = -23.550520;
-    const EMPRESA_LNG = -46.633308;
-    const RAIO_MAXIMO_METROS = 100;
+    // Coordenadas GPS
+    let EMPRESA_LAT = parseFloat(localStorage.getItem('cfg_lat')) || -23.550520;
+    let EMPRESA_LNG = parseFloat(localStorage.getItem('cfg_lng')) || -46.633308;
+    let RAIO_MAXIMO_METROS = parseInt(localStorage.getItem('cfg_raio')) || 100;
 
     // Inicialização da Data
     const hoje = new Date();
@@ -235,21 +318,213 @@
     
     const dataFormatadaExibicao = `${diaStr}/${mesStr}/${anoStr}`;
     document.getElementById('txtDataHoje').innerText = dataFormatadaExibicao;
-    document.getElementById('inputData').value = hoje.toISOString().split('T')[0];
     document.getElementById('filtroMesAno').value = `${mesStr}/${anoStr}`;
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(pos => {
-        const dist = Math.round(calcularDistancia(pos.coords.latitude, pos.coords.longitude, EMPRESA_LAT, EMPRESA_LNG));
-        if (dist <= RAIO_MAXIMO_METROS) {
-          document.getElementById('geoAlert').style.color = '#2e7d32';
-          document.getElementById('geoAlert').innerHTML = `✅ Dentro do perímetro da empresa!`;
-        } else {
-          document.getElementById('geoAlert').style.color = '#d32f2f';
-          document.getElementById('geoAlert').innerHTML = `❌ Fora do perímetro da empresa!<br><span style="font-size: 14px;">(${dist}m)</span>`;
-        }
+    // Fechar menu ao clicar fora
+    document.addEventListener('click', function(e) {
+      if (!e.target.matches('.menu-icon')) {
+        document.getElementById('dropdownMenu').classList.remove('active');
+      }
+    });
+
+    function toggleMenu(event) {
+      event.stopPropagation();
+      document.getElementById('dropdownMenu').classList.toggle('active');
+    }
+
+    function fecharModais() {
+      document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+    }
+
+    /* --- FUNÇÕES DO MENU --- */
+    function recalcularHistorico() {
+      carregarRelatorio();
+      alert("Histórico recalculado com sucesso!");
+    }
+
+    function abrirModalManual() {
+      document.getElementById('manData').value = hoje.toISOString().split('T')[0];
+      document.getElementById('modalManual').style.display = 'flex';
+    }
+
+    function salvarPontoManual() {
+      const dataRaw = document.getElementById('manData').value;
+      if (!dataRaw) return alert('Selecione a data!');
+      const [ano, mes, dia] = dataRaw.split('-');
+      const dataFmt = `${dia}/${mes}/${ano}`;
+
+      const obj = {
+        data: dataFmt,
+        entrada: document.getElementById('manE').value,
+        saida_intervalo: document.getElementById('manSI').value,
+        volta_intervalo: document.getElementById('manVI').value,
+        saida_final: document.getElementById('manSF').value
+      };
+
+      fetch(SHEETDB_URL, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: [obj] })
+      }).then(() => {
+        alert('Ponto inserido com sucesso!');
+        fecharModais();
+        carregarRelatorio();
       });
     }
+
+    function abrirModalJornada() {
+      document.getElementById('modalJornada').style.display = 'flex';
+    }
+
+    function salvarConfigJornada() {
+      localStorage.setItem('cfg_ent_padrao', document.getElementById('cfgHoraEntrada').value);
+      localStorage.setItem('cfg_sai_padrao', document.getElementById('cfgHoraSaida').value);
+      localStorage.setItem('cfg_sai_sex', document.getElementById('cfgHoraSaidaSex').value);
+      localStorage.setItem('cfg_tolerancia', document.getElementById('cfgTolerancia').value);
+      alert('Configurações de jornada salvas!');
+      fecharModais();
+      carregarRelatorio();
+    }
+
+    /* --- CAPTURA DE LOCALIZAÇÃO E CONFIGURAÇÃO GPS --- */
+    function abrirModalLocal() {
+      document.getElementById('cfgRaio').value = RAIO_MAXIMO_METROS;
+      document.getElementById('modalLocal').style.display = 'flex';
+      
+      // Busca a localização atual assim que abre o modal
+      obterGPSAtual(false);
+    }
+
+    function obterGPSAtual(notificarSucesso = true) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            document.getElementById('cfgLat').value = pos.coords.latitude.toFixed(6);
+            document.getElementById('cfgLng').value = pos.coords.longitude.toFixed(6);
+            if (notificarSucesso) {
+              alert('Localização atual capturada com sucesso!');
+            }
+          },
+          (error) => {
+            // Fallback para valores gravados anteriormente se falhar
+            document.getElementById('cfgLat').value = EMPRESA_LAT;
+            document.getElementById('cfgLng').value = EMPRESA_LNG;
+            if (notificarSucesso) {
+              alert('Erro ao obter GPS. Carregando dados salvos anteriormente.');
+            }
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          }
+        );
+      } else {
+        document.getElementById('cfgLat').value = EMPRESA_LAT;
+        document.getElementById('cfgLng').value = EMPRESA_LNG;
+        if (notificarSucesso) {
+          alert('Geolocalização não é suportada neste navegador.');
+        }
+      }
+    }
+
+    function salvarConfigLocal() {
+      const latVal = parseFloat(document.getElementById('cfgLat').value);
+      const lngVal = parseFloat(document.getElementById('cfgLng').value);
+      const raioVal = parseInt(document.getElementById('cfgRaio').value);
+
+      if (isNaN(latVal) || isNaN(lngVal) || isNaN(raioVal)) {
+        alert('Por favor, preencha valores válidos para Latitude, Longitude e Raio.');
+        return;
+      }
+
+      EMPRESA_LAT = latVal;
+      EMPRESA_LNG = lngVal;
+      RAIO_MAXIMO_METROS = raioVal;
+
+      localStorage.setItem('cfg_lat', EMPRESA_LAT);
+      localStorage.setItem('cfg_lng', EMPRESA_LNG);
+      localStorage.setItem('cfg_raio', RAIO_MAXIMO_METROS);
+
+      alert('Local GPS configurado e salvo com sucesso!');
+      fecharModais();
+      validarGPS();
+    }
+
+    function abrirModalSalario() {
+      document.getElementById('cfgValorHora').value = VALOR_HORA_BASE;
+      document.getElementById('modalSalario').style.display = 'flex';
+    }
+
+    function salvarConfigSalario() {
+      VALOR_HORA_BASE = parseFloat(document.getElementById('cfgValorHora').value);
+      localStorage.setItem('cfg_valor_hora', VALOR_HORA_BASE);
+      alert('Valor da hora atualizado!');
+      fecharModais();
+      carregarRelatorio();
+    }
+
+    function fazerBackupJSON() {
+      if (!pontosCarregados.length) return alert('Carregue os dados do relatório antes de exportar o backup.');
+      const jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(pontosCarregados, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", jsonStr);
+      downloadAnchor.setAttribute("download", `backup_ponto_${mesStr}_${anoStr}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importarJSON(event) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const dados = JSON.parse(e.target.result);
+          if (Array.isArray(dados)) {
+            fetch(SHEETDB_URL, {
+              method: 'POST',
+              headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+              body: JSON.stringify({ data: dados })
+            }).then(() => {
+              alert('JSON importado com sucesso!');
+              carregarRelatorio();
+            });
+          }
+        } catch(err) {
+          alert('Arquivo JSON inválido!');
+        }
+      };
+      reader.readAsText(event.target.files[0]);
+    }
+
+    function sincronizarTudo() {
+      carregarRelatorio();
+      validarGPS();
+      alert('Tudo sincronizado com o servidor!');
+    }
+
+    function sairApp() {
+      if (confirm('Deseja realmente fechar a sessão?')) {
+        document.body.innerHTML = "<h2 style='text-align:center; padding-top:50px;'>Sessão Encerrada. Feche o navegador/app.</h2>";
+      }
+    }
+
+    /* --- SISTEMA DE NAVEGAÇÃO E GPS --- */
+    function validarGPS() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          const dist = Math.round(calcularDistancia(pos.coords.latitude, pos.coords.longitude, EMPRESA_LAT, EMPRESA_LNG));
+          if (dist <= RAIO_MAXIMO_METROS) {
+            document.getElementById('geoAlert').style.color = '#2e7d32';
+            document.getElementById('geoAlert').innerHTML = `✅ Dentro do perímetro da empresa!`;
+          } else {
+            document.getElementById('geoAlert').style.color = '#d32f2f';
+            document.getElementById('geoAlert').innerHTML = `❌ Fora do perímetro da empresa!<br><span style="font-size: 14px;">(${dist}m)</span>`;
+          }
+        });
+      }
+    }
+    validarGPS();
 
     function calcularDistancia(lat1, lon1, lat2, lon2) {
       const R = 6371e3;
@@ -257,11 +532,6 @@
       const Δφ = (lat2-lat1) * Math.PI/180, Δλ = (lon2-lon1) * Math.PI/180;
       const a = Math.sin(Δφ/2)**2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2)**2;
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    }
-
-    function toggleFormManual() {
-      const p = document.getElementById('panelAjusteManual');
-      p.style.display = p.style.display === 'none' ? 'block' : 'none';
     }
 
     function mudarAba(aba) {
@@ -295,48 +565,41 @@
       const agora = new Date();
       const horaAtual = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
 
-      let e = document.getElementById('inputEntrada');
-      let sI = document.getElementById('inputSaiAlm');
-      let vI = document.getElementById('inputVoltAlm');
-      let sF = document.getElementById('inputSaidaFin');
+      let e = document.getElementById('dispE');
+      let sI = document.getElementById('dispSI');
+      let vI = document.getElementById('dispVI');
+      let sF = document.getElementById('dispSF');
 
-      if (!e.value) {
-        e.value = horaAtual;
-        document.getElementById('dispE').innerText = horaAtual;
+      if (e.innerText === '--:--') {
+        e.innerText = horaAtual;
         document.getElementById('lblProximoReg').innerText = "Saída Intervalo";
-      } else if (!sI.value) {
-        sI.value = horaAtual;
-        document.getElementById('dispSI').innerText = horaAtual;
+      } else if (sI.innerText === '--:--') {
+        sI.innerText = horaAtual;
         document.getElementById('lblProximoReg').innerText = "Volta Intervalo";
-      } else if (!vI.value) {
-        vI.value = horaAtual;
-        document.getElementById('dispVI').innerText = horaAtual;
+      } else if (vI.innerText === '--:--') {
+        vI.innerText = horaAtual;
         document.getElementById('lblProximoReg').innerText = "Saída Final";
-      } else if (!sF.value) {
-        sF.value = horaAtual;
-        document.getElementById('dispSF').innerText = horaAtual;
+      } else if (sF.innerText === '--:--') {
+        sF.innerText = horaAtual;
         document.getElementById('lblProximoReg').innerText = "Completo";
       } else {
         alert('Marcações de hoje já preenchidas!');
         return;
       }
-      salvarPontoManualmente();
-    }
 
-    function salvarPontoManualmente() {
-      const objetoPonto = {
+      const objPonto = {
         data: dataFormatadaExibicao,
-        entrada: document.getElementById('inputEntrada').value,
-        saida_intervalo: document.getElementById('inputSaiAlm').value,
-        volta_intervalo: document.getElementById('inputVoltAlm').value,
-        saida_final: document.getElementById('inputSaidaFin').value
+        entrada: e.innerText !== '--:--' ? e.innerText : '',
+        saida_intervalo: sI.innerText !== '--:--' ? sI.innerText : '',
+        volta_intervalo: vI.innerText !== '--:--' ? vI.innerText : '',
+        saida_final: sF.innerText !== '--:--' ? sF.innerText : ''
       };
 
       fetch(SHEETDB_URL, {
         method: 'POST',
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: [objetoPonto] })
-      }).then(() => alert('Ponto registrado com sucesso na planilha!'));
+        body: JSON.stringify({ data: [objPonto] })
+      }).then(() => alert('Ponto registrado!'));
     }
 
     function carregarRelatorio() {
@@ -381,13 +644,19 @@
                 const d = new Date(ano, mes - 1, dia);
                 const diaSemana = d.getDay();
 
-                if (minEnt < 450) minExtraManha = 450 - minEnt;
+                if (diaSemana >= 1 && diaSemana <= 5) {
+                  if (450 - minEnt >= 30) {
+                    minExtraManha = 450 - minEnt;
+                  }
+                }
 
                 let limiteTarde = (diaSemana === 5) ? 990 : 1050;
                 horaCorteTarde = (diaSemana === 5) ? "16:30" : "17:30";
 
                 if (diaSemana >= 1 && diaSemana <= 5) {
-                  if (minSaiFin > limiteTarde) minExtraTarde = minSaiFin - limiteTarde;
+                  if (minSaiFin - limiteTarde >= 30) {
+                    minExtraTarde = minSaiFin - limiteTarde;
+                  }
                 } else {
                   minExtraTarde = minSaiFin - minEnt;
                 }
@@ -458,63 +727,38 @@
       document.getElementById('modalEdicao').style.display = 'flex';
     }
 
-    function fecharModal() {
-      document.getElementById('modalEdicao').style.display = 'none';
-    }
-
     function salvarEdicaoModal() {
       const dataStr = document.getElementById('editData').value;
-      
-      // Mapeamento dos campos a atualizar
       const payload = {
-        entrada: document.getElementById('editE').value,
-        saida_intervalo: document.getElementById('editSI').value,
-        volta_intervalo: document.getElementById('editVI').value,
-        saida_final: document.getElementById('editSF').value
+        "data": {
+          "entrada": document.getElementById('editE').value,
+          "saida_intervalo": document.getElementById('editSI').value,
+          "volta_intervalo": document.getElementById('editVI').value,
+          "saida_final": document.getElementById('editSF').value
+        }
       };
 
-      // Usa encodeURIComponent para que as barras "/" da data funcionem corretamente na URL da API
-      const urlFormatada = `${SHEETDB_URL}/data/data/${encodeURIComponent(dataStr)}`;
-
-      fetch(urlFormatada, {
+      fetch(`${SHEETDB_URL}/data/${encodeURIComponent(dataStr)}`, {
         method: 'PATCH',
-        headers: { 
-          'Accept': 'application/json', 
-          'Content-Type': 'application/json' 
-        },
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      })
-      .then(res => res.json())
-      .then(data => {
-        alert('Planilha atualizada com sucesso!');
-        fecharModal();
+      }).then(() => {
+        alert('Registro atualizado!');
+        fecharModais();
         carregarRelatorio();
-      })
-      .catch(err => {
-        alert('Erro ao atualizar na planilha: ' + err);
       });
     }
 
     function excluirDoModal() {
       if(confirm("Deseja apagar esse registro da planilha?")) {
         const dataStr = document.getElementById('editData').value;
-        const urlFormatada = `${SHEETDB_URL}/data/data/${encodeURIComponent(dataStr)}`;
-
-        fetch(urlFormatada, {
+        fetch(`${SHEETDB_URL}/data/${encodeURIComponent(dataStr)}`, {
           method: 'DELETE',
-          headers: { 
-            'Accept': 'application/json', 
-            'Content-Type': 'application/json' 
-          }
-        })
-        .then(res => res.json())
-        .then(() => {
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
+        }).then(() => {
           alert('Registro excluído!');
-          fecharModal();
+          fecharModais();
           carregarRelatorio();
-        })
-        .catch(err => {
-          alert('Erro ao excluir registro: ' + err);
         });
       }
     }
