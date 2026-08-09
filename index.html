@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ponto Fácil</title>
+  
+  <!-- FAVICON PARA A ABA DO NAVEGADOR -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233f51b5'><path d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5-2.5 2.5z'/></svg>">
+
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
     body { background-color: #f6f8fa; padding-bottom: 75px; user-select: none; }
@@ -113,12 +117,15 @@
     .day-row b { font-size: 15px; }
     .day-icon { font-size: 16px; min-width: 20px; text-align: center; }
 
-    /* ESTILOS DE MODAIS GENERALIZADOS */
+    /* ESTILOS DE MODAIS */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 300; }
     .modal-content { background: white; padding: 16px; border-radius: 8px; width: 85%; max-width: 380px; }
+    .modal-title { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600; color: #3f51b5; margin-bottom: 12px; }
+    .modal-title svg { width: 22px; height: 22px; fill: #3f51b5; }
+    
     label { font-size: 12px; color: #757575; font-weight: bold; display: block; margin-top: 8px; }
     input[type="text"], input[type="date"], input[type="time"], input[type="number"] { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; }
-    .btn { width: 100%; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 10px; }
+    .btn { width: 100%; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .btn-primary { background: #3f51b5; color: white; }
     .btn-danger { background: #d32f2f; color: white; }
 
@@ -143,7 +150,7 @@
       <div class="menu-item" onclick="recalcularHistorico()"><span class="icon">🔄</span> Recalcular Histórico</div>
       <div class="menu-item" onclick="abrirModalManual()"><span class="icon">📝</span> Adicionar Ponto Manual</div>
       <div class="menu-item" onclick="abrirModalJornada()"><span class="icon">⚙️</span> Configurar Horário/Jornada</div>
-      <div class="menu-item" onclick="abrirModalLocal()"><span class="icon">📡</span> Configurar Local</div>
+      <div class="menu-item" onclick="abrirModalLocal()"><span class="icon">📍</span> Configurar Local</div>
       <div class="menu-item" onclick="abrirModalSalario()"><span class="icon">🤑</span> Configurar Salário</div>
       <div class="menu-item" onclick="fazerBackupJSON()"><span class="icon">💾</span> Fazer Backup JSON</div>
       <div class="menu-item" onclick="document.getElementById('fileInputJSON').click()"><span class="icon">📁</span> Importar JSON</div>
@@ -205,7 +212,7 @@
   <!-- MODAL: ADICIONAR PONTO MANUAL -->
   <div id="modalManual" class="modal">
     <div class="modal-content">
-      <h3 style="margin-bottom: 12px; color: #3f51b5;">Adicionar Ponto Manual</h3>
+      <div class="modal-title">📝 Adicionar Ponto Manual</div>
       <label>Data</label><input type="date" id="manData">
       <label>Entrada</label><input type="time" id="manE">
       <label>Saída Intervalo</label><input type="time" id="manSI">
@@ -219,7 +226,7 @@
   <!-- MODAL: CONFIGURAR JORNADA -->
   <div id="modalJornada" class="modal">
     <div class="modal-content">
-      <h3 style="margin-bottom: 12px; color: #3f51b5;">Configurar Jornada</h3>
+      <div class="modal-title">⚙️ Configurar Jornada</div>
       <label>Entrada Padrão Manhã</label><input type="time" id="cfgHoraEntrada" value="07:30">
       <label>Saída Padrão (Seg-Qui)</label><input type="time" id="cfgHoraSaida" value="17:30">
       <label>Saída Padrão (Sexta)</label><input type="time" id="cfgHoraSaidaSex" value="16:30">
@@ -229,10 +236,15 @@
     </div>
   </div>
 
-  <!-- MODAL: CONFIGURAR LOCAL -->
+  <!-- MODAL: CONFIGURAR LOCAL GPS -->
   <div id="modalLocal" class="modal">
     <div class="modal-content">
-      <h3 style="margin-bottom: 12px; color: #3f51b5;">Configurar Local GPS</h3>
+      <div class="modal-title">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+        </svg>
+        <span>Configurar Local GPS</span>
+      </div>
       
       <label>Latitude Empresa</label>
       <input type="text" id="cfgLat" placeholder="Buscando GPS...">
@@ -255,7 +267,7 @@
   <!-- MODAL: CONFIGURAR SALÁRIO -->
   <div id="modalSalario" class="modal">
     <div class="modal-content">
-      <h3 style="margin-bottom: 12px; color: #3f51b5;">Configurar Salário</h3>
+      <div class="modal-title">🤑 Configurar Salário</div>
       <label>Valor Hora Base (R$)</label><input type="number" step="0.01" id="cfgValorHora" value="27.19">
       <button class="btn btn-primary" onclick="salvarConfigSalario()">SALVAR VALOR HORA</button>
       <button class="btn" style="background:#888; color:white;" onclick="fecharModais()">CANCELAR</button>
@@ -265,7 +277,7 @@
   <!-- MODAL DE EDIÇÃO -->
   <div id="modalEdicao" class="modal">
     <div class="modal-content">
-      <h3 style="margin-bottom: 12px; color: #1e88e5;">Editar Registro</h3>
+      <div class="modal-title" style="color: #1e88e5;">✏️ Editar Registro</div>
       <input type="hidden" id="editData">
       <label>Entrada</label><input type="time" id="editE">
       <label>Saída Intervalo</label><input type="time" id="editSI">
@@ -406,7 +418,6 @@
             }
           },
           (error) => {
-            // Fallback para valores gravados anteriormente se falhar
             document.getElementById('cfgLat').value = EMPRESA_LAT;
             document.getElementById('cfgLng').value = EMPRESA_LNG;
             if (notificarSucesso) {
