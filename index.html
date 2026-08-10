@@ -307,6 +307,17 @@
       padding: 12px 16px;
       margin-bottom: 10px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      position: relative;
+    }
+
+    .day-card:hover {
+      background-color: #f8f9fa;
+    }
+
+    .day-card:active {
+      transform: scale(0.99);
     }
 
     .day-row {
@@ -324,6 +335,104 @@
 
     .day-row strong {
       font-weight: bold;
+    }
+
+    .edit-hint {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      font-size: 0.75rem;
+      color: var(--primary-blue);
+      font-weight: bold;
+    }
+
+    /* MODAL DE EDIÇÃO COMPLETA */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: white;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 15px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    .modal-field {
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .modal-field label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .modal-field input {
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .btn-modal {
+      flex: 1;
+      padding: 12px 6px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .btn-save {
+      background-color: var(--primary-blue);
+      color: white;
+    }
+
+    .btn-delete {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .btn-cancel {
+      background-color: #e0e0e0;
+      color: #333;
     }
 
     /* Bottom Nav */
@@ -456,6 +565,36 @@
     </div>
   </div>
 
+  <!-- MODAL DE EDIÇÃO -->
+  <div class="modal-overlay" id="modalEdicao">
+    <div class="modal-box">
+      <div class="modal-header" id="modalTitulo">Editar Registro</div>
+      
+      <div class="modal-field">
+        <label>Entrada</label>
+        <input type="text" id="editEntrada" placeholder="HH:MM">
+      </div>
+      <div class="modal-field">
+        <label>Saída Intervalo</label>
+        <input type="text" id="editSaidaInt" placeholder="HH:MM">
+      </div>
+      <div class="modal-field">
+        <label>Volta Intervalo</label>
+        <input type="text" id="editVoltaInt" placeholder="HH:MM">
+      </div>
+      <div class="modal-field">
+        <label>Saída Final</label>
+        <input type="text" id="editSaidaFin" placeholder="HH:MM">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-modal btn-cancel" onclick="fecharModal()">CANCELAR</button>
+        <button class="btn-modal btn-delete" onclick="deletarRegistro()">DELETAR</button>
+        <button class="btn-modal btn-save" onclick="salvarModal()">SALVAR</button>
+      </div>
+    </div>
+  </div>
+
   <!-- NAVEGAÇÃO INFERIOR -->
   <nav class="bottom-nav">
     <button class="nav-item active" id="btnNavPonto" onclick="mudarAba('ponto')">
@@ -470,8 +609,8 @@
 
   <script>
     const SHEETDB_URL = 'https://sheetdb.io/api/v1/ujlpc27gcszbc';
-    const JORNADA_PADRAO_MINUTOS = 8 * 60; // 8 horas por dia
-    const VALOR_HORA_EXTRA = 38.00; // Valor por hora extra em R$
+    const JORNADA_PADRAO_MINUTOS = 8 * 60;
+    const VALOR_HORA_EXTRA = 38.00;
 
     const hoje = new Date();
     const dia = String(hoje.getDate()).padStart(2, '0');
@@ -479,6 +618,8 @@
     const ano = hoje.getFullYear();
     const dataFormatadaExibicao = `${dia}/${mes}/${ano}`;
     const mesAnoAtual = `${mes}/${ano}`;
+
+    let dataEdicaoAtual = null;
 
     document.getElementById('dataAtual').innerText = dataFormatadaExibicao;
     document.getElementById('filtroMesAno').value = mesAnoAtual;
@@ -514,24 +655,45 @@
       return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
     }
 
+    function parseDateString(dateStr) {
+      if (!dateStr) return new Date(0);
+      const parts = dateStr.split('/');
+      if (parts.length !== 3) return new Date(0);
+      return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+
     function calcularHorasExtras(p) {
       const e = timeToMinutes(p.entrada || p.Entrada);
       const sI = timeToMinutes(p.saida_intervalo || p.saiAlm || p['Sai Almoço']);
       const vI = timeToMinutes(p.volta_intervalo || p.voltAlm || p['Vol Almoço']);
       const sF = timeToMinutes(p.saida_final || p.saidaFin || p.Fim);
 
-      let minutosTrabalhados = 0;
+      let minutosExtra = 0;
 
       if (e !== null && sF !== null) {
-        if (sI !== null && vI !== null) {
-          minutosTrabalhados = (sI - e) + (sF - vI);
+        const dataObjeto = parseDateString(p.data);
+        const diaDaSemana = dataObjeto.getDay(); 
+        const ehFimDeSemana = (diaDaSemana === 0 || diaDaSemana === 6);
+
+        let intervalo = 0;
+        if (sI !== null && vI !== null && vI > sI) {
+          intervalo = vI - sI;
+        }
+
+        const totalTrabalhado = (sF - e) - intervalo;
+
+        if (ehFimDeSemana) {
+          minutosExtra = totalTrabalhado > 0 ? totalTrabalhado : 0;
         } else {
-          minutosTrabalhados = sF - e;
+          const horaFimJornadaPadrao = 17 * 60 + 30; // 17:30
+          if (sF > horaFimJornadaPadrao) {
+            minutosExtra = sF - horaFimJornadaPadrao;
+          } else {
+            minutosExtra = totalTrabalhado - JORNADA_PADRAO_MINUTOS;
+            if (minutosExtra < 0) minutosExtra = 0;
+          }
         }
       }
-
-      let minutosExtra = minutosTrabalhados - JORNADA_PADRAO_MINUTOS;
-      if (minutosExtra < 0) minutosExtra = 0;
 
       const valorReais = (minutosExtra / 60) * VALOR_HORA_EXTRA;
 
@@ -542,7 +704,86 @@
       };
     }
 
-    // Carregar Relatório filtrando estritamente pelo MM/AAAA digitado
+    // Abrir Modal de Edição
+    function abrirModalEdicao(dataStr, e, sI, vI, sF) {
+      dataEdicaoAtual = dataStr;
+      document.getElementById('modalTitulo').innerText = `Editar Ponto - ${dataStr}`;
+      document.getElementById('editEntrada').value = e === '--:--' ? '' : e;
+      document.getElementById('editSaidaInt').value = sI === '--:--' ? '' : sI;
+      document.getElementById('editVoltaInt').value = vI === '--:--' ? '' : vI;
+      document.getElementById('editSaidaFin').value = sF === '--:--' ? '' : sF;
+      document.getElementById('modalEdicao').classList.add('active');
+    }
+
+    function fecharModal() {
+      document.getElementById('modalEdicao').classList.remove('active');
+      dataEdicaoAtual = null;
+    }
+
+    function salvarModal() {
+      if (!dataEdicaoAtual) return;
+
+      const e = document.getElementById('editEntrada').value.trim();
+      const sI = document.getElementById('editSaidaInt').value.trim();
+      const vI = document.getElementById('editVoltaInt').value.trim();
+      const sF = document.getElementById('editSaidaFin').value.trim();
+
+      const payload = {
+        data: {
+          entrada: e,
+          saida_intervalo: sI,
+          volta_intervalo: vI,
+          saida_final: sF
+        }
+      };
+
+      fetch(`${SHEETDB_URL}/data/${encodeURIComponent(dataEdicaoAtual)}`, {
+        method: 'PATCH',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => {
+        if (res.ok) {
+          alert('Registro atualizado com sucesso!');
+          fecharModal();
+          carregarRelatorio();
+          if (dataEdicaoAtual === dataFormatadaExibicao) carregarPontoDeHoje();
+        } else {
+          alert('Erro ao atualizar registro.');
+        }
+      })
+      .catch(() => alert('Erro de conexão ao salvar alterações.'));
+    }
+
+    function deletarRegistro() {
+      if (!dataEdicaoAtual) return;
+
+      if (confirm(`Tem certeza que deseja DELETAR o registro do dia ${dataEdicaoAtual}?`)) {
+        fetch(`${SHEETDB_URL}/data/${encodeURIComponent(dataEdicaoAtual)}`, {
+          method: 'DELETE',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
+        })
+        .then(res => {
+          if (res.ok) {
+            alert('Registro excluído com sucesso!');
+            const dataDeletada = dataEdicaoAtual;
+            fecharModal();
+            carregarRelatorio();
+            if (dataDeletada === dataFormatadaExibicao) {
+              document.getElementById('dispE').innerText = '--:--';
+              document.getElementById('dispSI').innerText = '--:--';
+              document.getElementById('dispVI').innerText = '--:--';
+              document.getElementById('dispSF').innerText = '--:--';
+              document.getElementById('lblProximoReg').innerText = "Entrada";
+            }
+          } else {
+            alert('Erro ao excluir registro.');
+          }
+        })
+        .catch(() => alert('Erro de conexão ao tentar deletar.'));
+      }
+    }
+
     function carregarRelatorio() {
       const container = document.getElementById('listaCardsRelatorio');
       const somenteFaltas = document.getElementById('chkFaltas').checked;
@@ -561,11 +802,13 @@
           container.innerHTML = '';
           let acumuladoMinutos = 0;
 
-          // Filtra apenas registros que correspondem ao MM/AAAA (ex: DD/08/2026)
-          const pontosFiltrados = pontos.filter(p => {
+          let pontosFiltrados = pontos.filter(p => {
             if (!p.data) return false;
             return p.data.endsWith(filtroMesAno) || p.data.includes('/' + filtroMesAno);
           });
+
+          // ORDENAÇÃO DECRESCENTE
+          pontosFiltrados.sort((a, b) => parseDateString(b.data) - parseDateString(a.data));
 
           if (pontosFiltrados.length === 0) {
             container.innerHTML = `<div style="text-align:center; padding:20px;">Nenhum registro encontrado para ${filtroMesAno}.</div>`;
@@ -589,7 +832,9 @@
 
             const card = document.createElement('div');
             card.className = 'day-card';
+            card.onclick = () => abrirModalEdicao(p.data, e, sI, vI, sF);
             card.innerHTML = `
+              <span class="edit-hint">✏️ Editar</span>
               <div class="day-row">📅 <strong>Data: ${p.data}</strong></div>
               <div class="day-row">📥 Ent: ${e} | Sai Almoço: ${sI}</div>
               <div class="day-row">📤 Vol Almoço: ${vI} | Fim: ${sF}</div>
@@ -599,7 +844,6 @@
             container.appendChild(card);
           });
 
-          // Atualizar Topo Acumulado com a soma do mês filtrado
           document.getElementById('totalHorasExtra').innerText = minutesToTime(acumuladoMinutos);
           const totalValor = (acumuladoMinutos / 60) * VALOR_HORA_EXTRA;
           document.getElementById('totalValorExtra').innerText = totalValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -628,8 +872,8 @@
             document.getElementById('dispSF').innerText = sF || '--:--';
 
             if (!e) document.getElementById('lblProximoReg').innerText = "Entrada";
-            else if (!sI) document.getElementById('lblProximoReg').innerText = "Saída Intervalo";
-            else if (!vI) document.getElementById('lblProximoReg').innerText = "Volta Intervalo";
+            else if (!sI && !sF) document.getElementById('lblProximoReg').innerText = "Saída Intervalo / Final";
+            else if (!vI && !sF) document.getElementById('lblProximoReg').innerText = "Volta Intervalo";
             else if (!sF) document.getElementById('lblProximoReg').innerText = "Saída Final";
             else document.getElementById('lblProximoReg').innerText = "Completo";
           }
@@ -650,19 +894,39 @@
       if (e === '--:--') {
         e = horaAtual;
         document.getElementById('dispE').innerText = horaAtual;
-        document.getElementById('lblProximoReg').innerText = "Saída Intervalo";
+        document.getElementById('lblProximoReg').innerText = "Saída Intervalo / Final";
         campo = 'entrada';
-      } else if (sI === '--:--') {
-        sI = horaAtual;
-        document.getElementById('dispSI').innerText = horaAtual;
-        document.getElementById('lblProximoReg').innerText = "Volta Intervalo";
-        campo = 'saida_intervalo';
-      } else if (vI === '--:--') {
+
+        fetch(SHEETDB_URL, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: [{ data: dataFormatadaExibicao, entrada: e }] })
+        }).then(() => alert('Entrada registrada!'));
+        return;
+      } 
+
+      if (sI === '--:--' && sF === '--:--') {
+        const ehSaidaFinal = confirm("Esta marcação é a SAÍDA FINAL?\n\n- Clique em [OK] para SAÍDA FINAL (Ex: Final de semana / Sem almoço)\n- Clique em [Cancelar] para SAÍDA INTERVALO (Almoço)");
+
+        if (ehSaidaFinal) {
+          sF = horaAtual;
+          document.getElementById('dispSF').innerText = horaAtual;
+          document.getElementById('lblProximoReg').innerText = "Completo";
+          campo = 'saida_final';
+        } else {
+          sI = horaAtual;
+          document.getElementById('dispSI').innerText = horaAtual;
+          document.getElementById('lblProximoReg').innerText = "Volta Intervalo";
+          campo = 'saida_intervalo';
+        }
+      } 
+      else if (vI === '--:--' && sF === '--:--') {
         vI = horaAtual;
         document.getElementById('dispVI').innerText = horaAtual;
         document.getElementById('lblProximoReg').innerText = "Saída Final";
         campo = 'volta_intervalo';
-      } else if (sF === '--:--') {
+      } 
+      else if (sF === '--:--') {
         sF = horaAtual;
         document.getElementById('dispSF').innerText = horaAtual;
         document.getElementById('lblProximoReg').innerText = "Completo";
@@ -672,20 +936,12 @@
         return;
       }
 
-      if (campo === 'entrada') {
-        fetch(SHEETDB_URL, {
-          method: 'POST',
-          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: [{ data: dataFormatadaExibicao, entrada: e }] })
-        }).then(() => alert('Entrada registrada!'));
-      } else {
-        const payload = { "data": { [campo]: horaAtual } };
-        fetch(`${SHEETDB_URL}/data/${encodeURIComponent(dataFormatadaExibicao)}`, {
-          method: 'PATCH',
-          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        }).then(() => alert('Ponto atualizado!'));
-      }
+      const payload = { "data": { [campo]: horaAtual } };
+      fetch(`${SHEETDB_URL}/data/${encodeURIComponent(dataFormatadaExibicao)}`, {
+        method: 'PATCH',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(() => alert('Ponto atualizado!'));
     }
 
     function recalcularHistorico() { alert("Recalculando Histórico..."); toggleMenu(); }
