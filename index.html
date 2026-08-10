@@ -3,803 +3,373 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Configurações para Web App e Atalho na Tela Inicial -->
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Ponto Fácil">
-<meta name="theme-color" content="#3b50b5">
   <title>Ponto Fácil</title>
-<!-- Favicon Padrão -->
-<link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/elisandro33/pontoF/main/favicon.jpeg">
 
-<!-- Ícone específico para atalhos do iOS (Apple) -->
-<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/elisandro33/pontoF/main/favicon.jpeg">
+  <!-- Suporte a PWA e Atalho na Tela Inicial -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Ponto Fácil">
+  <meta name="theme-color" content="#3b50b5">
 
-<!-- Ícone específico para atalhos do Android (Chrome) -->
-<link rel="shortcut icon" sizes="192x192" href="https://raw.githubusercontent.com/elisandro33/pontoF/main/favicon.jpeg">
-
-  <!-- FAVICON CARREGADO DIRETO DO REPOSITÓRIO GITHUB -->
-  <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/elisandro33/pontoF/main/favicon.jpeg">
+  <link rel="icon" type="image/jpeg" href="favicon.jpeg">
+  <link rel="apple-touch-icon" href="favicon.jpeg">
+  <link rel="shortcut icon" sizes="192x192" href="favicon.jpeg">
 
   <style>
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-    body { background-color: #f6f8fa; padding-bottom: 75px; user-select: none; }
+    :root {
+      --primary: #3b50b5;
+      --bg: #f5f6fa;
+      --card-bg: #ffffff;
+      --text: #333333;
+      --text-muted: #666666;
+      --danger: #d93025;
+      --border: #e0e0e0;
+    }
 
-    /* TOOLBAR SUPERIOR */
-    .app-bar {
-      background-color: #3b50b5;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding-bottom: 70px;
+    }
+
+    header {
+      background-color: var(--primary);
       color: white;
-      padding: 14px 16px;
-      font-size: 20px;
-      font-weight: 500;
+      padding: 16px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      position: relative;
     }
-    .app-bar .menu-icon { font-size: 22px; cursor: pointer; opacity: 0.9; padding: 4px 8px; }
 
-    /* MENU 3 PONTINHOS (DROPDOWN) */
-    .dropdown-menu {
-      display: none;
-      position: absolute;
-      top: 50px;
-      right: 10px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-      width: 250px;
-      z-index: 200;
-      overflow: hidden;
+    header h1 {
+      font-size: 1.2rem;
+      font-weight: 600;
     }
-    .dropdown-menu.active { display: block; }
-    .menu-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      font-size: 15px;
-      color: #333;
-      cursor: pointer;
-      border-bottom: 1px solid #f0f0f0;
-      transition: background 0.2s;
-    }
-    .menu-item:last-child { border-bottom: none; }
-    .menu-item:hover { background-color: #f5f5f5; }
-    .menu-item .icon { font-size: 18px; width: 24px; text-align: center; }
 
-    /* CONTÊINER PRINCIPAL */
-    .main-container { padding: 14px; }
-
-    /* ABA PONTO */
-    .perimeter-alert {
-      color: #d32f2f;
-      font-size: 16px;
-      font-weight: bold;
-      margin-bottom: 20px;
+    .container {
+      padding: 20px;
+      max-width: 500px;
+      margin: 0 auto;
+      width: 100%;
       text-align: center;
     }
-    .current-date { font-size: 26px; color: #333; font-weight: 500; text-align: center; margin-bottom: 4px; }
-    .next-status { font-size: 16px; color: #666; text-align: center; margin-bottom: 24px; }
+
+    .status-location {
+      color: var(--danger);
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 15px;
+    }
+
+    .date-display {
+      font-size: 1.6rem;
+      font-weight: bold;
+      color: #222;
+      margin-top: 5px;
+    }
+
+    .next-register {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+    }
 
     .fingerprint-btn {
-      background: none; border: none; cursor: pointer; display: block; margin: 0 auto 28px auto; outline: none; transition: transform 0.1s;
-    }
-    .fingerprint-btn:active { transform: scale(0.92); }
-    .fingerprint-btn svg { width: 120px; height: 120px; fill: #111; }
-
-    .today-card {
-      background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #eef0f2; max-width: 450px; margin: 0 auto;
-    }
-    .today-card-title { font-size: 17px; color: #1976d2; font-weight: 600; margin-bottom: 14px; }
-    .mark-item { display: flex; align-items: center; margin-bottom: 10px; font-size: 15px; color: #757575; }
-    .mark-num {
-      background-color: #3f51b5; color: white; width: 22px; height: 22px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; margin-right: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      outline: none;
+      margin: 10px 0 30px 0;
+      transition: transform 0.1s ease;
     }
 
-    /* ABA RELATÓRIO */
-    .report-title { font-size: 20px; color: #2196f3; font-weight: 500; margin-bottom: 12px; }
-    .filter-box { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .filter-input {
-      flex: 1; border: none; border-bottom: 1px solid #757575; padding: 4px 0; font-size: 18px; color: #333; background: transparent; outline: none;
-    }
-    .btn-filtrar {
-      background-color: #1e88e5; color: white; border: none; padding: 10px 18px; font-size: 14px; font-weight: 500; cursor: pointer; border-radius: 2px;
+    .fingerprint-btn:active {
+      transform: scale(0.95);
     }
 
-    .checkbox-container { display: flex; align-items: center; gap: 8px; color: #424242; margin-bottom: 16px; }
-    .checkbox-container input { width: 16px; height: 16px; cursor: pointer; }
-    .checkbox-container label { font-size: 14px; color: #424242; font-weight: normal; margin: 0; cursor: pointer; }
-
-    .summary-card {
-      background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .summary-label { font-size: 12px; color: #616161; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 6px; }
-    .summary-hours-val { font-size: 28px; color: #2e7d32; font-weight: bold; margin-bottom: 2px; }
-    .summary-money-val { font-size: 18px; color: #d84315; font-weight: bold; margin-bottom: 12px; }
-    
-    .btn-export {
-      width: 100%; background-color: #2e7d32; color: white; border: none; padding: 12px; font-size: 15px; font-weight: 500; border-radius: 4px; cursor: pointer; text-align: center;
+    .fingerprint-icon {
+      width: 90px;
+      height: 90px;
+      fill: none;
+      stroke: #1a1a1a;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
-    .day-card {
-      background: #fff; border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); cursor: pointer;
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: left;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
-    .day-row { font-size: 14px; color: #333333; line-height: 1.4; display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
-    .day-row b { font-size: 15px; }
-    .day-icon { font-size: 16px; min-width: 20px; text-align: center; }
 
-    /* ESTILOS DE MODAIS */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 300; }
-    .modal-content { background: white; padding: 16px; border-radius: 8px; width: 85%; max-width: 380px; }
-    .modal-title { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600; color: #3f51b5; margin-bottom: 12px; }
-    .modal-title svg { width: 22px; height: 22px; fill: #3f51b5; }
-    
-    label { font-size: 12px; color: #757575; font-weight: bold; display: block; margin-top: 8px; }
-    input[type="text"], input[type="date"], input[type="time"], input[type="number"] { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; }
-    .btn { width: 100%; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .btn-primary { background: #3f51b5; color: white; }
-    .btn-danger { background: #d32f2f; color: white; }
-
-    /* BOTTOM NAV BAR */
-    .tab-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #e0e0e0; height: 60px; z-index: 10;
+    .card h2 {
+      font-size: 1.1rem;
+      color: var(--primary);
+      margin-bottom: 15px;
     }
-    .tab { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #757575; cursor: pointer; font-size: 12px; }
-    .tab.active { color: #1976d2; font-weight: 500; }
-    .tab-icon { margin-bottom: 2px; }
+
+    .mark-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+    }
+
+    .mark-badge {
+      background-color: var(--primary);
+      color: white;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-right: 12px;
+    }
+
+    .mark-label {
+      color: var(--text-muted);
+      flex: 1;
+    }
+
+    .mark-time {
+      font-weight: 600;
+    }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      border-top: 1px solid var(--border);
+      height: 60px;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.75rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .nav-icon {
+      font-size: 1.2rem;
+      margin-bottom: 2px;
+    }
   </style>
 </head>
 <body>
 
-  <!-- BARRA SUPERIOR -->
-  <div class="app-bar">
-    <span>Ponto Fácil</span>
-    <span class="menu-icon" onclick="toggleMenu(event)">⋮</span>
+  <header>
+    <h1>Ponto Fácil</h1>
+    <div>&#8203;</div>
+  </header>
 
-    <!-- MENU DROPDOWN -->
-    <div class="dropdown-menu" id="dropdownMenu">
-      <div class="menu-item" onclick="recalcularHistorico()"><span class="icon">🔄</span> Recalcular Histórico</div>
-      <div class="menu-item" onclick="abrirModalManual()"><span class="icon">📝</span> Adicionar Ponto Manual</div>
-      <div class="menu-item" onclick="abrirModalJornada()"><span class="icon">⚙️</span> Configurar Horário/Jornada</div>
-      <div class="menu-item" onclick="abrirModalLocal()"><span class="icon">📍</span> Configurar Local</div>
-      <div class="menu-item" onclick="abrirModalSalario()"><span class="icon">🤑</span> Configurar Salário</div>
-      <div class="menu-item" onclick="fazerBackupJSON()"><span class="icon">💾</span> Fazer Backup JSON</div>
-      <div class="menu-item" onclick="document.getElementById('fileInputJSON').click()"><span class="icon">📁</span> Importar JSON</div>
-      <div class="menu-item" onclick="sincronizarTudo()"><span class="icon">🔄</span> Sincronizar Tudo</div>
-      <div class="menu-item" onclick="sairApp()"><span class="icon">❌</span> Sair</div>
-    </div>
-  </div>
-
-  <input type="file" id="fileInputJSON" accept=".json" style="display:none" onchange="importarJSON(event)">
-
-  <!-- ABA 1: PONTO -->
-  <div id="abaPonto" class="main-container">
-    <div class="perimeter-alert" id="geoAlert">
-      ❌ Fora do perímetro da empresa!<br><span id="distanciaTxt" style="font-size: 14px;">(470m)</span>
+  <div class="container">
+    <div class="status-location" id="statusPerimetro">
+      &#10060; Fora do perímetro da empresa!<br><span id="distanciaTexto">(472m)</span>
     </div>
 
-    <div class="current-date" id="txtDataHoje">09/08/2026</div>
-    <div class="next-status">Próximo Registro: <span id="lblProximoReg">Entrada</span></div>
+    <div class="date-display" id="dataAtual">--/--/----</div>
+    <div class="next-register">Próximo Registro: <span id="lblProximoReg">Entrada</span></div>
 
     <button class="fingerprint-btn" onclick="baterPontoAutomatico()" title="Bater Ponto">
-      <svg viewBox="0 0 24 24">
-        <path d="M17.81 4.42c-1.32-1.12-3.08-1.78-5.01-1.78s-3.69.66-5.01 1.78c-.37.31-.42.86-.11 1.23.31.37.86.42 1.23.11 1.05-.89 2.45-1.42 3.89-1.42s2.84.53 3.89 1.42c.18.15.4.22.62.22.26 0 .52-.1.71-.3.31-.38.26-.93-.11-1.24zM12 5.38c-3.11 0-5.74 2.1-6.42 5.06-.09.39.16.78.55.87.39.09.78-.16.87-.55.53-2.32 2.58-3.98 5-3.98s4.47 1.66 5 3.98c.09.39.48.64.87.55.39-.09.64-.48.55-.87-.68-2.96-3.31-5.06-6.42-5.06zm0 4c-1.84 0-3.38 1.28-3.8 3.01-.1.4.15.8.55.9.4.1.8-.15.9-.55.26-1.07 1.22-1.86 2.35-1.86s2.09.79 2.35 1.86c.08.34.38.58.72.58.06 0 .12 0 .18-.03.4-.1.65-.5.55-.9-.42-1.73-1.96-3.01-3.8-3.01zm5.2 3.9c-.38-.13-.79.08-.92.46-.77 2.27-2.92 3.76-5.28 3.76s-4.51-1.49-5.28-3.76c-.13-.38-.54-.59-.92-.46-.38.13-.59.54-.46.92 1 2.94 3.78 4.88 6.66 4.88s5.66-1.94 6.66-4.88c.13-.38-.08-.79-.46-.92zM12 16.5c-1.38 0-2.5 1.12-2.5 2.5 0 .41.34.75.75.75s.75-.34.75-.75c0-.41.34-.75.75-.75s.75.34.75.75c0 1.24-1.01 2.25-2.25 2.25S8 20.24 8 19c0-.41-.34-.75-.75-.75S6.5 18.59 6.5 19c0 2.07 1.68 3.75 3.75 3.75s3.75-1.68 3.75-3.75c0-.41-.34-.75-.75-.75s-.75.34-.75.75z"/>
+      <svg class="fingerprint-icon" viewBox="0 0 24 24">
+        <path d="M12 2a10 10 0 0 0-8 4"/>
+        <path d="M12 6a6 6 0 0 0-6 6c0 1.5.5 3 1.5 4"/>
+        <path d="M12 10a2 2 0 0 0-2 2c0 2 1 3.5 2 5"/>
+        <path d="M12 14a1 1 0 0 1 1 1c0 1.5-.5 2.5-1 3.5"/>
+        <path d="M16 8a8 8 0 0 1 4 7c0 2-1 4-2 5.5"/>
+        <path d="M19 12a7 7 0 0 1 1 3.5"/>
       </svg>
     </button>
 
-    <div class="today-card">
-      <div class="today-card-title">Marcações de Hoje</div>
-      <div class="mark-item"><span class="mark-num">1</span><span>Entrada: <b id="dispE" style="color:#333;">--:--</b></span></div>
-      <div class="mark-item"><span class="mark-num">2</span><span>Saída Intervalo: <b id="dispSI" style="color:#333;">--:--</b></span></div>
-      <div class="mark-item"><span class="mark-num">3</span><span>Volta Intervalo: <b id="dispVI" style="color:#333;">--:--</b></span></div>
-      <div class="mark-item"><span class="mark-num">4</span><span>Saída Final: <b id="dispSF" style="color:#333;">--:--</b></span></div>
-    </div>
-  </div>
-
-  <!-- ABA 2: RELATÓRIO -->
-  <div id="abaRelatorio" class="main-container" style="display: none;">
-    <div class="report-title">Filtros do Relatório</div>
-
-    <div class="filter-box">
-      <input type="text" id="filtroMesAno" class="filter-input" value="08/2026">
-      <button class="btn-filtrar" onclick="carregarRelatorio()">FILTRAR</button>
-    </div>
-
-    <div class="checkbox-container">
-      <input type="checkbox" id="chkFaltas" onchange="carregarRelatorio()">
-      <label for="chkFaltas">Visualizar apenas faltas/incompletos</label>
-    </div>
-
-    <div class="summary-card">
-      <div class="summary-label">TOTAL ACUMULADO DE HORAS EXTRAS</div>
-      <div class="summary-hours-val" id="lblTotalHoras">00:00</div>
-      <div class="summary-money-val" id="lblTotalDinheiro">R$ 0,00</div>
-      <button class="btn-export" onclick="exportarCSV()">EXPORTAR CSV</button>
-    </div>
-
-    <div id="containerLogs"></div>
-  </div>
-
-  <!-- MODAL: ADICIONAR PONTO MANUAL -->
-  <div id="modalManual" class="modal">
-    <div class="modal-content">
-      <div class="modal-title">📝 Adicionar Ponto Manual</div>
-      <label>Data</label><input type="date" id="manData">
-      <label>Entrada</label><input type="time" id="manE">
-      <label>Saída Intervalo</label><input type="time" id="manSI">
-      <label>Volta Intervalo</label><input type="time" id="manVI">
-      <label>Saída Final</label><input type="time" id="manSF">
-      <button class="btn btn-primary" onclick="salvarPontoManual()">SALVAR PONTO</button>
-      <button class="btn" style="background:#888; color:white;" onclick="fecharModais()">CANCELAR</button>
-    </div>
-  </div>
-
-  <!-- MODAL: CONFIGURAR JORNADA -->
-  <div id="modalJornada" class="modal">
-    <div class="modal-content">
-      <div class="modal-title">⚙️ Configurar Jornada</div>
-      <label>Entrada Padrão Manhã</label><input type="time" id="cfgHoraEntrada" value="07:30">
-      <label>Saída Padrão (Seg-Qui)</label><input type="time" id="cfgHoraSaida" value="17:30">
-      <label>Saída Padrão (Sexta)</label><input type="time" id="cfgHoraSaidaSex" value="16:30">
-      <label>Minutos Tolerância Extra</label><input type="number" id="cfgTolerancia" value="30">
-      <button class="btn btn-primary" onclick="salvarConfigJornada()">GUARDAR JORNADA</button>
-      <button class="btn" style="background:#888; color:white;" onclick="fecharModais()">CANCELAR</button>
-    </div>
-  </div>
-
-  <!-- MODAL: CONFIGURAR LOCAL GPS -->
-  <div id="modalLocal" class="modal">
-    <div class="modal-content">
-      <div class="modal-title">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-        </svg>
-        <span>Configurar Local GPS</span>
+    <div class="card">
+      <h2>Marcações de Hoje</h2>
+      <div class="mark-item">
+        <div class="mark-badge">1</div>
+        <div class="mark-label">Entrada:</div>
+        <div class="mark-time" id="dispE">--:--</div>
       </div>
-      
-      <label>Latitude Empresa</label>
-      <input type="text" id="cfgLat" placeholder="Buscando GPS...">
-      
-      <label>Longitude Empresa</label>
-      <input type="text" id="cfgLng" placeholder="Buscando GPS...">
-      
-      <label>Raio Máximo (Metros)</label>
-      <input type="number" id="cfgRaio" value="100">
-      
-      <button class="btn" style="background:#0288d1; color:white;" onclick="obterGPSAtual(true)">
-        📍 OBTER LOCALIZAÇÃO ATUAL
-      </button>
-      
-      <button class="btn btn-primary" onclick="salvarConfigLocal()">SALVAR COORDENADAS</button>
-      <button class="btn" style="background:#888; color:white;" onclick="fecharModais()">CANCELAR</button>
-    </div>
-  </div>
-
-  <!-- MODAL: CONFIGURAR SALÁRIO -->
-  <div id="modalSalario" class="modal">
-    <div class="modal-content">
-      <div class="modal-title">🤑 Configurar Salário</div>
-      <label>Valor Hora Base (R$)</label><input type="number" step="0.01" id="cfgValorHora" value="27.19">
-      <button class="btn btn-primary" onclick="salvarConfigSalario()">SALVAR VALOR HORA</button>
-      <button class="btn" style="background:#888; color:white;" onclick="fecharModais()">CANCELAR</button>
-    </div>
-  </div>
-
-  <!-- MODAL DE EDIÇÃO -->
-  <div id="modalEdicao" class="modal">
-    <div class="modal-content">
-      <div class="modal-title" style="color: #1e88e5;">✏️ Editar Registro</div>
-      <input type="hidden" id="editData">
-      <label>Entrada</label><input type="time" id="editE">
-      <label>Saída Intervalo</label><input type="time" id="editSI">
-      <label>Volta Intervalo</label><input type="time" id="editVI">
-      <label>Saída Final</label><input type="time" id="editSF">
-      <button class="btn btn-primary" onclick="salvarEdicaoModal()">ATUALIZAR PLANILHA</button>
-      <button class="btn btn-danger" onclick="excluirDoModal()">DELETAR REGISTRO</button>
-      <button class="btn" style="background:#888; color:white;" onclick="fecharModais()">CANCELAR</button>
-    </div>
-  </div>
-
-  <!-- BOTTOM NAV BAR -->
-  <div class="tab-bar">
-    <div id="btnTabPonto" class="tab active" onclick="mudarAba('ponto')">
-      <div class="tab-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 16 14"></polyline>
-        </svg>
+      <div class="mark-item">
+        <div class="mark-badge">2</div>
+        <div class="mark-label">Saída Intervalo:</div>
+        <div class="mark-time" id="dispSI">--:--</div>
       </div>
-      <span>Ponto</span>
-    </div>
-    <div id="btnTabRelatorio" class="tab" onclick="mudarAba('relatorio')">
-      <div class="tab-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="20" x2="18" y2="10"></line>
-          <line x1="12" y1="20" x2="12" y2="4"></line>
-          <line x1="6" y1="20" x2="6" y2="14"></line>
-        </svg>
+      <div class="mark-item">
+        <div class="mark-badge">3</div>
+        <div class="mark-label">Volta Intervalo:</div>
+        <div class="mark-time" id="dispVI">--:--</div>
       </div>
-      <span>Relatório</span>
+      <div class="mark-item">
+        <div class="mark-badge">4</div>
+        <div class="mark-label">Saída Final:</div>
+        <div class="mark-time" id="dispSF">--:--</div>
+      </div>
     </div>
   </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active">
+      <span class="nav-icon">&#9432;</span>
+      Ponto
+    </button>
+    <button class="nav-item">
+      <span class="nav-icon">&#128202;</span>
+      Relatório
+    </button>
+  </nav>
 
   <script>
-    const SHEETDB_URL = "https://sheetdb.io/api/v1/ujlpc27gcszbc";
-    let VALOR_HORA_BASE = parseFloat(localStorage.getItem('cfg_valor_hora')) || 27.19;
-    let pontosCarregados = [];
+    // URL da sua API no SheetDB
+    const SHEETDB_URL = 'https://sheetdb.io/api/v1/ujlpc27gcszbc';
 
-    // Coordenadas GPS
-    let EMPRESA_LAT = parseFloat(localStorage.getItem('cfg_lat')) || -23.550520;
-    let EMPRESA_LNG = parseFloat(localStorage.getItem('cfg_lng')) || -46.633308;
-    let RAIO_MAXIMO_METROS = parseInt(localStorage.getItem('cfg_raio')) || 100;
-
-    // Inicialização da Data
+    // Formata a data atual no padrão DD/MM/YYYY
     const hoje = new Date();
-    const diaStr = String(hoje.getDate()).padStart(2, '0');
-    const mesStr = String(hoje.getMonth() + 1).padStart(2, '0');
-    const anoStr = hoje.getFullYear();
-    
-    const dataFormatadaExibicao = `${diaStr}/${mesStr}/${anoStr}`;
-    document.getElementById('txtDataHoje').innerText = dataFormatadaExibicao;
-    document.getElementById('filtroMesAno').value = `${mesStr}/${anoStr}`;
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const ano = hoje.getFullYear();
+    const dataFormatadaExibicao = `${dia}/${mes}/${ano}`;
 
-    // Fechar menu ao clicar fora
-    document.addEventListener('click', function(e) {
-      if (!e.target.matches('.menu-icon')) {
-        document.getElementById('dropdownMenu').classList.remove('active');
-      }
-    });
+    document.getElementById('dataAtual').innerText = dataFormatadaExibicao;
 
-    function toggleMenu(event) {
-      event.stopPropagation();
-      document.getElementById('dropdownMenu').classList.toggle('active');
-    }
+    // Busca as marcações de hoje assim que o app é aberto
+    function carregarPontoDeHoje() {
+      fetch(SHEETDB_URL)
+        .then(res => res.json())
+        .then(pontos => {
+          if (!Array.isArray(pontos)) return;
+          
+          const pontoHoje = pontos.find(p => p.data === dataFormatadaExibicao);
+          
+          if (pontoHoje) {
+            const e = pontoHoje.entrada || pontoHoje.Entrada || '';
+            const sI = pontoHoje.saida_intervalo || pontoHoje.saiAlm || pontoHoje['Sai Almoço'] || '';
+            const vI = pontoHoje.volta_intervalo || pontoHoje.voltAlm || pontoHoje['Vol Almoço'] || '';
+            const sF = pontoHoje.saida_final || pontoHoje.saidaFin || pontoHoje.Fim || '';
 
-    function fecharModais() {
-      document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-    }
+            document.getElementById('dispE').innerText = e || '--:--';
+            document.getElementById('dispSI').innerText = sI || '--:--';
+            document.getElementById('dispVI').innerText = vI || '--:--';
+            document.getElementById('dispSF').innerText = sF || '--:--';
 
-    /* --- FUNÇÕES DO MENU --- */
-    function recalcularHistorico() {
-      carregarRelatorio();
-      alert("Histórico recalculado com sucesso!");
-    }
-
-    function abrirModalManual() {
-      document.getElementById('manData').value = hoje.toISOString().split('T')[0];
-      document.getElementById('modalManual').style.display = 'flex';
-    }
-
-    function salvarPontoManual() {
-      const dataRaw = document.getElementById('manData').value;
-      if (!dataRaw) return alert('Selecione a data!');
-      const [ano, mes, dia] = dataRaw.split('-');
-      const dataFmt = `${dia}/${mes}/${ano}`;
-
-      const obj = {
-        data: dataFmt,
-        entrada: document.getElementById('manE').value,
-        saida_intervalo: document.getElementById('manSI').value,
-        volta_intervalo: document.getElementById('manVI').value,
-        saida_final: document.getElementById('manSF').value
-      };
-
-      fetch(SHEETDB_URL, {
-        method: 'POST',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: [obj] })
-      }).then(() => {
-        alert('Ponto inserido com sucesso!');
-        fecharModais();
-        carregarRelatorio();
-      });
-    }
-
-    function abrirModalJornada() {
-      document.getElementById('modalJornada').style.display = 'flex';
-    }
-
-    function salvarConfigJornada() {
-      localStorage.setItem('cfg_ent_padrao', document.getElementById('cfgHoraEntrada').value);
-      localStorage.setItem('cfg_sai_padrao', document.getElementById('cfgHoraSaida').value);
-      localStorage.setItem('cfg_sai_sex', document.getElementById('cfgHoraSaidaSex').value);
-      localStorage.setItem('cfg_tolerancia', document.getElementById('cfgTolerancia').value);
-      alert('Configurações de jornada salvas!');
-      fecharModais();
-      carregarRelatorio();
-    }
-
-    /* --- CAPTURA DE LOCALIZAÇÃO E CONFIGURAÇÃO GPS --- */
-    function abrirModalLocal() {
-      document.getElementById('cfgRaio').value = RAIO_MAXIMO_METROS;
-      document.getElementById('modalLocal').style.display = 'flex';
-      
-      // Busca a localização atual assim que abre o modal
-      obterGPSAtual(false);
-    }
-
-    function obterGPSAtual(notificarSucesso = true) {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            document.getElementById('cfgLat').value = pos.coords.latitude.toFixed(6);
-            document.getElementById('cfgLng').value = pos.coords.longitude.toFixed(6);
-            if (notificarSucesso) {
-              alert('Localização atual capturada com sucesso!');
-            }
-          },
-          (error) => {
-            document.getElementById('cfgLat').value = EMPRESA_LAT;
-            document.getElementById('cfgLng').value = EMPRESA_LNG;
-            if (notificarSucesso) {
-              alert('Erro ao obter GPS. Carregando dados salvos anteriormente.');
-            }
-          },
-          {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
+            // Atualiza o texto do próximo registro
+            if (!e) document.getElementById('lblProximoReg').innerText = "Entrada";
+            else if (!sI) document.getElementById('lblProximoReg').innerText = "Saída Intervalo";
+            else if (!vI) document.getElementById('lblProximoReg').innerText = "Volta Intervalo";
+            else if (!sF) document.getElementById('lblProximoReg').innerText = "Saída Final";
+            else document.getElementById('lblProximoReg').innerText = "Completo";
           }
-        );
-      } else {
-        document.getElementById('cfgLat').value = EMPRESA_LAT;
-        document.getElementById('cfgLng').value = EMPRESA_LNG;
-        if (notificarSucesso) {
-          alert('Geolocalização não é suportada neste navegador.');
-        }
-      }
+        })
+        .catch(err => console.error("Erro ao buscar dados de hoje:", err));
     }
 
-    function salvarConfigLocal() {
-      const latVal = parseFloat(document.getElementById('cfgLat').value);
-      const lngVal = parseFloat(document.getElementById('cfgLng').value);
-      const raioVal = parseInt(document.getElementById('cfgRaio').value);
-
-      if (isNaN(latVal) || isNaN(lngVal) || isNaN(raioVal)) {
-        alert('Por favor, preencha valores válidos para Latitude, Longitude e Raio.');
-        return;
-      }
-
-      EMPRESA_LAT = latVal;
-      EMPRESA_LNG = lngVal;
-      RAIO_MAXIMO_METROS = raioVal;
-
-      localStorage.setItem('cfg_lat', EMPRESA_LAT);
-      localStorage.setItem('cfg_lng', EMPRESA_LNG);
-      localStorage.setItem('cfg_raio', RAIO_MAXIMO_METROS);
-
-      alert('Local GPS configurado e salvo com sucesso!');
-      fecharModais();
-      validarGPS();
-    }
-
-    function abrirModalSalario() {
-      document.getElementById('cfgValorHora').value = VALOR_HORA_BASE;
-      document.getElementById('modalSalario').style.display = 'flex';
-    }
-
-    function salvarConfigSalario() {
-      VALOR_HORA_BASE = parseFloat(document.getElementById('cfgValorHora').value);
-      localStorage.setItem('cfg_valor_hora', VALOR_HORA_BASE);
-      alert('Valor da hora atualizado!');
-      fecharModais();
-      carregarRelatorio();
-    }
-
-    function fazerBackupJSON() {
-      if (!pontosCarregados.length) return alert('Carregue os dados do relatório antes de exportar o backup.');
-      const jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(pontosCarregados, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", jsonStr);
-      downloadAnchor.setAttribute("download", `backup_ponto_${mesStr}_${anoStr}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    }
-
-    function importarJSON(event) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const dados = JSON.parse(e.target.result);
-          if (Array.isArray(dados)) {
-            fetch(SHEETDB_URL, {
-              method: 'POST',
-              headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-              body: JSON.stringify({ data: dados })
-            }).then(() => {
-              alert('JSON importado com sucesso!');
-              carregarRelatorio();
-            });
-          }
-        } catch(err) {
-          alert('Arquivo JSON inválido!');
-        }
-      };
-      reader.readAsText(event.target.files[0]);
-    }
-
-    function sincronizarTudo() {
-      carregarRelatorio();
-      validarGPS();
-      alert('Tudo sincronizado com o servidor!');
-    }
-
-    function sairApp() {
-      if (confirm('Deseja realmente fechar a sessão?')) {
-        document.body.innerHTML = "<h2 style='text-align:center; padding-top:50px;'>Sessão Encerrada. Feche o navegador/app.</h2>";
-      }
-    }
-
-    /* --- SISTEMA DE NAVEGAÇÃO E GPS --- */
-    function validarGPS() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          const dist = Math.round(calcularDistancia(pos.coords.latitude, pos.coords.longitude, EMPRESA_LAT, EMPRESA_LNG));
-          if (dist <= RAIO_MAXIMO_METROS) {
-            document.getElementById('geoAlert').style.color = '#2e7d32';
-            document.getElementById('geoAlert').innerHTML = `✅ Dentro do perímetro da empresa!`;
-          } else {
-            document.getElementById('geoAlert').style.color = '#d32f2f';
-            document.getElementById('geoAlert').innerHTML = `❌ Fora do perímetro da empresa!<br><span style="font-size: 14px;">(${dist}m)</span>`;
-          }
-        });
-      }
-    }
-    validarGPS();
-
-    function calcularDistancia(lat1, lon1, lat2, lon2) {
-      const R = 6371e3;
-      const φ1 = lat1 * Math.PI/180, φ2 = lat2 * Math.PI/180;
-      const Δφ = (lat2-lat1) * Math.PI/180, Δλ = (lon2-lon1) * Math.PI/180;
-      const a = Math.sin(Δφ/2)**2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2)**2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    }
-
-    function mudarAba(aba) {
-      if(aba === 'ponto') {
-        document.getElementById('abaPonto').style.display = 'block';
-        document.getElementById('abaRelatorio').style.display = 'none';
-        document.getElementById('btnTabPonto').classList.add('active');
-        document.getElementById('btnTabRelatorio').classList.remove('active');
-      } else {
-        document.getElementById('abaPonto').style.display = 'none';
-        document.getElementById('abaRelatorio').style.display = 'block';
-        document.getElementById('btnTabPonto').classList.remove('active');
-        document.getElementById('btnTabRelatorio').classList.add('active');
-        carregarRelatorio();
-      }
-    }
-
-    function timeToMinutes(timeStr) {
-      if (!timeStr) return null;
-      const [h, m] = timeStr.split(':').map(Number);
-      return h * 60 + m;
-    }
-
-    function formatMinutesToHM(totalMinutes) {
-      const h = Math.floor(totalMinutes / 60);
-      const m = totalMinutes % 60;
-      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-    }
-
+    // Função de clique no botão digital
     function baterPontoAutomatico() {
       const agora = new Date();
       const horaAtual = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
 
-      let e = document.getElementById('dispE');
-      let sI = document.getElementById('dispSI');
-      let vI = document.getElementById('dispVI');
-      let sF = document.getElementById('dispSF');
+      let e = document.getElementById('dispE').innerText;
+      let sI = document.getElementById('dispSI').innerText;
+      let vI = document.getElementById('dispVI').innerText;
+      let sF = document.getElementById('dispSF').innerText;
 
-      if (e.innerText === '--:--') {
-        e.innerText = horaAtual;
+      let campoAtualizar = '';
+
+      if (e === '--:--') {
+        e = horaAtual;
+        document.getElementById('dispE').innerText = horaAtual;
         document.getElementById('lblProximoReg').innerText = "Saída Intervalo";
-      } else if (sI.innerText === '--:--') {
-        sI.innerText = horaAtual;
+        campoAtualizar = 'entrada';
+      } else if (sI === '--:--') {
+        sI = horaAtual;
+        document.getElementById('dispSI').innerText = horaAtual;
         document.getElementById('lblProximoReg').innerText = "Volta Intervalo";
-      } else if (vI.innerText === '--:--') {
-        vI.innerText = horaAtual;
+        campoAtualizar = 'saida_intervalo';
+      } else if (vI === '--:--') {
+        vI = horaAtual;
+        document.getElementById('dispVI').innerText = horaAtual;
         document.getElementById('lblProximoReg').innerText = "Saída Final";
-      } else if (sF.innerText === '--:--') {
-        sF.innerText = horaAtual;
+        campoAtualizar = 'volta_intervalo';
+      } else if (sF === '--:--') {
+        sF = horaAtual;
+        document.getElementById('dispSF').innerText = horaAtual;
         document.getElementById('lblProximoReg').innerText = "Completo";
+        campoAtualizar = 'saida_final';
       } else {
-        alert('Marcações de hoje já preenchidas!');
+        alert('Todas as marcações de hoje já foram preenchidas!');
         return;
       }
 
-      const objPonto = {
-        data: dataFormatadaExibicao,
-        entrada: e.innerText !== '--:--' ? e.innerText : '',
-        saida_intervalo: sI.innerText !== '--:--' ? sI.innerText : '',
-        volta_intervalo: vI.innerText !== '--:--' ? vI.innerText : '',
-        saida_final: sF.innerText !== '--:--' ? sF.innerText : ''
-      };
+      // Primeira marcação salva uma nova linha na planilha (POST)
+      if (campoAtualizar === 'entrada') {
+        const objPonto = {
+          data: dataFormatadaExibicao,
+          entrada: e,
+          saida_intervalo: '',
+          volta_intervalo: '',
+          saida_final: ''
+        };
 
-      fetch(SHEETDB_URL, {
-        method: 'POST',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: [objPonto] })
-      }).then(() => alert('Ponto registrado!'));
-    }
+        fetch(SHEETDB_URL, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: [objPonto] })
+        }).then(() => alert('Entrada registrada com sucesso!'));
 
-    function carregarRelatorio() {
-      const container = document.getElementById('containerLogs');
-      container.innerHTML = '<p style="text-align:center; padding:20px; font-size:14px; color:#666;">Carregando...</p>';
-      const filtro = document.getElementById('filtroMesAno').value.trim();
-      const apenasFaltas = document.getElementById('chkFaltas').checked;
-
-      fetch(SHEETDB_URL)
-        .then(res => res.json())
-        .then(pontos => {
-          pontosCarregados = pontos;
-          container.innerHTML = '';
-          let acumuladoMinutos = 0;
-
-          if (!Array.isArray(pontos) || pontos.length === 0) {
-            container.innerHTML = '<p style="text-align:center; padding:20px; font-size:14px; color:#666;">Nenhum registro encontrado.</p>';
-            return;
+      } else {
+        // Demais marcações atualizam a linha existente do dia (PATCH)
+        const payload = {
+          "data": {
+            "entrada": e !== '--:--' ? e : '',
+            "saida_intervalo": sI !== '--:--' ? sI : '',
+            "volta_intervalo": vI !== '--:--' ? vI : '',
+            "saida_final": sF !== '--:--' ? sF : ''
           }
+        };
 
-          pontos.forEach(p => {
-            if (!p.data || (filtro && !p.data.includes(filtro))) return;
-
-            const entrada = p.entrada || p.Entrada || '';
-            const saiAlm = p.saida_intervalo || p.saiAlm || p['Sai Almoço'] || '';
-            const voltAlm = p.volta_intervalo || p.voltAlm || p['Vol Almoço'] || '';
-            const saidaFin = p.saida_final || p.saidaFin || p.Fim || '';
-
-            const isIncompleto = !entrada || !saiAlm || !voltAlm || !saidaFin;
-            if (apenasFaltas && !isIncompleto) return;
-
-            let minExtraManha = 0;
-            let minExtraTarde = 0;
-            let horaCorteTarde = "17:30";
-
-            if (entrada && saidaFin) {
-              const minEnt = timeToMinutes(entrada);
-              const minSaiFin = timeToMinutes(saidaFin);
-
-              const [dia, mes, ano] = p.data.split('/');
-              if (dia && mes && ano) {
-                const d = new Date(ano, mes - 1, dia);
-                const diaSemana = d.getDay();
-
-                if (diaSemana >= 1 && diaSemana <= 5) {
-                  if (450 - minEnt >= 30) {
-                    minExtraManha = 450 - minEnt;
-                  }
-                }
-
-                let limiteTarde = (diaSemana === 5) ? 990 : 1050;
-                horaCorteTarde = (diaSemana === 5) ? "16:30" : "17:30";
-
-                if (diaSemana >= 1 && diaSemana <= 5) {
-                  if (minSaiFin - limiteTarde >= 30) {
-                    minExtraTarde = minSaiFin - limiteTarde;
-                  }
-                } else {
-                  minExtraTarde = minSaiFin - minEnt;
-                }
-              }
-            }
-
-            const totalMinutosDia = minExtraManha + minExtraTarde;
-            acumuladoMinutos += totalMinutosDia;
-
-            const valorDia = (totalMinutosDia / 60) * VALOR_HORA_BASE * 1.5;
-            const strTotalExtraDia = formatMinutesToHM(totalMinutosDia);
-
-            const card = document.createElement('div');
-            card.className = 'day-card';
-            card.onclick = () => abrirModalEdicao(p.data);
-
-            let htmlCard = `
-              <div class="day-row">
-                <span class="day-icon">📅</span> <b>Data: ${p.data}</b>
-              </div>
-              <div class="day-row">
-                <span class="day-icon">📥</span> Ent: ${entrada || '--:--'} | Sai Almoço: ${saiAlm || '--:--'}
-              </div>
-              <div class="day-row">
-                <span class="day-icon">📤</span> Vol Almoço: ${voltAlm || '--:--'} | Fim: ${saidaFin || '--:--'}
-              </div>
-              <div class="day-row">
-                <span class="day-icon">⭐</span> Total Extra: ${strTotalExtraDia} (R$ ${valorDia.toFixed(2).replace('.', ',')})
-              </div>
-            `;
-
-            if (minExtraManha > 0) {
-              htmlCard += `
-                <div class="day-row">
-                  <span class="day-icon">🌅</span> Extra Manhã: ${entrada} - 07:30
-                </div>`;
-            }
-
-            if (minExtraTarde > 0) {
-              htmlCard += `
-                <div class="day-row">
-                  <span class="day-icon">🌆</span> Extra Tarde: ${horaCorteTarde} - ${saidaFin}
-                </div>`;
-            }
-
-            card.innerHTML = htmlCard;
-            container.appendChild(card);
-          });
-
-          const totalHorasStr = formatMinutesToHM(acumuladoMinutos);
-          const totalValorMoney = (acumuladoMinutos / 60) * VALOR_HORA_BASE * 1.5;
-
-          document.getElementById('lblTotalHoras').innerText = totalHorasStr;
-          document.getElementById('lblTotalDinheiro').innerText = `R$ ${totalValorMoney.toFixed(2).replace('.', ',')}`;
-        });
-    }
-
-    function abrirModalEdicao(dataProcurada) {
-      const p = pontosCarregados.find(x => x.data === dataProcurada);
-      if(!p) return;
-
-      document.getElementById('editData').value = p.data;
-      document.getElementById('editE').value = p.entrada || p.Entrada || '';
-      document.getElementById('editSI').value = p.saida_intervalo || p.saiAlm || p['Sai Almoço'] || '';
-      document.getElementById('editVI').value = p.volta_intervalo || p.voltAlm || p['Vol Almoço'] || '';
-      document.getElementById('editSF').value = p.saida_final || p.saidaFin || p.Fim || '';
-
-      document.getElementById('modalEdicao').style.display = 'flex';
-    }
-
-    function salvarEdicaoModal() {
-      const dataStr = document.getElementById('editData').value;
-      const payload = {
-        "data": {
-          "entrada": document.getElementById('editE').value,
-          "saida_intervalo": document.getElementById('editSI').value,
-          "volta_intervalo": document.getElementById('editVI').value,
-          "saida_final": document.getElementById('editSF').value
-        }
-      };
-
-      fetch(`${SHEETDB_URL}/data/${encodeURIComponent(dataStr)}`, {
-        method: 'PATCH',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      }).then(() => {
-        alert('Registro atualizado!');
-        fecharModais();
-        carregarRelatorio();
-      });
-    }
-
-    function excluirDoModal() {
-      if(confirm("Deseja apagar esse registro da planilha?")) {
-        const dataStr = document.getElementById('editData').value;
-        fetch(`${SHEETDB_URL}/data/${encodeURIComponent(dataStr)}`, {
-          method: 'DELETE',
-          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
-        }).then(() => {
-          alert('Registro excluído!');
-          fecharModais();
-          carregarRelatorio();
-        });
+        fetch(`${SHEETDB_URL}/data/${encodeURIComponent(dataFormatadaExibicao)}`, {
+          method: 'PATCH',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(() => alert('Ponto atualizado com sucesso!'));
       }
     }
 
-    function exportarCSV() {
-      let csvContent = "data:text/csv;charset=utf-8,Data,Entrada,Saida Intervalo,Volta Intervalo,Saida Final\n";
-      pontosCarregados.forEach(p => {
-        csvContent += `${p.data},${p.entrada||''},${p.saida_intervalo||''},${p.volta_intervalo||''},${p.saida_final||''}\n`;
-      });
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "relatorio_ponto.csv");
-      document.body.appendChild(link);
-      link.click();
-    }
+    // Inicialização ao carregar a página
+    carregarPontoDeHoje();
   </script>
 </body>
 </html>
