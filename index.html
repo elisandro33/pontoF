@@ -435,7 +435,7 @@
     <div class="title-report">Filtros do Relatório</div>
     
     <div class="filter-row">
-      <input type="text" class="filter-input" id="filtroMesAno" value="08/2026">
+      <input type="text" class="filter-input" id="filtroMesAno" placeholder="MM/AAAA">
       <button class="btn-filter" onclick="carregarRelatorio()">FILTRAR</button>
     </div>
 
@@ -471,15 +471,17 @@
   <script>
     const SHEETDB_URL = 'https://sheetdb.io/api/v1/ujlpc27gcszbc';
     const JORNADA_PADRAO_MINUTOS = 8 * 60; // 8 horas por dia
-    const VALOR_HORA_EXTRA = 38.00; // Valor monetário por hora extra em R$
+    const VALOR_HORA_EXTRA = 38.00; // Valor por hora extra em R$
 
     const hoje = new Date();
     const dia = String(hoje.getDate()).padStart(2, '0');
     const mes = String(hoje.getMonth() + 1).padStart(2, '0');
     const ano = hoje.getFullYear();
     const dataFormatadaExibicao = `${dia}/${mes}/${ano}`;
+    const mesAnoAtual = `${mes}/${ano}`;
 
     document.getElementById('dataAtual').innerText = dataFormatadaExibicao;
+    document.getElementById('filtroMesAno').value = mesAnoAtual;
 
     function toggleMenu() {
       document.getElementById('dropdownMenu').classList.toggle('show');
@@ -500,21 +502,18 @@
       }
     }
 
-    // Converter HH:MM para Minutos
     function timeToMinutes(timeStr) {
       if (!timeStr || timeStr === '--:--' || !timeStr.includes(':')) return null;
       const [h, m] = timeStr.split(':').map(Number);
       return (h * 60) + m;
     }
 
-    // Converter Minutos para HH:MM
     function minutesToTime(totalMinutes) {
       const h = Math.floor(Math.abs(totalMinutes) / 60);
       const m = Math.abs(totalMinutes) % 60;
       return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
     }
 
-    // Calcular Horas Extras de um Registro
     function calcularHorasExtras(p) {
       const e = timeToMinutes(p.entrada || p.Entrada);
       const sI = timeToMinutes(p.saida_intervalo || p.saiAlm || p['Sai Almoço']);
@@ -523,7 +522,6 @@
 
       let minutosTrabalhados = 0;
 
-      // Se tiver entrada e saída final
       if (e !== null && sF !== null) {
         if (sI !== null && vI !== null) {
           minutosTrabalhados = (sI - e) + (sF - vI);
@@ -544,10 +542,12 @@
       };
     }
 
-    // Carregar Relatório e Atualizar Totais
+    // Carregar Relatório filtrando estritamente pelo MM/AAAA digitado
     function carregarRelatorio() {
       const container = document.getElementById('listaCardsRelatorio');
       const somenteFaltas = document.getElementById('chkFaltas').checked;
+      const filtroMesAno = document.getElementById('filtroMesAno').value.trim();
+
       container.innerHTML = '<div style="text-align:center; padding:20px;">Carregando registros...</div>';
 
       fetch(SHEETDB_URL)
@@ -561,7 +561,20 @@
           container.innerHTML = '';
           let acumuladoMinutos = 0;
 
-          pontos.forEach(p => {
+          // Filtra apenas registros que correspondem ao MM/AAAA (ex: DD/08/2026)
+          const pontosFiltrados = pontos.filter(p => {
+            if (!p.data) return false;
+            return p.data.endsWith(filtroMesAno) || p.data.includes('/' + filtroMesAno);
+          });
+
+          if (pontosFiltrados.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding:20px;">Nenhum registro encontrado para ${filtroMesAno}.</div>`;
+            document.getElementById('totalHorasExtra').innerText = "00:00";
+            document.getElementById('totalValorExtra').innerText = "R$ 0,00";
+            return;
+          }
+
+          pontosFiltrados.forEach(p => {
             const e = p.entrada || p.Entrada || '--:--';
             const sI = p.saida_intervalo || p.saiAlm || p['Sai Almoço'] || '--:--';
             const vI = p.volta_intervalo || p.voltAlm || p['Vol Almoço'] || '--:--';
@@ -586,7 +599,7 @@
             container.appendChild(card);
           });
 
-          // Atualizar Topo Acumulado
+          // Atualizar Topo Acumulado com a soma do mês filtrado
           document.getElementById('totalHorasExtra').innerText = minutesToTime(acumuladoMinutos);
           const totalValor = (acumuladoMinutos / 60) * VALOR_HORA_EXTRA;
           document.getElementById('totalValorExtra').innerText = totalValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
