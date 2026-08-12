@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Ponto Fácil</title>
+
+	<!-- PWA & Favicon -->
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<meta name="apple-mobile-web-app-title" content="Ponto Fácil">
+	<meta name="theme-color" content="#3b50b5">
+
+	<link rel="icon" type="image/jpeg" href="favicon.jpeg">
+	<link rel="apple-touch-icon" href="favicon.jpeg">
+	<link rel="shortcut icon" sizes="192x192" href="favicon.jpeg">
+
+<style>
+    :root {
+      --primary: #3b50b5;
+      --primary-blue: #2196F3;
+      --bg: #f5f6fa;
+      --card-bg: #ffffff;
+      --text: #333333;
+      --text-muted: #666666;
+      --danger: #d93025;
+      --success: #2e7d32;
+      --border: #e0e0e0;
+      --green-btn: #2e7d32;
+      --extra-green: #2e7d32;
+      --extra-red: #c62828;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding-bottom: 70px;
+    }
+
+    /* Header */
+    header {
+      background-color: var(--primary);
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+
+    .menu-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0 5px;
+    }
+
+    /* Menu Suspenso 3 Pontinhos */
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 15px;
+      background: white;
+      color: var(--text);
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      width: 250px;
+      z-index: 1000;
+      overflow: hidden;
+    }
+
+    .dropdown-menu.show {
+      display: block;
+    }
+
+    .dropdown-item {
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 500;
+    }
+
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    .dropdown-icon {
+      font-size: 1.1rem;
+      width: 24px;
+      text-align: center;
+    }
+
+    /* Abas */
+    .tab-content {
+      display: none;
+      padding: 15px;
+      max-width: 500px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Tela Ponto */
+    .container {
+      text-align: center;
+    }
+
+    .status-location {
+      color: var(--danger);
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 15px;
+    }
+
+    .status-location.inside {
+      color: var(--success);
+    }
+
+    .date-display {
+      font-size: 1.6rem;
+      font-weight: bold;
+      color: #222;
+      margin-top: 5px;
+    }
+
+    .next-register {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+    }
+
+    .fingerprint-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      outline: none;
+      margin: 10px 0 30px 0;
+      transition: transform 0.1s ease;
+    }
+
+    .fingerprint-btn:active {
+      transform: scale(0.95);
+    }
+
+    .fingerprint-icon {
+      width: 90px;
+      height: 90px;
+      fill: none;
+      stroke: #1a1a1a;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: left;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 12px;
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      color: var(--primary);
+      margin-bottom: 15px;
+    }
+
+    .mark-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+    }
+
+    .mark-badge {
+      background-color: var(--primary);
+      color: white;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-right: 12px;
+    }
+
+    .mark-label {
+      color: var(--text-muted);
+      flex: 1;
+    }
+
+    .mark-time {
+      font-weight: 600;
+    }
+
+    /* Tela Relatório */
+    .title-report {
+      color: var(--primary-blue);
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .filter-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    .btn-filter {
+      background-color: var(--primary-blue);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      color: #444;
+      margin-bottom: 15px;
+    }
+
+    /* Total Acumulado */
+    .accumulated-title {
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #666;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .accumulated-hours {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: var(--extra-green);
+      line-height: 1;
+    }
+
+    .accumulated-money {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--extra-red);
+      margin: 6px 0 12px 0;
+    }
+
+    .btn-export {
+      width: 100%;
+      background-color: var(--green-btn);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    /* Cards de Registros */
+    .day-card {
+      background: white;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      position: relative;
+    }
+
+    .day-card:hover {
+      background-color: #f8f9fa;
+    }
+
+    .day-card:active {
+      transform: scale(0.99);
+    }
+
+    .day-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+      color: #333;
+    }
+
+    .day-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .day-row strong {
+      font-weight: bold;
+    }
+
+    .edit-hint {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      font-size: 0.75rem;
+      color: var(--primary-blue);
+      font-weight: bold;
+    }
+
+    /* MODAL DE EDIÇÃO COMPLETA */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: white;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 15px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    .modal-field {
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .modal-field label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .modal-field input {
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .btn-modal {
+      flex: 1;
+      padding: 12px 6px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .btn-save {
+      background-color: var(--primary-blue);
+      color: white;
+    }
+
+    .btn-delete {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .btn-cancel {
+      background-color: #e0e0e0;
+      color: #333;
+    }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      border-top: 1px solid var(--border);
+      height: 60px;
+      z-index: 900;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.75rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: var(--primary-blue);
+      font-weight: bold;
+    }
+
+    .nav-icon {
+      font-size: 1.2rem;
+      margin-bottom: 2px;
+    }
+</style>
+  </head>
+  <body>
+
+	<!-- HEADER -->
+	<header>
+	  <h1>Ponto Fácil</h1>
+	  <button class="menu-btn" onclick="toggleMenu()">&#8942;</button>
+	  <div class="dropdown-menu" id="dropdownMenu">
+		<div class="dropdown-item" onclick="recalcularHistorico()"><span class="dropdown-icon">🔄</span> Recalcular Histórico</div>
+		<div class="dropdown-item" onclick="adicionarPontoManual()"><span class="dropdown-icon">📝</span> Adicionar Ponto Manual</div>
+		<div class="dropdown-item" onclick="configurarJornada()"><span class="dropdown-icon">⚙️</span> Configurar Horário/Jornada</div>
+		<div class="dropdown-item" onclick="configurarLocal()"><span class="dropdown-icon">📍</span> Configurar Local</div>
+		<div class="dropdown-item" onclick="configurarSalario()"><span class="dropdown-icon">🤑</span> Configurar Salário</div>
+		<div class="dropdown-item" onclick="fazerBackup()"><span class="dropdown-icon">💾</span> Fazer Backup JSON</div>
+		<div class="dropdown-item" onclick="importarBackup()"><span class="dropdown-icon">📁</span> Importar JSON</div>
+		<div class="dropdown-item" onclick="sincronizarTudo()"><span class="dropdown-icon">🔄</span> Sincronizar Tudo</div>
+		<div class="dropdown-item" onclick="sairApp()"><span class="dropdown-icon">❌</span> Sair</div>
+	  </div>
+	</header>
+
+	<!-- ABA 1: PONTO -->
+	<div id="tabPonto" class="tab-content active">
+	  <div class="container">
+		<div class="status-location" id="statusPerimetro">
+		  &#10060; Obtendo localização GPS...<br><span id="distanciaTexto">(--m)</span>
+		</div>
+
+		<div class="date-display" id="dataAtual">--/--/----</div>
+		<div class="next-register">Próximo Registro: <span id="lblProximoReg">Entrada</span></div>
+
+		<button class="fingerprint-btn" onclick="baterPontoAutomatico()" title="Bater Ponto">
+		  <svg class="fingerprint-icon" viewBox="0 0 24 24">
+			<path d="M12 2a10 10 0 0 0-8 4"/>
+			<path d="M12 6a6 6 0 0 0-6 6c0 1.5.5 3 1.5 4"/>
+			<path d="M12 10a2 2 0 0 0-2 2c0 2 1 3.5 2 5"/>
+			<path d="M12 14a1 1 0 0 1 1 1c0 1.5-.5 2.5-1 3.5"/>
+			<path d="M16 8a8 8 0 0 1 4 7c0 2-1 4-2 5.5"/>
+			<path d="M19 12a7 7 0 0 1 1 3.5"/>
+		  </svg>
+		</button>
+
+		<div class="card">
+		  <h2>Marcações de Hoje</h2>
+		  <div class="mark-item">
+			<div class="mark-badge">1</div>
+			<div class="mark-label">Entrada:</div>
+			<div class="mark-time" id="dispE">--:--</div>
+		  </div>
+		  <div class="mark-item">
+			<div class="mark-badge">2</div>
+			<div class="mark-label">Saída Intervalo:</div>
+			<div class="mark-time" id="dispSI">--:--</div>
+		  </div>
+		  <div class="mark-item">
+			<div class="mark-badge">3</div>
+			<div class="mark-label">Volta Intervalo:</div>
+			<div class="mark-time" id="dispVI">--:--</div>
+		  </div>
+		  <div class="mark-item">
+			<div class="mark-badge">4</div>
+			<div class="mark-label">Saída Final:</div>
+			<div class="mark-time" id="dispSF">--:--</div>
+		  </div>
+		</div>
+	  </div>
+	</div>
+
+	<!-- ABA 2: RELATÓRIO -->
+	<div id="tabRelatorio" class="tab-content">
+	  <div class="title-report">Filtros do Relatório</div>
+
+	  <div class="filter-row">
+		<input type="text" class="filter-input" id="filtroMesAno" placeholder="MM/AAAA">
+		<button class="btn-filter" onclick="carregarRelatorio()">FILTRAR</button>
+	  </div>
+
+	  <div class="checkbox-container">
+		<input type="checkbox" id="chkFaltas" onchange="carregarRelatorio()">
+		<label for="chkFaltas">Visualizar apenas faltas/incompletos</label>
+	  </div>
+
+	  <div class="card">
+		<div class="accumulated-title">TOTAL ACUMULADO DE HORAS EXTRAS</div>
+		<div class="accumulated-hours" id="totalHorasExtra">00:00</div>
+		<div class="accumulated-money" id="totalValorExtra">R$ 0,00</div>
+		<button class="btn-export" onclick="exportarCSV()">EXPORTAR CSV</button>
+	  </div>
+
+	  <div id="listaCardsRelatorio">
+		<!-- Cards gerados via JavaScript -->
+	  </div>
+	</div>
+
+	<!-- MODAL DE EDIÇÃO -->
+	<div class="modal-overlay" id="modalEdicao">
+	  <div class="modal-box">
+		<div class="modal-header" id="modalTitulo">Editar Registro</div>
+
+		<div class="modal-field">
+		  <label>Entrada</label>
+		  <input type="text" id="editEntrada" placeholder="HH:MM">
+		</div>
+		<div class="modal-field">
+		  <label>Saída Intervalo</label>
+		  <input type="text" id="editSaidaInt" placeholder="HH:MM">
+		</div>
+		<div class="modal-field">
+		  <label>Volta Intervalo</label>
+		  <input type="text" id="editVoltaInt" placeholder="HH:MM">
+		</div>
+		<div class="modal-field">
+		  <label>Saída Final</label>
+		  <input type="text" id="editSaidaFin" placeholder="HH:MM">
+		</div>
+
+		<div class="modal-actions">
+		  <button class="btn-modal btn-cancel" onclick="fecharModal()">CANCELAR</button>
+		  <button class="btn-modal btn-delete" onclick="deletarRegistro()">DELETAR</button>
+		  <button class="btn-modal btn-save" onclick="salvarModal()">SALVAR</button>
+		</div>
+	  </div>
+	</div>
+
+	<!-- NAVEGAÇÃO INFERIOR -->
+	<nav class="bottom-nav">
+	  <button class="nav-item active" id="btnNavPonto" onclick="mudarAba('ponto')">
+		<span class="nav-icon">&#9432;</span>
+		Ponto
+	  </button>
+	  <button class="nav-item" id="btnNavRelatorio" onclick="mudarAba('relatorio')">
+		<span class="nav-icon">&#128202;</span>
+		Relatório
+	  </button>
+	</nav>
+
+<script>
+    const SHEETDB_URL = 'https://sheetdb.io/api/v1/ujlpc27gcszbc';
+    const JORNADA_PADRAO_MINUTOS = 8 * 60;
+    const VALOR_HORA_EXTRA = 38.00;
+
+    // Configuração de Perímetro da Empresa (Substitua pelas suas coordenadas reais)
+    const EMPRESA_LAT = -23.550520;
+    const EMPRESA_LNG = -46.633308;
+    const RAIO_PERMITIDO_METROS = 200;
+
+    const hoje = new Date();
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const ano = hoje.getFullYear();
+    const dataFormatadaExibicao = `${dia}/${mes}/${ano}`;
+    const mesAnoAtual = `${mes}/${ano}`;
+
+    let dataEdicaoAtual = null;
+
+    document.getElementById('dataAtual').innerText = dataFormatadaExibicao;
+    document.getElementById('filtroMesAno').value = mesAnoAtual;
+
+    // Função para calcular distância GPS em Metros (Haversine)
+    function calcularDistanciaEmMetros(lat1, lon1, lat2, lon2) {
+      const R = 6371e3;
+      const φ1 = lat1 * Math.PI / 180;
+      const φ2 = lat2 * Math.PI / 180;
+      const Δφ = (lat2 - lat1) * Math.PI / 180;
+      const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+      const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+      return Math.round(R * c);
+    }
+
+    // Monitoramento contínuo de Geolocalização
+    function iniciarGPS() {
+      const elStatus = document.getElementById('statusPerimetro');
+      const elDistancia = document.getElementById('distanciaTexto');
+
+      if ("geolocation" in navigator) {
+        navigator.geolocation.watchPosition(
+          (posicao) => {
+            const userLat = posicao.coords.latitude;
+            const userLng = posicao.coords.longitude;
+            const distancia = calcularDistanciaEmMetros(userLat, userLng, EMPRESA_LAT, EMPRESA_LNG);
+
+            elDistancia.innerText = `(${distancia}m)`;
+
+            if (distancia <= RAIO_PERMITIDO_METROS) {
+              elStatus.innerHTML = `&#9989; Dentro do perímetro da empresa!<br><span id="distanciaTexto">(${distancia}m)</span>`;
+              elStatus.classList.add('inside');
+            } else {
+              elStatus.innerHTML = `&#10060; Fora do perímetro da empresa!<br><span id="distanciaTexto">(${distancia}m)</span>`;
+              elStatus.classList.remove('inside');
+            }
+          },
+          (erro) => {
+            let msg = "Erro ao acessar GPS";
+            if (erro.code === erro.PERMISSION_DENIED) msg = "Permissão de GPS negada!";
+            elStatus.innerHTML = `&#10060; ${msg}<br><span id="distanciaTexto">(--m)</span>`;
+            elStatus.classList.remove('inside');
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      } else {
+        elStatus.innerHTML = "&#10060; Geolocalização não suportada no aparelho.";
+      }
+    }
+
+    function toggleMenu() {
+      document.getElementById('dropdownMenu').classList.toggle('show');
+    }
+
+    function mudarAba(aba) {
+      if (aba === 'ponto') {
+        document.getElementById('tabPonto').classList.add('active');
+        document.getElementById('tabRelatorio').classList.remove('active');
+        document.getElementById('btnNavPonto').classList.add('active');
+        document.getElementById('btnNavRelatorio').classList.remove('active');
+      } else {
+        document.getElementById('tabPonto').classList.remove('active');
+        document.getElementById('tabRelatorio').classList.add('active');
+        document.getElementById('btnNavPonto').classList.remove('active');
+        document.getElementById('btnNavRelatorio').classList.add('active');
+        carregarRelatorio();
+      }
+    }
+
+    function timeToMinutes(timeStr) {
+      if (!timeStr || timeStr === '--:--' || !timeStr.includes(':')) return null;
+      const [h, m] = timeStr.split(':').map(Number);
+      return (h * 60) + m;
+    }
+
+    function minutesToTime(totalMinutes) {
+      const h = Math.floor(Math.abs(totalMinutes) / 60);
+      const m = Math.abs(totalMinutes) % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+
+    function parseDateString(dateStr) {
+      if (!dateStr) return new Date(0);
+      const parts = dateStr.split('/');
+      if (parts.length !== 3) return new Date(0);
+      return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+
+    function calcularHorasExtras(p) {
+      const e = timeToMinutes(p.entrada || p.Entrada);
+      const sI = timeToMinutes(p.saida_intervalo || p.saiAlm || p['Sai Almoço']);
+      const vI = timeToMinutes(p.volta_intervalo || p.voltAlm || p['Vol Almoço']);
+      const sF = timeToMinutes(p.saida_final || p.saidaFin || p.Fim);
+
+      let minutosExtra = 0;
+
+      if (e !== null && sF !== null) {
+        const dataObjeto = parseDateString(p.data);
+        const diaDaSemana = dataObjeto.getDay(); 
+        const ehFimDeSemana = (diaDaSemana === 0 || diaDaSemana === 6);
+
+        let intervalo = 0;
+        if (sI !== null && vI !== null && vI > sI) {
+          intervalo = vI - sI;
+        }
+
+        const totalTrabalhado = (sF - e) - intervalo;
+
+        if (ehFimDeSemana) {
+          minutosExtra = totalTrabalhado > 0 ? totalTrabalhado : 0;
+        } else {
+          const horaFimJornadaPadrao = 17 * 60 + 30; // 17:30
+          if (sF > horaFimJornadaPadrao) {
+            minutosExtra = sF - horaFimJornadaPadrao;
+          } else {
+            minutosExtra = totalTrabalhado - JORNADA_PADRAO_MINUTOS;
+            if (minutosExtra < 0) minutosExtra = 0;
+          }
+        }
+      }
+
+      const valorReais = (minutosExtra / 60) * VALOR_HORA_EXTRA;
+
+      return {
+        minutosExtra,
+        textoHoras: minutesToTime(minutosExtra),
+        valorFormatado: valorReais.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+      };
+    }
+
+    function abrirModalEdicao(dataStr, e, sI, vI, sF) {
+      dataEdicaoAtual = dataStr;
+      document.getElementById('modalTitulo').innerText = `Editar Ponto - ${dataStr}`;
+      document.getElementById('editEntrada').value = e === '--:--' ? '' : e;
+      document.getElementById('editSaidaInt').value = sI === '--:--' ? '' : sI;
+      document.getElementById('editVoltaInt').value = vI === '--:--' ? '' : vI;
+      document.getElementById('editSaidaFin').value = sF === '--:--' ? '' : sF;
+      document.getElementById('modalEdicao').classList.add('active');
+    }
+
+    function fecharModal() {
+      document.getElementById('modalEdicao').classList.remove('active');
+      dataEdicaoAtual = null;
+    }
+
+    function salvarModal() {
+      if (!dataEdicaoAtual) return;
+
+      const e = document.getElementById('editEntrada').value.trim();
+      const sI = document.getElementById('editSaidaInt').value.trim();
+      const vI = document.getElementById('editVoltaInt').value.trim();
+      const sF = document.getElementById('editSaidaFin').value.trim();
+
+      const payload = {
+        data: {
+          entrada: e,
+          saida_intervalo: sI,
+          volta_intervalo: vI,
+          saida_final: sF
+        }
+      };
+
+      fetch(`${SHEETDB_URL}/data/${encodeURIComponent(dataEdicaoAtual)}`, {
+        method: 'PATCH',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => {
+        if (res.ok) {
+          alert('Registro atualizado com sucesso!');
+          fecharModal();
+          carregarRelatorio();
+          if (dataEdicaoAtual === dataFormatadaExibicao) carregarPontoDeHoje();
+        } else {
+          alert('Erro ao atualizar registro.');
+        }
+      })
+      .catch(() => alert('Erro de conexão ao salvar alterações.'));
+    }
+
+    function deletarRegistro() {
+      if (!dataEdicaoAtual) return;
+
+      if (confirm(`Tem certeza que deseja DELETAR o registro do dia ${dataEdicaoAtual}?`)) {
+        fetch(`${SHEETDB_URL}/data/${encodeURIComponent(dataEdicaoAtual)}`, {
+          method: 'DELETE',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
+        })
+        .then(res => {
+          if (res.ok) {
+            alert('Registro excluído com sucesso!');
+            const dataDeletada = dataEdicaoAtual;
+            fecharModal();
+            carregarRelatorio();
+            if (dataDeletada === dataFormatadaExibicao) {
+              document.getElementById('dispE').innerText = '--:--';
+              document.getElementById('dispSI').innerText = '--:--';
+              document.getElementById('dispVI').innerText = '--:--';
+              document.getElementById('dispSF').innerText = '--:--';
+              document.getElementById('lblProximoReg').innerText = "Entrada";
+            }
+          } else {
+            alert('Erro ao excluir registro.');
+          }
+        })
+        .catch(() => alert('Erro de conexão ao tentar deletar.'));
+      }
+    }
+
+    function carregarRelatorio() {
+      const container = document.getElementById('listaCardsRelatorio');
+      const somenteFaltas = document.getElementById('chkFaltas').checked;
+      const filtroMesAno = document.getElementById('filtroMesAno').value.trim();
+
+      container.innerHTML = '<div style="text-align:center; padding:20px;">Carregando registros...</div>';
+
+      fetch(SHEETDB_URL)
+        .then(res => res.json())
+        .then(pontos => {
+          if (!Array.isArray(pontos) || pontos.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:20px;">Nenhum registro encontrado.</div>';
+            return;
+          }
+
+          container.innerHTML = '';
+          let acumuladoMinutos = 0;
+
+          let pontosFiltrados = pontos.filter(p => {
+            if (!p.data) return false;
+            return p.data.endsWith(filtroMesAno) || p.data.includes('/' + filtroMesAno);
+          });
+
+          pontosFiltrados.sort((a, b) => parseDateString(b.data) - parseDateString(a.data));
+
+          if (pontosFiltrados.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding:20px;">Nenhum registro encontrado para ${filtroMesAno}.</div>`;
+            document.getElementById('totalHorasExtra').innerText = "00:00";
+            document.getElementById('totalValorExtra').innerText = "R$ 0,00";
+            return;
+          }
+
+          pontosFiltrados.forEach(p => {
+            const e = p.entrada || p.Entrada || '--:--';
+            const sI = p.saida_intervalo || p.saiAlm || p['Sai Almoço'] || '--:--';
+            const vI = p.volta_intervalo || p.voltAlm || p['Vol Almoço'] || '--:--';
+            const sF = p.saida_final || p.saidaFin || p.Fim || '--:--';
+
+            const isIncompleto = (e === '--:--' || sI === '--:--' || vI === '--:--' || sF === '--:--');
+
+            if (somenteFaltas && !isIncompleto) return;
+
+            const extra = calcularHorasExtras(p);
+            acumuladoMinutos += extra.minutosExtra;
+
+            const card = document.createElement('div');
+            card.className = 'day-card';
+            card.onclick = () => abrirModalEdicao(p.data, e, sI, vI, sF);
+            card.innerHTML = `
+              <span class="edit-hint">✏️ Editar</span>
+              <div class="day-row">📅 <strong>Data: ${p.data}</strong></div>
+              <div class="day-row">📥 Ent: ${e} | Sai Almoço: ${sI}</div>
+              <div class="day-row">📤 Vol Almoço: ${vI} | Fim: ${sF}</div>
+              <div class="day-row">⭐ Total Extra: ${extra.textoHoras} (${extra.valorFormatado})</div>
+              ${sF !== '--:--' ? `<div class="day-row">🏢 Extra Tarde: 17:30 - ${sF}</div>` : ''}
+            `;
+            container.appendChild(card);
+          });
+
+          document.getElementById('totalHorasExtra').innerText = minutesToTime(acumuladoMinutos);
+          const totalValor = (acumuladoMinutos / 60) * VALOR_HORA_EXTRA;
+          document.getElementById('totalValorExtra').innerText = totalValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        })
+        .catch(() => {
+          container.innerHTML = '<div style="text-align:center; padding:20px;">Erro ao carregar dados.</div>';
+        });
+    }
+
+    function carregarPontoDeHoje() {
+      fetch(SHEETDB_URL)
+        .then(res => res.json())
+        .then(pontos => {
+          if (!Array.isArray(pontos)) return;
+          const pontoHoje = pontos.find(p => p.data === dataFormatadaExibicao);
+          
+          if (pontoHoje) {
+            const e = pontoHoje.entrada || pontoHoje.Entrada || '';
+            const sI = pontoHoje.saida_intervalo || pontoHoje.saiAlm || pontoHoje['Sai Almoço'] || '';
+            const vI = pontoHoje.volta_intervalo || pontoHoje.voltAlm || pontoHoje['Vol Almoço'] || '';
+            const sF = pontoHoje.saida_final || pontoHoje.saidaFin || pontoHoje.Fim || '';
+
+            document.getElementById('dispE').innerText = e || '--:--';
+            document.getElementById('dispSI').innerText = sI || '--:--';
+            document.getElementById('dispVI').innerText = vI || '--:--';
+            document.getElementById('dispSF').innerText = sF || '--:--';
+
+            if (!e) document.getElementById('lblProximoReg').innerText = "Entrada";
+            else if (!sI && !sF) document.getElementById('lblProximoReg').innerText = "Saída Intervalo / Final";
+            else if (!vI && !sF) document.getElementById('lblProximoReg').innerText = "Volta Intervalo";
+            else if (!sF) document.getElementById('lblProximoReg').innerText = "Saída Final";
+            else document.getElementById('lblProximoReg').innerText = "Completo";
+          }
+        });
+    }
+
+    function baterPontoAutomatico() {
+      const agora = new Date();
+      const horaAtual = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
+
+      let e = document.getElementById('dispE').innerText;
+      let sI = document.getElementById('dispSI').innerText;
+      let vI = document.getElementById('dispVI').innerText;
+      let sF = document.getElementById('dispSF').innerText;
+
+      let campo = '';
+
+      if (e === '--:--') {
+        e = horaAtual;
+        document.getElementById('dispE').innerText = horaAtual;
+        document.getElementById('lblProximoReg').innerText = "Saída Intervalo / Final";
+        campo = 'entrada';
+
+        fetch(SHEETDB_URL, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: [{ data: dataFormatadaExibicao, entrada: e }] })
+        }).then(() => alert('Entrada registrada!'));
+        return;
+      } 
+
+      if (sI === '--:--' && sF === '--:--') {
+        const ehSaidaFinal = confirm("Esta marcação é a SAÍDA FINAL?\n\n- Clique em [OK] para SAÍDA FINAL (Ex: Final de semana / Sem almoço)\n- Clique em [Cancelar] para SAÍDA INTERVALO (Almoço)");
+
+        if (ehSaidaFinal) {
+          sF = horaAtual;
+          document.getElementById('dispSF').innerText = horaAtual;
+          document.getElementById('lblProximoReg').innerText = "Completo";
+          campo = 'saida_final';
+        } else {
+          sI = horaAtual;
+          document.getElementById('dispSI').innerText = horaAtual;
+          document.getElementById('lblProximoReg').innerText = "Volta Intervalo";
+          campo = 'saida_intervalo';
+        }
+      } 
+      else if (vI === '--:--' && sF === '--:--') {
+        vI = horaAtual;
+        document.getElementById('dispVI').innerText = horaAtual;
+        document.getElementById('lblProximoReg').innerText = "Saída Final";
+        campo = 'volta_intervalo';
+      } 
+      else if (sF === '--:--') {
+        sF = horaAtual;
+        document.getElementById('dispSF').innerText = horaAtual;
+        document.getElementById('lblProximoReg').innerText = "Completo";
+        campo = 'saida_final';
+      } else {
+        alert('Todas as marcações de hoje já foram preenchidas!');
+        return;
+      }
+
+      const payload = { "data": { [campo]: horaAtual } };
+      fetch(`${SHEETDB_URL}/data/${encodeURIComponent(dataFormatadaExibicao)}`, {
+        method: 'PATCH',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(() => alert('Ponto atualizado!'));
+    }
+
+    function recalcularHistorico() { alert("Recalculando Histórico..."); toggleMenu(); }
+    function adicionarPontoManual() { alert("Abrir formulário de Ponto Manual"); toggleMenu(); }
+    function configurarJornada() { alert("Configurar Horários"); toggleMenu(); }
+    function configurarLocal() { alert("Configurar Perímetro/GPS"); toggleMenu(); }
+    function configurarSalario() { alert("Configurar Salário/Valor Hora"); toggleMenu(); }
+    function fazerBackup() { alert("Backup baixado!"); toggleMenu(); }
+    function importarBackup() { alert("Selecione o arquivo JSON"); toggleMenu(); }
+    function sincronizarTudo() { carregarPontoDeHoje(); carregarRelatorio(); alert("Sincronizado!"); toggleMenu(); }
+    function sairApp() { window.close(); }
+
+    window.onclick = function(event) {
+      if (!event.target.matches('.menu-btn')) {
+        const dropdown = document.getElementById('dropdownMenu');
+        if (dropdown && dropdown.classList.contains('show')) dropdown.classList.remove('show');
+      }
+    }
+
+    // Inicializa a localização e carrega os dados de hoje
+    iniciarGPS();
+    carregarPontoDeHoje();
+</script>
+  </body>
+</html>
