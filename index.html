@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ponto Fácil</title>
+  <head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Ponto Fácil</title>
 
-  <!-- PWA & Favicon -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Ponto Fácil">
-  <meta name="theme-color" content="#3b50b5">
+	<!-- PWA & Favicon -->
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<meta name="apple-mobile-web-app-title" content="Ponto Fácil">
+	<meta name="theme-color" content="#3b50b5">
 
-  <link rel="icon" type="image/jpeg" href="favicon.jpeg">
-  <link rel="apple-touch-icon" href="favicon.jpeg">
-  <link rel="shortcut icon" sizes="192x192" href="favicon.jpeg">
+	<link rel="icon" type="image/jpeg" href="favicon.jpeg">
+	<link rel="apple-touch-icon" href="favicon.jpeg">
+	<link rel="shortcut icon" sizes="192x192" href="favicon.jpeg">
 
-  <style>
+<style>
     :root {
       --primary: #3b50b5;
       --primary-blue: #2196F3;
@@ -25,6 +25,7 @@
       --text: #333333;
       --text-muted: #666666;
       --danger: #d93025;
+      --success: #2e7d32;
       --border: #e0e0e0;
       --green-btn: #2e7d32;
       --extra-green: #2e7d32;
@@ -140,6 +141,10 @@
       font-weight: 600;
       font-size: 0.95rem;
       margin-bottom: 15px;
+    }
+
+    .status-location.inside {
+      color: var(--success);
     }
 
     .date-display {
@@ -346,7 +351,7 @@
       font-weight: bold;
     }
 
-    /* MODAL DE EDIÇÃO COMPLETA */
+    /* MODAIS */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -435,6 +440,19 @@
       color: #333;
     }
 
+    .btn-gps-current {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      margin-bottom: 15px;
+      width: 100%;
+      cursor: pointer;
+    }
+
     /* Bottom Nav */
     .bottom-nav {
       position: fixed;
@@ -471,146 +489,177 @@
       font-size: 1.2rem;
       margin-bottom: 2px;
     }
-  </style>
-</head>
-<body>
+</style>
+  </head>
+  <body>
 
-  <!-- HEADER -->
-  <header>
-    <h1>Ponto Fácil</h1>
-    <button class="menu-btn" onclick="toggleMenu()">&#8942;</button>
-    <div class="dropdown-menu" id="dropdownMenu">
-      <div class="dropdown-item" onclick="recalcularHistorico()"><span class="dropdown-icon">🔄</span> Recalcular Histórico</div>
-      <div class="dropdown-item" onclick="adicionarPontoManual()"><span class="dropdown-icon">📝</span> Adicionar Ponto Manual</div>
-      <div class="dropdown-item" onclick="configurarJornada()"><span class="dropdown-icon">⚙️</span> Configurar Horário/Jornada</div>
-      <div class="dropdown-item" onclick="configurarLocal()"><span class="dropdown-icon">📍</span> Configurar Local</div>
-      <div class="dropdown-item" onclick="configurarSalario()"><span class="dropdown-icon">🤑</span> Configurar Salário</div>
-      <div class="dropdown-item" onclick="fazerBackup()"><span class="dropdown-icon">💾</span> Fazer Backup JSON</div>
-      <div class="dropdown-item" onclick="importarBackup()"><span class="dropdown-icon">📁</span> Importar JSON</div>
-      <div class="dropdown-item" onclick="sincronizarTudo()"><span class="dropdown-icon">🔄</span> Sincronizar Tudo</div>
-      <div class="dropdown-item" onclick="sairApp()"><span class="dropdown-icon">❌</span> Sair</div>
-    </div>
-  </header>
+	<!-- HEADER -->
+	<header>
+	  <h1>Ponto Fácil</h1>
+	  <button class="menu-btn" onclick="toggleMenu()">&#8942;</button>
+	  <div class="dropdown-menu" id="dropdownMenu">
+		<div class="dropdown-item" onclick="recalcularHistorico()"><span class="dropdown-icon">🔄</span> Recalcular Histórico</div>
+		<div class="dropdown-item" onclick="adicionarPontoManual()"><span class="dropdown-icon">📝</span> Adicionar Ponto Manual</div>
+		<div class="dropdown-item" onclick="configurarJornada()"><span class="dropdown-icon">⚙️</span> Configurar Horário/Jornada</div>
+		<div class="dropdown-item" onclick="abrirConfigLocal()"><span class="dropdown-icon">📍</span> Configurar Local</div>
+		<div class="dropdown-item" onclick="configurarSalario()"><span class="dropdown-icon">🤑</span> Configurar Salário</div>
+		<div class="dropdown-item" onclick="fazerBackup()"><span class="dropdown-icon">💾</span> Fazer Backup JSON</div>
+		<div class="dropdown-item" onclick="importarBackup()"><span class="dropdown-icon">📁</span> Importar JSON</div>
+		<div class="dropdown-item" onclick="sincronizarTudo()"><span class="dropdown-icon">🔄</span> Sincronizar Tudo</div>
+		<div class="dropdown-item" onclick="sairApp()"><span class="dropdown-icon">❌</span> Sair</div>
+	  </div>
+	</header>
 
-  <!-- ABA 1: PONTO -->
-  <div id="tabPonto" class="tab-content active">
-    <div class="container">
-      <div class="status-location" id="statusPerimetro">
-        &#10060; Fora do perímetro da empresa!<br><span id="distanciaTexto">(472m)</span>
-      </div>
+	<!-- ABA 1: PONTO -->
+	<div id="tabPonto" class="tab-content active">
+	  <div class="container">
+		<div class="status-location" id="statusPerimetro">
+		  &#10060; Obtendo localização GPS...<br><span id="distanciaTexto">(--m)</span>
+		</div>
 
-      <div class="date-display" id="dataAtual">--/--/----</div>
-      <div class="next-register">Próximo Registro: <span id="lblProximoReg">Entrada</span></div>
+		<div class="date-display" id="dataAtual">--/--/----</div>
+		<div class="next-register">Próximo Registro: <span id="lblProximoReg">Entrada</span></div>
 
-      <button class="fingerprint-btn" onclick="baterPontoAutomatico()" title="Bater Ponto">
-        <svg class="fingerprint-icon" viewBox="0 0 24 24">
-          <path d="M12 2a10 10 0 0 0-8 4"/>
-          <path d="M12 6a6 6 0 0 0-6 6c0 1.5.5 3 1.5 4"/>
-          <path d="M12 10a2 2 0 0 0-2 2c0 2 1 3.5 2 5"/>
-          <path d="M12 14a1 1 0 0 1 1 1c0 1.5-.5 2.5-1 3.5"/>
-          <path d="M16 8a8 8 0 0 1 4 7c0 2-1 4-2 5.5"/>
-          <path d="M19 12a7 7 0 0 1 1 3.5"/>
-        </svg>
-      </button>
+		<button class="fingerprint-btn" onclick="baterPontoAutomatico()" title="Bater Ponto">
+		  <svg class="fingerprint-icon" viewBox="0 0 24 24">
+			<path d="M12 2a10 10 0 0 0-8 4"/>
+			<path d="M12 6a6 6 0 0 0-6 6c0 1.5.5 3 1.5 4"/>
+			<path d="M12 10a2 2 0 0 0-2 2c0 2 1 3.5 2 5"/>
+			<path d="M12 14a1 1 0 0 1 1 1c0 1.5-.5 2.5-1 3.5"/>
+			<path d="M16 8a8 8 0 0 1 4 7c0 2-1 4-2 5.5"/>
+			<path d="M19 12a7 7 0 0 1 1 3.5"/>
+		  </svg>
+		</button>
 
-      <div class="card">
-        <h2>Marcações de Hoje</h2>
-        <div class="mark-item">
-          <div class="mark-badge">1</div>
-          <div class="mark-label">Entrada:</div>
-          <div class="mark-time" id="dispE">--:--</div>
-        </div>
-        <div class="mark-item">
-          <div class="mark-badge">2</div>
-          <div class="mark-label">Saída Intervalo:</div>
-          <div class="mark-time" id="dispSI">--:--</div>
-        </div>
-        <div class="mark-item">
-          <div class="mark-badge">3</div>
-          <div class="mark-label">Volta Intervalo:</div>
-          <div class="mark-time" id="dispVI">--:--</div>
-        </div>
-        <div class="mark-item">
-          <div class="mark-badge">4</div>
-          <div class="mark-label">Saída Final:</div>
-          <div class="mark-time" id="dispSF">--:--</div>
-        </div>
-      </div>
-    </div>
-  </div>
+		<div class="card">
+		  <h2>Marcações de Hoje</h2>
+		  <div class="mark-item">
+			<div class="mark-badge">1</div>
+			<div class="mark-label">Entrada:</div>
+			<div class="mark-time" id="dispE">--:--</div>
+		  </div>
+		  <div class="mark-item">
+			<div class="mark-badge">2</div>
+			<div class="mark-label">Saída Intervalo:</div>
+			<div class="mark-time" id="dispSI">--:--</div>
+		  </div>
+		  <div class="mark-item">
+			<div class="mark-badge">3</div>
+			<div class="mark-label">Volta Intervalo:</div>
+			<div class="mark-time" id="dispVI">--:--</div>
+		  </div>
+		  <div class="mark-item">
+			<div class="mark-badge">4</div>
+			<div class="mark-label">Saída Final:</div>
+			<div class="mark-time" id="dispSF">--:--</div>
+		  </div>
+		</div>
+	  </div>
+	</div>
 
-  <!-- ABA 2: RELATÓRIO -->
-  <div id="tabRelatorio" class="tab-content">
-    <div class="title-report">Filtros do Relatório</div>
-    
-    <div class="filter-row">
-      <input type="text" class="filter-input" id="filtroMesAno" placeholder="MM/AAAA">
-      <button class="btn-filter" onclick="carregarRelatorio()">FILTRAR</button>
-    </div>
+	<!-- ABA 2: RELATÓRIO -->
+	<div id="tabRelatorio" class="tab-content">
+	  <div class="title-report">Filtros do Relatório</div>
 
-    <div class="checkbox-container">
-      <input type="checkbox" id="chkFaltas" onchange="carregarRelatorio()">
-      <label for="chkFaltas">Visualizar apenas faltas/incompletos</label>
-    </div>
+	  <div class="filter-row">
+		<input type="text" class="filter-input" id="filtroMesAno" placeholder="MM/AAAA">
+		<button class="btn-filter" onclick="carregarRelatorio()">FILTRAR</button>
+	  </div>
 
-    <div class="card">
-      <div class="accumulated-title">TOTAL ACUMULADO DE HORAS EXTRAS</div>
-      <div class="accumulated-hours" id="totalHorasExtra">00:00</div>
-      <div class="accumulated-money" id="totalValorExtra">R$ 0,00</div>
-      <button class="btn-export" onclick="exportarCSV()">EXPORTAR CSV</button>
-    </div>
+	  <div class="checkbox-container">
+		<input type="checkbox" id="chkFaltas" onchange="carregarRelatorio()">
+		<label for="chkFaltas">Visualizar apenas faltas/incompletos</label>
+	  </div>
 
-    <div id="listaCardsRelatorio">
-      <!-- Cards gerados via JavaScript -->
-    </div>
-  </div>
+	  <div class="card">
+		<div class="accumulated-title">TOTAL ACUMULADO DE HORAS EXTRAS</div>
+		<div class="accumulated-hours" id="totalHorasExtra">00:00</div>
+		<div class="accumulated-money" id="totalValorExtra">R$ 0,00</div>
+		<button class="btn-export" onclick="exportarCSV()">EXPORTAR CSV</button>
+	  </div>
 
-  <!-- MODAL DE EDIÇÃO -->
-  <div class="modal-overlay" id="modalEdicao">
-    <div class="modal-box">
-      <div class="modal-header" id="modalTitulo">Editar Registro</div>
-      
-      <div class="modal-field">
-        <label>Entrada</label>
-        <input type="text" id="editEntrada" placeholder="HH:MM">
-      </div>
-      <div class="modal-field">
-        <label>Saída Intervalo</label>
-        <input type="text" id="editSaidaInt" placeholder="HH:MM">
-      </div>
-      <div class="modal-field">
-        <label>Volta Intervalo</label>
-        <input type="text" id="editVoltaInt" placeholder="HH:MM">
-      </div>
-      <div class="modal-field">
-        <label>Saída Final</label>
-        <input type="text" id="editSaidaFin" placeholder="HH:MM">
-      </div>
+	  <div id="listaCardsRelatorio"></div>
+	</div>
 
-      <div class="modal-actions">
-        <button class="btn-modal btn-cancel" onclick="fecharModal()">CANCELAR</button>
-        <button class="btn-modal btn-delete" onclick="deletarRegistro()">DELETAR</button>
-        <button class="btn-modal btn-save" onclick="salvarModal()">SALVAR</button>
-      </div>
-    </div>
-  </div>
+	<!-- MODAL DE EDIÇÃO DE REGISTRO -->
+	<div class="modal-overlay" id="modalEdicao">
+	  <div class="modal-box">
+		<div class="modal-header" id="modalTitulo">Editar Registro</div>
+		<div class="modal-field">
+		  <label>Entrada</label>
+		  <input type="text" id="editEntrada" placeholder="HH:MM">
+		</div>
+		<div class="modal-field">
+		  <label>Saída Intervalo</label>
+		  <input type="text" id="editSaidaInt" placeholder="HH:MM">
+		</div>
+		<div class="modal-field">
+		  <label>Volta Intervalo</label>
+		  <input type="text" id="editVoltaInt" placeholder="HH:MM">
+		</div>
+		<div class="modal-field">
+		  <label>Saída Final</label>
+		  <input type="text" id="editSaidaFin" placeholder="HH:MM">
+		</div>
+		<div class="modal-actions">
+		  <button class="btn-modal btn-cancel" onclick="fecharModal()">CANCELAR</button>
+		  <button class="btn-modal btn-delete" onclick="deletarRegistro()">DELETAR</button>
+		  <button class="btn-modal btn-save" onclick="salvarModal()">SALVAR</button>
+		</div>
+	  </div>
+	</div>
 
-  <!-- NAVEGAÇÃO INFERIOR -->
-  <nav class="bottom-nav">
-    <button class="nav-item active" id="btnNavPonto" onclick="mudarAba('ponto')">
-      <span class="nav-icon">&#9432;</span>
-      Ponto
-    </button>
-    <button class="nav-item" id="btnNavRelatorio" onclick="mudarAba('relatorio')">
-      <span class="nav-icon">&#128202;</span>
-      Relatório
-    </button>
-  </nav>
+	<!-- MODAL DE CONFIGURAÇÃO DE LOCAL -->
+	<div class="modal-overlay" id="modalLocal">
+	  <div class="modal-box">
+		<div class="modal-header">Configurar Perímetro GPS</div>
 
-  <script>
+		<button class="btn-gps-current" onclick="usarGpsAtual()">📍 USAR MINHA LOCALIZAÇÃO ATUAL</button>
+
+		<div class="modal-field">
+		  <label>Latitude da Empresa</label>
+		  <input type="text" id="cfgLat" placeholder="Ex: -23.550520">
+		</div>
+		<div class="modal-field">
+		  <label>Longitude da Empresa</label>
+		  <input type="text" id="cfgLng" placeholder="Ex: -46.633308">
+		</div>
+		<div class="modal-field">
+		  <label>Raio Permitido (Metros)</label>
+		  <input type="number" id="cfgRaio" placeholder="Ex: 200">
+		</div>
+
+		<div class="modal-actions">
+		  <button class="btn-modal btn-cancel" onclick="fecharModalLocal()">CANCELAR</button>
+		  <button class="btn-modal btn-save" onclick="salvarConfigLocal()">SALVAR</button>
+		</div>
+	  </div>
+	</div>
+
+	<!-- NAVEGAÇÃO INFERIOR -->
+	<nav class="bottom-nav">
+	  <button class="nav-item active" id="btnNavPonto" onclick="mudarAba('ponto')">
+		<span class="nav-icon">&#9432;</span>
+		Ponto
+	  </button>
+	  <button class="nav-item" id="btnNavRelatorio" onclick="mudarAba('relatorio')">
+		<span class="nav-icon">&#128202;</span>
+		Relatório
+	  </button>
+	</nav>
+
+<script>
     const SHEETDB_URL = 'https://sheetdb.io/api/v1/ujlpc27gcszbc';
-    const JORNADA_PADRAO_MINUTOS = 8 * 60;
+    const JORNADA_PADRAO_MINUTOS = 8 * 60; // 8 horas = 480 minutos
     const VALOR_HORA_EXTRA = 38.00;
+
+    // Configurações de Local com persistência via localStorage
+    let empresaLat = parseFloat(localStorage.getItem('EMPRESA_LAT')) || -23.550520;
+    let empresaLng = parseFloat(localStorage.getItem('EMPRESA_LNG')) || -46.633308;
+    let raioPermitidoMetros = parseInt(localStorage.getItem('RAIO_PERMITIDO_METROS')) || 200;
+
+    let userLatAtual = null;
+    let userLngAtual = null;
 
     const hoje = new Date();
     const dia = String(hoje.getDate()).padStart(2, '0');
@@ -623,6 +672,118 @@
 
     document.getElementById('dataAtual').innerText = dataFormatadaExibicao;
     document.getElementById('filtroMesAno').value = mesAnoAtual;
+
+    // Função para calcular distância GPS em Metros (Haversine)
+    function calcularDistanciaEmMetros(lat1, lon1, lat2, lon2) {
+      const R = 6371e3;
+      const φ1 = lat1 * Math.PI / 180;
+      const φ2 = lat2 * Math.PI / 180;
+      const Δφ = (lat2 - lat1) * Math.PI / 180;
+      const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+      const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+      return Math.round(R * c);
+    }
+
+    // FUNÇÕES CHAMADAS DIRETAMENTE PELO JAVA DA MAINACTIVITY
+    function atualizarCoordenadas(lat, lng) {
+      userLatAtual = lat;
+      userLngAtual = lng;
+
+      const elStatus = document.getElementById('statusPerimetro');
+      const distancia = calcularDistanciaEmMetros(lat, lng, empresaLat, empresaLng);
+
+      if (distancia <= raioPermitidoMetros) {
+        elStatus.innerHTML = `&#9989; Dentro do perímetro da empresa!<br><span id="distanciaTexto">(${distancia}m)</span>`;
+        elStatus.classList.add('inside');
+      } else {
+        elStatus.innerHTML = `&#10060; Fora do perímetro da empresa!<br><span id="distanciaTexto">(${distancia}m)</span>`;
+        elStatus.classList.remove('inside');
+      }
+    }
+
+    function atualizarGpsNativo(lat, lng) {
+      atualizarCoordenadas(lat, lng);
+    }
+
+    // Fallback de GPS Web JS (caso rode em navegador comum fora do App Android)
+    function iniciarGPS() {
+      const elStatus = document.getElementById('statusPerimetro');
+
+      if ("geolocation" in navigator) {
+        navigator.geolocation.watchPosition(
+          (posicao) => {
+            atualizarCoordenadas(posicao.coords.latitude, posicao.coords.longitude);
+          },
+          (erro) => {
+            if (!userLatAtual) {
+              let msg = "Aguardando sinal do GPS...";
+              if (erro.code === erro.PERMISSION_DENIED) msg = "Permissão de GPS negada!";
+              elStatus.innerHTML = `&#10060; ${msg}<br><span id="distanciaTexto">(--m)</span>`;
+              elStatus.classList.remove('inside');
+            }
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      }
+    }
+
+    // Modal de Configuração de Local
+    function abrirConfigLocal() {
+      toggleMenu();
+      document.getElementById('cfgLat').value = empresaLat;
+      document.getElementById('cfgLng').value = empresaLng;
+      document.getElementById('cfgRaio').value = raioPermitidoMetros;
+      document.getElementById('modalLocal').classList.add('active');
+    }
+
+    function fecharModalLocal() {
+      document.getElementById('modalLocal').classList.remove('active');
+    }
+
+    function usarGpsAtual() {
+      if (userLatAtual && userLngAtual) {
+        document.getElementById('cfgLat').value = userLatAtual;
+        document.getElementById('cfgLng').value = userLngAtual;
+        alert("Sua localização atual foi preenchida nos campos!");
+      } else {
+        // Tenta acionar a atualização de GPS do Android
+        if (window.AndroidGPS && typeof window.AndroidGPS.solicitarGPS === 'function') {
+          window.AndroidGPS.solicitarGPS();
+        }
+        alert("Aguardando sinal do GPS... Tente novamente em alguns segundos.");
+      }
+    }
+
+    function salvarConfigLocal() {
+      const latInput = parseFloat(document.getElementById('cfgLat').value);
+      const lngInput = parseFloat(document.getElementById('cfgLng').value);
+      const raioInput = parseInt(document.getElementById('cfgRaio').value);
+
+      if (isNaN(latInput) || isNaN(lngInput) || isNaN(raioInput)) {
+        alert("Preencha valores válidos para Latitude, Longitude e Raio.");
+        return;
+      }
+
+      empresaLat = latInput;
+      empresaLng = lngInput;
+      raioPermitidoMetros = raioInput;
+
+      localStorage.setItem('EMPRESA_LAT', empresaLat);
+      localStorage.setItem('EMPRESA_LNG', empresaLng);
+      localStorage.setItem('RAIO_PERMITIDO_METROS', raioPermitidoMetros);
+
+      alert("Local da empresa atualizado com sucesso!");
+      fecharModalLocal();
+
+      if (userLatAtual && userLngAtual) {
+        atualizarCoordenadas(userLatAtual, userLngAtual);
+      }
+    }
 
     function toggleMenu() {
       document.getElementById('dropdownMenu').classList.toggle('show');
@@ -662,6 +823,7 @@
       return new Date(parts[2], parts[1] - 1, parts[0]);
     }
 
+    // CÁLCULO DE HORAS EXTRAS
     function calcularHorasExtras(p) {
       const e = timeToMinutes(p.entrada || p.Entrada);
       const sI = timeToMinutes(p.saida_intervalo || p.saiAlm || p['Sai Almoço']);
@@ -685,13 +847,8 @@
         if (ehFimDeSemana) {
           minutosExtra = totalTrabalhado > 0 ? totalTrabalhado : 0;
         } else {
-          const horaFimJornadaPadrao = 17 * 60 + 30; // 17:30
-          if (sF > horaFimJornadaPadrao) {
-            minutosExtra = sF - horaFimJornadaPadrao;
-          } else {
-            minutosExtra = totalTrabalhado - JORNADA_PADRAO_MINUTOS;
-            if (minutosExtra < 0) minutosExtra = 0;
-          }
+          minutosExtra = totalTrabalhado - JORNADA_PADRAO_MINUTOS;
+          if (minutosExtra < 0) minutosExtra = 0;
         }
       }
 
@@ -704,7 +861,6 @@
       };
     }
 
-    // Abrir Modal de Edição
     function abrirModalEdicao(dataStr, e, sI, vI, sF) {
       dataEdicaoAtual = dataStr;
       document.getElementById('modalTitulo').innerText = `Editar Ponto - ${dataStr}`;
@@ -807,7 +963,6 @@
             return p.data.endsWith(filtroMesAno) || p.data.includes('/' + filtroMesAno);
           });
 
-          // ORDENAÇÃO DECRESCENTE
           pontosFiltrados.sort((a, b) => parseDateString(b.data) - parseDateString(a.data));
 
           if (pontosFiltrados.length === 0) {
@@ -839,7 +994,6 @@
               <div class="day-row">📥 Ent: ${e} | Sai Almoço: ${sI}</div>
               <div class="day-row">📤 Vol Almoço: ${vI} | Fim: ${sF}</div>
               <div class="day-row">⭐ Total Extra: ${extra.textoHoras} (${extra.valorFormatado})</div>
-              ${sF !== '--:--' ? `<div class="day-row">🏢 Extra Tarde: 17:30 - ${sF}</div>` : ''}
             `;
             container.appendChild(card);
           });
@@ -880,7 +1034,27 @@
         });
     }
 
+    // BATER PONTO COM BLOQUEIO DE GPS
     function baterPontoAutomatico() {
+      // Pede atualização imediata do GPS nativo do Android
+      if (window.AndroidGPS && typeof window.AndroidGPS.solicitarGPS === 'function') {
+        window.AndroidGPS.solicitarGPS();
+      }
+
+      // 1. TRAVA DE SEGURANÇA DE PERÍMETRO GPS
+      if (userLatAtual === null || userLngAtual === null) {
+        alert("⚠️ Aguarde a captura do sinal de GPS antes de registrar o ponto!");
+        return;
+      }
+
+      const distanciaAtual = calcularDistanciaEmMetros(userLatAtual, userLngAtual, empresaLat, empresaLng);
+
+      if (distanciaAtual > raioPermitidoMetros) {
+        alert(`❌ Registro Bloqueado!\n\nVocê está fora do perímetro da empresa.\nDistância atual: ${distanciaAtual}m\nLimite permitido: ${raioPermitidoMetros}m`);
+        return;
+      }
+
+      // 2. REGISTRO NORMAL DO PONTO
       const agora = new Date();
       const horaAtual = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
 
@@ -901,7 +1075,7 @@
           method: 'POST',
           headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: [{ data: dataFormatadaExibicao, entrada: e }] })
-        }).then(() => alert('Entrada registrada!'));
+        }).then(() => alert('Entrada registrada com sucesso!'));
         return;
       } 
 
@@ -941,13 +1115,12 @@
         method: 'PATCH',
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      }).then(() => alert('Ponto atualizado!'));
+      }).then(() => alert('Ponto atualizado com sucesso!'));
     }
 
     function recalcularHistorico() { alert("Recalculando Histórico..."); toggleMenu(); }
     function adicionarPontoManual() { alert("Abrir formulário de Ponto Manual"); toggleMenu(); }
     function configurarJornada() { alert("Configurar Horários"); toggleMenu(); }
-    function configurarLocal() { alert("Configurar Perímetro/GPS"); toggleMenu(); }
     function configurarSalario() { alert("Configurar Salário/Valor Hora"); toggleMenu(); }
     function fazerBackup() { alert("Backup baixado!"); toggleMenu(); }
     function importarBackup() { alert("Selecione o arquivo JSON"); toggleMenu(); }
@@ -961,7 +1134,9 @@
       }
     }
 
+    iniciarGPS();
     carregarPontoDeHoje();
-  </script>
-</body>
+</script>
+  </body>
 </html>
+
