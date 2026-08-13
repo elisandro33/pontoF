@@ -613,9 +613,9 @@
 	<div class="modal-overlay" id="modalLocal">
 	  <div class="modal-box">
 		<div class="modal-header">Configurar Perímetro GPS</div>
-		
+
 		<button class="btn-gps-current" onclick="usarGpsAtual()">📍 USAR MINHA LOCALIZAÇÃO ATUAL</button>
-		
+
 		<div class="modal-field">
 		  <label>Latitude da Empresa</label>
 		  <input type="text" id="cfgLat" placeholder="Ex: -23.550520">
@@ -673,7 +673,7 @@
     document.getElementById('dataAtual').innerText = dataFormatadaExibicao;
     document.getElementById('filtroMesAno').value = mesAnoAtual;
 
-    // Função de Haversine
+    // Função para calcular distância GPS em Metros (Haversine)
     function calcularDistanciaEmMetros(lat1, lon1, lat2, lon2) {
       const R = 6371e3;
       const φ1 = lat1 * Math.PI / 180;
@@ -689,36 +689,42 @@
       return Math.round(R * c);
     }
 
-    // GPS Continuo
+    // FUNÇÃO CHAMADA DIRETAMENTE PELO JAVA DA MAINACTIVITY
+    function atualizarGpsNativo(lat, lng) {
+      userLatAtual = lat;
+      userLngAtual = lng;
+
+      const elStatus = document.getElementById('statusPerimetro');
+      const distancia = calcularDistanciaEmMetros(lat, lng, empresaLat, empresaLng);
+
+      if (distancia <= raioPermitidoMetros) {
+        elStatus.innerHTML = `&#9989; Dentro do perímetro da empresa!<br><span id="distanciaTexto">(${distancia}m)</span>`;
+        elStatus.classList.add('inside');
+      } else {
+        elStatus.innerHTML = `&#10060; Fora do perímetro da empresa!<br><span id="distanciaTexto">(${distancia}m)</span>`;
+        elStatus.classList.remove('inside');
+      }
+    }
+
+    // Fallback de GPS Web JS (caso rode em navegador comum)
     function iniciarGPS() {
       const elStatus = document.getElementById('statusPerimetro');
 
       if ("geolocation" in navigator) {
         navigator.geolocation.watchPosition(
           (posicao) => {
-            userLatAtual = posicao.coords.latitude;
-            userLngAtual = posicao.coords.longitude;
-            
-            const distancia = calcularDistanciaEmMetros(userLatAtual, userLngAtual, empresaLat, empresaLng);
-
-            if (distancia <= raioPermitidoMetros) {
-              elStatus.innerHTML = `&#9989; Dentro do perímetro da empresa!<br><span id="distanciaTexto">(${distancia}m)</span>`;
-              elStatus.classList.add('inside');
-            } else {
-              elStatus.innerHTML = `&#10060; Fora do perímetro da empresa!<br><span id="distanciaTexto">(${distancia}m)</span>`;
+            atualizarGpsNativo(posicao.coords.latitude, posicao.coords.longitude);
+          },
+          (erro) => {
+            if (!userLatAtual) { // Só mostra erro se o Java nativo também não tiver mandado posição
+              let msg = "Aguardando sinal do GPS...";
+              if (erro.code === erro.PERMISSION_DENIED) msg = "Permissão de GPS negada!";
+              elStatus.innerHTML = `&#10060; ${msg}<br><span id="distanciaTexto">(--m)</span>`;
               elStatus.classList.remove('inside');
             }
           },
-          (erro) => {
-            let msg = "Erro ao acessar GPS";
-            if (erro.code === erro.PERMISSION_DENIED) msg = "Permissão de GPS negada!";
-            elStatus.innerHTML = `&#10060; ${msg}<br><span id="distanciaTexto">(--m)</span>`;
-            elStatus.classList.remove('inside');
-          },
           { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
-      } else {
-        elStatus.innerHTML = "&#10060; Geolocalização não suportada no aparelho.";
       }
     }
 
@@ -765,6 +771,11 @@
 
       alert("Local da empresa atualizado com sucesso!");
       fecharModalLocal();
+
+      // Recalcula o perímetro se já houver posição capturada
+      if (userLatAtual && userLngAtual) {
+        atualizarGpsNativo(userLatAtual, userLngAtual);
+      }
     }
 
     function toggleMenu() {
@@ -1106,3 +1117,4 @@
 </script>
   </body>
 </html>
+
