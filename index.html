@@ -499,16 +499,18 @@
 	  <button class="menu-btn" onclick="toggleMenu()">&#8942;</button>
 	  <div class="dropdown-menu" id="dropdownMenu">
 		<div class="dropdown-item" onclick="recalcularHistorico()"><span class="dropdown-icon">🔄</span> Recalcular Histórico</div>
-		<div class="dropdown-item" onclick="adicionarPontoManual()"><span class="dropdown-icon">📝</span> Adicionar Ponto Manual</div>
-		<div class="dropdown-item" onclick="configurarJornada()"><span class="dropdown-icon">⚙️</span> Configurar Horário/Jornada</div>
+		<div class="dropdown-item" onclick="abrirModalManual()"><span class="dropdown-icon">📝</span> Adicionar Ponto Manual</div>
+		<div class="dropdown-item" onclick="abrirModalJornada()"><span class="dropdown-icon">⚙️</span> Configurar Horário/Jornada</div>
 		<div class="dropdown-item" onclick="abrirConfigLocal()"><span class="dropdown-icon">📍</span> Configurar Local</div>
-		<div class="dropdown-item" onclick="configurarSalario()"><span class="dropdown-icon">🤑</span> Configurar Salário</div>
+		<div class="dropdown-item" onclick="abrirModalSalario()"><span class="dropdown-icon">🤑</span> Configurar Salário</div>
 		<div class="dropdown-item" onclick="fazerBackup()"><span class="dropdown-icon">💾</span> Fazer Backup JSON</div>
 		<div class="dropdown-item" onclick="importarBackup()"><span class="dropdown-icon">📁</span> Importar JSON</div>
 		<div class="dropdown-item" onclick="sincronizarTudo()"><span class="dropdown-icon">🔄</span> Sincronizar Tudo</div>
 		<div class="dropdown-item" onclick="sairApp()"><span class="dropdown-icon">❌</span> Sair</div>
 	  </div>
 	</header>
+
+	<input type="file" id="inputImportarJson" accept=".json" style="display:none;" onchange="processarArquivoImportado(event)">
 
 	<!-- ABA 1: PONTO -->
 	<div id="tabPonto" class="tab-content active">
@@ -609,6 +611,67 @@
 	  </div>
 	</div>
 
+	<!-- MODAL ADICIONAR PONTO MANUAL -->
+	<div class="modal-overlay" id="modalManual">
+	  <div class="modal-box">
+		<div class="modal-header">Adicionar Ponto Manual</div>
+		<div class="modal-field">
+		  <label>Data (DD/MM/AAAA)</label>
+		  <input type="text" id="manData" placeholder="Ex: 15/08/2026">
+		</div>
+		<div class="modal-field">
+		  <label>Entrada</label>
+		  <input type="text" id="manEntrada" placeholder="08:00">
+		</div>
+		<div class="modal-field">
+		  <label>Saída Intervalo</label>
+		  <input type="text" id="manSaidaInt" placeholder="12:00">
+		</div>
+		<div class="modal-field">
+		  <label>Volta Intervalo</label>
+		  <input type="text" id="manVoltaInt" placeholder="13:00">
+		</div>
+		<div class="modal-field">
+		  <label>Saída Final</label>
+		  <input type="text" id="manSaidaFin" placeholder="17:00">
+		</div>
+		<div class="modal-actions">
+		  <button class="btn-modal btn-cancel" onclick="fecharModalManual()">CANCELAR</button>
+		  <button class="btn-modal btn-save" onclick="salvarPontoManual()">SALVAR</button>
+		</div>
+	  </div>
+	</div>
+
+	<!-- MODAL CONFIGURAR SALÁRIO -->
+	<div class="modal-overlay" id="modalSalario">
+	  <div class="modal-box">
+		<div class="modal-header">Configurar Salário / Hora Extra</div>
+		<div class="modal-field">
+		  <label>Valor por Hora Extra (R$)</label>
+		  <input type="number" step="0.01" id="cfgValorHora" placeholder="Ex: 38.00">
+		</div>
+		<div class="modal-actions">
+		  <button class="btn-modal btn-cancel" onclick="fecharModalSalario()">CANCELAR</button>
+		  <button class="btn-modal btn-save" onclick="salvarSalario()">SALVAR</button>
+		</div>
+	  </div>
+	</div>
+
+	<!-- MODAL CONFIGURAR JORNADA -->
+	<div class="modal-overlay" id="modalJornada">
+	  <div class="modal-box">
+		<div class="modal-header">Configurar Jornada Diária</div>
+		<div class="modal-field">
+		  <label>Horas Diárias de Trabalho</label>
+		  <input type="number" id="cfgJornadaHoras" placeholder="Ex: 8">
+		</div>
+		<div class="modal-actions">
+		  <button class="btn-modal btn-cancel" onclick="fecharModalJornada()">CANCELAR</button>
+		  <button class="btn-modal btn-save" onclick="salvarJornada()">SALVAR</button>
+		</div>
+	  </div>
+	</div>
+
 	<!-- MODAL DE CONFIGURAÇÃO DE LOCAL -->
 	<div class="modal-overlay" id="modalLocal">
 	  <div class="modal-box">
@@ -650,10 +713,11 @@
 
 <script>
     const SHEETDB_URL = 'https://sheetdb.io/api/v1/ujlpc27gcszbc';
-    const JORNADA_PADRAO_MINUTOS = 8 * 60; // 8 horas = 480 minutos
-    const VALOR_HORA_EXTRA = 38.00;
 
-    // Configurações de Local com persistência via localStorage
+    // Persistência de Configurações via localStorage
+    let JORNADA_PADRAO_MINUTOS = (parseInt(localStorage.getItem('JORNADA_HORAS')) || 8) * 60;
+    let VALOR_HORA_EXTRA = parseFloat(localStorage.getItem('VALOR_HORA_EXTRA')) || 38.00;
+
     let empresaLat = parseFloat(localStorage.getItem('EMPRESA_LAT')) || -23.550520;
     let empresaLng = parseFloat(localStorage.getItem('EMPRESA_LNG')) || -46.633308;
     let raioPermitidoMetros = parseInt(localStorage.getItem('RAIO_PERMITIDO_METROS')) || 200;
@@ -710,7 +774,6 @@
       atualizarCoordenadas(lat, lng);
     }
 
-    // Fallback de GPS Web JS (caso rode em navegador comum fora do App Android)
     function iniciarGPS() {
       const elStatus = document.getElementById('statusPerimetro');
 
@@ -732,7 +795,7 @@
       }
     }
 
-    // Modal de Configuração de Local
+    /* MODAL LOCAL */
     function abrirConfigLocal() {
       toggleMenu();
       document.getElementById('cfgLat').value = empresaLat;
@@ -751,7 +814,6 @@
         document.getElementById('cfgLng').value = userLngAtual;
         alert("Sua localização atual foi preenchida nos campos!");
       } else {
-        // Tenta acionar a atualização de GPS do Android
         if (window.AndroidGPS && typeof window.AndroidGPS.solicitarGPS === 'function') {
           window.AndroidGPS.solicitarGPS();
         }
@@ -765,7 +827,7 @@
       const raioInput = parseInt(document.getElementById('cfgRaio').value);
 
       if (isNaN(latInput) || isNaN(lngInput) || isNaN(raioInput)) {
-        alert("Preencha valores válidos para Latitude, Longitude e Raio.");
+        alert("Preencha valores válidos.");
         return;
       }
 
@@ -777,12 +839,175 @@
       localStorage.setItem('EMPRESA_LNG', empresaLng);
       localStorage.setItem('RAIO_PERMITIDO_METROS', raioPermitidoMetros);
 
-      alert("Local da empresa atualizado com sucesso!");
+      alert("Local da empresa atualizado!");
       fecharModalLocal();
 
-      if (userLatAtual && userLngAtual) {
-        atualizarCoordenadas(userLatAtual, userLngAtual);
+      if (userLatAtual && userLngAtual) atualizarCoordenadas(userLatAtual, userLngAtual);
+    }
+
+    /* MODAL SALÁRIO */
+    function abrirModalSalario() {
+      toggleMenu();
+      document.getElementById('cfgValorHora').value = VALOR_HORA_EXTRA;
+      document.getElementById('modalSalario').classList.add('active');
+    }
+
+    function fecharModalSalario() {
+      document.getElementById('modalSalario').classList.remove('active');
+    }
+
+    function salvarSalario() {
+      const v = parseFloat(document.getElementById('cfgValorHora').value);
+      if (isNaN(v) || v <= 0) {
+        alert("Digite um valor de hora válido.");
+        return;
       }
+      VALOR_HORA_EXTRA = v;
+      localStorage.setItem('VALOR_HORA_EXTRA', v);
+      alert("Valor da Hora Extra atualizado!");
+      fecharModalSalario();
+      carregarRelatorio();
+    }
+
+    /* MODAL JORNADA */
+    function abrirModalJornada() {
+      toggleMenu();
+      document.getElementById('cfgJornadaHoras').value = JORNADA_PADRAO_MINUTOS / 60;
+      document.getElementById('modalJornada').classList.add('active');
+    }
+
+    function fecharModalJornada() {
+      document.getElementById('modalJornada').classList.remove('active');
+    }
+
+    function salvarJornada() {
+      const h = parseInt(document.getElementById('cfgJornadaHoras').value);
+      if (isNaN(h) || h <= 0) {
+        alert("Digite um número de horas válido.");
+        return;
+      }
+      JORNADA_PADRAO_MINUTOS = h * 60;
+      localStorage.setItem('JORNADA_HORAS', h);
+      alert("Jornada diária atualizada!");
+      fecharModalJornada();
+      carregarRelatorio();
+    }
+
+    /* MODAL PONTO MANUAL */
+    function abrirModalManual() {
+      toggleMenu();
+      document.getElementById('manData').value = dataFormatadaExibicao;
+      document.getElementById('manEntrada').value = '';
+      document.getElementById('manSaidaInt').value = '';
+      document.getElementById('manVoltaInt').value = '';
+      document.getElementById('manSaidaFin').value = '';
+      document.getElementById('modalManual').classList.add('active');
+    }
+
+    function fecharModalManual() {
+      document.getElementById('modalManual').classList.remove('active');
+    }
+
+    function salvarPontoManual() {
+      const d = document.getElementById('manData').value.trim();
+      const e = document.getElementById('manEntrada').value.trim();
+      const sI = document.getElementById('manSaidaInt').value.trim();
+      const vI = document.getElementById('manVoltaInt').value.trim();
+      const sF = document.getElementById('manSaidaFin').value.trim();
+
+      if (!d) {
+        alert("A data é obrigatória!");
+        return;
+      }
+
+      const payload = {
+        data: [{
+          data: d,
+          entrada: e,
+          saida_intervalo: sI,
+          volta_intervalo: vI,
+          saida_final: sF
+        }]
+      };
+
+      fetch(SHEETDB_URL, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => {
+        if (res.ok) {
+          alert("Ponto manual adicionado com sucesso!");
+          fecharModalManual();
+          carregarRelatorio();
+          if (d === dataFormatadaExibicao) carregarPontoDeHoje();
+        } else {
+          alert("Erro ao adicionar ponto.");
+        }
+      })
+      .catch(() => alert("Erro de conexão."));
+    }
+
+    /* BACKUP E IMPORTAÇÃO JSON */
+    function fazerBackup() {
+      toggleMenu();
+      alert("Gerando backup em JSON...");
+      fetch(SHEETDB_URL)
+        .then(res => res.json())
+        .then(dados => {
+          const jsonStr = JSON.stringify(dados, null, 2);
+          const blob = new Blob([jsonStr], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `ponto_facil_backup_${dataExibicaoParaArquivo(dataFormatadaExibicao)}.json`;
+          a.click();
+        })
+        .catch(() => alert("Erro ao obter dados para backup."));
+    }
+
+    function dataExibicaoParaArquivo(d) {
+      return d.replace(/\//g, '-');
+    }
+
+    function importarBackup() {
+      toggleMenu();
+      document.getElementById('inputImportarJson').click();
+    }
+
+    function processarArquivoImportado(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const dados = JSON.parse(e.target.result);
+          if (Array.isArray(dados)) {
+            if (confirm(`Deseja importar ${dados.length} registros para o banco de dados?`)) {
+              fetch(SHEETDB_URL, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: dados })
+              })
+              .then(res => {
+                if (res.ok) {
+                  alert("Dados importados com sucesso!");
+                  carregarRelatorio();
+                  carregarPontoDeHoje();
+                } else {
+                  alert("Erro ao importar registros.");
+                }
+              });
+            }
+          } else {
+            alert("O arquivo selecionado não contém um formato de backup válido.");
+          }
+        } catch (err) {
+          alert("Arquivo JSON inválido.");
+        }
+      };
+      reader.readAsText(file);
     }
 
     function toggleMenu() {
@@ -823,7 +1048,6 @@
       return new Date(parts[2], parts[1] - 1, parts[0]);
     }
 
-    // CÁLCULO DE HORAS EXTRAS
     function calcularHorasExtras(p) {
       const e = timeToMinutes(p.entrada || p.Entrada);
       const sI = timeToMinutes(p.saida_intervalo || p.saiAlm || p['Sai Almoço']);
@@ -908,7 +1132,7 @@
           alert('Erro ao atualizar registro.');
         }
       })
-      .catch(() => alert('Erro de conexão ao salvar alterações.'));
+      .catch(() => alert('Erro de conexão.'));
     }
 
     function deletarRegistro() {
@@ -1034,14 +1258,11 @@
         });
     }
 
-    // BATER PONTO COM BLOQUEIO DE GPS
     function baterPontoAutomatico() {
-      // Pede atualização imediata do GPS nativo do Android
       if (window.AndroidGPS && typeof window.AndroidGPS.solicitarGPS === 'function') {
         window.AndroidGPS.solicitarGPS();
       }
 
-      // 1. TRAVA DE SEGURANÇA DE PERÍMETRO GPS
       if (userLatAtual === null || userLngAtual === null) {
         alert("⚠️ Aguarde a captura do sinal de GPS antes de registrar o ponto!");
         return;
@@ -1054,7 +1275,6 @@
         return;
       }
 
-      // 2. REGISTRO NORMAL DO PONTO
       const agora = new Date();
       const horaAtual = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
 
@@ -1080,7 +1300,7 @@
       } 
 
       if (sI === '--:--' && sF === '--:--') {
-        const ehSaidaFinal = confirm("Esta marcação é a SAÍDA FINAL?\n\n- Clique em [OK] para SAÍDA FINAL (Ex: Final de semana / Sem almoço)\n- Clique em [Cancelar] para SAÍDA INTERVALO (Almoço)");
+        const ehSaidaFinal = confirm("Esta marcação é a SAÍDA FINAL?\n\n- Clique em [OK] para SAÍDA FINAL\n- Clique em [Cancelar] para SAÍDA INTERVALO (Almoço)");
 
         if (ehSaidaFinal) {
           sF = horaAtual;
@@ -1118,14 +1338,23 @@
       }).then(() => alert('Ponto atualizado com sucesso!'));
     }
 
-    function recalcularHistorico() { alert("Recalculando Histórico..."); toggleMenu(); }
-    function adicionarPontoManual() { alert("Abrir formulário de Ponto Manual"); toggleMenu(); }
-    function configurarJornada() { alert("Configurar Horários"); toggleMenu(); }
-    function configurarSalario() { alert("Configurar Salário/Valor Hora"); toggleMenu(); }
-    function fazerBackup() { alert("Backup baixado!"); toggleMenu(); }
-    function importarBackup() { alert("Selecione o arquivo JSON"); toggleMenu(); }
-    function sincronizarTudo() { carregarPontoDeHoje(); carregarRelatorio(); alert("Sincronizado!"); toggleMenu(); }
-    function sairApp() { window.close(); }
+    function recalcularHistorico() {
+      toggleMenu();
+      carregarRelatorio();
+      alert("Histórico e horas extras recalculados!");
+    }
+
+    function sincronizarTudo() { 
+      toggleMenu();
+      carregarPontoDeHoje(); 
+      carregarRelatorio(); 
+      alert("Sincronizado com a nuvem!"); 
+    }
+
+    function sairApp() { 
+      toggleMenu();
+      if (confirm("Deseja fechar o aplicativo?")) window.close(); 
+    }
 
     window.onclick = function(event) {
       if (!event.target.matches('.menu-btn')) {
