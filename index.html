@@ -36,16 +36,14 @@
 	html, body {
     width: 100%;
     max-width: 100vw;
-    overflow-x: hidden; /* Trava a rolagem horizontal */
+    overflow-x: hidden;
     margin: 0;
     padding: 0;
 }
 
-/* Garante que nenhum elemento interno ultrapasse a largura da tela */
 * {
     box-sizing: border-box;
 }
-
 
     * {
       box-sizing: border-box;
@@ -80,7 +78,6 @@
       font-weight: 600;
     }
 
-    /* Alinhamento dos botões do cabeçalho */
     .header-actions {
       display: flex;
       align-items: center;
@@ -260,14 +257,14 @@
 
   .filter-row {
   display: flex;
-  gap: 8px; /* Reduz ligeiramente o espaço entre o campo e o botão */
+  gap: 8px;
   margin-bottom: 10px;
-  width: 100%; /* Garante que não ultrapasse a tela */
+  width: 100%;
 }
 
 .filter-input {
-  flex: 1; /* Faz o campo de data ocupar o espaço disponível */
-  min-width: 0; /* Impede que o campo expanda e empurre o botão para fora */
+  flex: 1;
+  min-width: 0;
   padding: 10px 8px;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -278,15 +275,14 @@
   background-color: var(--primary-blue);
   color: white;
   border: none;
-  padding: 10px 14px; /* Reduz o preenchimento interno para o botão caber perfeitamente */
+  padding: 10px 14px;
   border-radius: 6px;
   font-weight: bold;
   font-size: 0.85rem;
   cursor: pointer;
-  white-space: nowrap; /* Evita que o texto "FILTRAR" quebre em duas linhas */
-  flex-shrink: 0; /* Impede que o botão seja esmagado */
+  white-space: nowrap;
+  flex-shrink: 0;
 }
-
 
     .checkbox-container {
       display: flex;
@@ -379,7 +375,7 @@
       font-weight: bold;
     }
 
-    /* MODAIS */
+    /* Modais */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -405,6 +401,8 @@
       max-width: 400px;
       padding: 20px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     .modal-header {
@@ -429,11 +427,20 @@
       font-weight: 600;
     }
 
-    .modal-field input {
+    .modal-field input, .modal-field select {
       padding: 10px;
       border: 1px solid var(--border);
       border-radius: 6px;
       font-size: 1rem;
+    }
+
+    .modal-section-title {
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: var(--primary-blue);
+      margin: 10px 0 6px 0;
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 2px;
     }
 
     .modal-actions {
@@ -691,11 +698,46 @@
 	<!-- MODAL CONFIGURAR JORNADA -->
 	<div class="modal-overlay" id="modalJornada">
 	  <div class="modal-box">
-		<div class="modal-header">Configurar Jornada Diária</div>
+		<div class="modal-header">Configurar Jornada de Trabalho</div>
+		
+		<div class="modal-section-title">Segunda a Sexta</div>
 		<div class="modal-field">
-		  <label>Horas Diárias de Trabalho</label>
-		  <input type="number" id="cfgJornadaHoras" placeholder="Ex: 8">
+		  <label>Hora de Entrada</label>
+		  <input type="time" id="cfgEntradaSemana" value="08:00">
 		</div>
+		<div class="modal-field">
+		  <label>Intervalo (Refeição)</label>
+		  <input type="text" id="cfgIntervaloSemana" value="01:00" placeholder="01:00">
+		</div>
+		<div class="modal-field">
+		  <label>Hora de Saída</label>
+		  <input type="time" id="cfgSaidaSemana" value="17:30">
+		</div>
+
+		<div class="modal-section-title">Sábados</div>
+		<div class="modal-field">
+		  <label>Sábados Alternados?</label>
+		  <select id="cfgSabadoAlternado" onchange="toggleSabadoCampos()">
+		    <option value="nao">Não</option>
+		    <option value="sim">Sim</option>
+		  </select>
+		</div>
+
+		<div id="containerSabadoCampos" style="display: none;">
+		  <div class="modal-field">
+		    <label>Hora de Entrada (Sábado)</label>
+		    <input type="time" id="cfgEntradaSabado" value="08:00">
+		  </div>
+		  <div class="modal-field">
+		    <label>Intervalo de Refeição (Sábado)</label>
+		    <input type="text" id="cfgIntervaloSabado" value="01:00" placeholder="01:00">
+		  </div>
+		  <div class="modal-field">
+		    <label>Hora de Saída (Sábado)</label>
+		    <input type="time" id="cfgSaidaSabado" value="12:00">
+		  </div>
+		</div>
+
 		<div class="modal-actions">
 		  <button class="btn-modal btn-cancel" onclick="fecharModalJornada()">CANCELAR</button>
 		  <button class="btn-modal btn-save" onclick="salvarJornada()">SALVAR</button>
@@ -745,9 +787,17 @@
 <script>
     const SHEETDB_URL = 'https://sheetdb.io/api/v1/ujlpc27gcszbc';
 
-    // Persistência de Configurações via localStorage
-    let JORNADA_PADRAO_MINUTOS = (parseInt(localStorage.getItem('JORNADA_HORAS')) || 8) * 60;
     let VALOR_HORA_EXTRA = parseFloat(localStorage.getItem('VALOR_HORA_EXTRA')) || 38.00;
+
+    // Configurações de Jornada
+    let JORNADA_SEMANA_ENTRADA = localStorage.getItem('JORNADA_SEMANA_ENTRADA') || '08:00';
+    let JORNADA_SEMANA_INTERVALO = localStorage.getItem('JORNADA_SEMANA_INTERVALO') || '01:00';
+    let JORNADA_SEMANA_SAIDA = localStorage.getItem('JORNADA_SEMANA_SAIDA') || '17:30';
+
+    let JORNADA_SABADO_ALTERNADO = localStorage.getItem('JORNADA_SABADO_ALTERNADO') || 'nao';
+    let JORNADA_SABADO_ENTRADA = localStorage.getItem('JORNADA_SABADO_ENTRADA') || '08:00';
+    let JORNADA_SABADO_INTERVALO = localStorage.getItem('JORNADA_SABADO_INTERVALO') || '01:00';
+    let JORNADA_SABADO_SAIDA = localStorage.getItem('JORNADA_SABADO_SAIDA') || '12:00';
 
     let empresaLat = parseFloat(localStorage.getItem('EMPRESA_LAT')) || -23.550520;
     let empresaLng = parseFloat(localStorage.getItem('EMPRESA_LNG')) || -46.633308;
@@ -768,14 +818,12 @@
     document.getElementById('dataAtual').innerText = dataFormatadaExibicao;
     document.getElementById('filtroMesAno').value = mesAnoAtual;
 
-    // Recarrega a página forçando a MainActivity a buscar o HTML atualizado do GitHub
     function atualizarDoGithub() {
       if (confirm("Deseja buscar a versão mais recente do GitHub e atualizar o app?")) {
         window.location.reload(true);
       }
     }
 
-    // Função para calcular distância GPS em Metros (Haversine)
     function calcularDistanciaEmMetros(lat1, lon1, lat2, lon2) {
       const R = 6371e3;
       const φ1 = lat1 * Math.PI / 180;
@@ -791,7 +839,6 @@
       return Math.round(R * c);
     }
 
-    // FUNÇÕES CHAMADAS DIRETAMENTE PELO JAVA DA MAINACTIVITY
     function atualizarCoordenadas(lat, lng) {
       userLatAtual = lat;
       userLngAtual = lng;
@@ -910,8 +957,27 @@
     /* MODAL JORNADA */
     function abrirModalJornada() {
       toggleMenu();
-      document.getElementById('cfgJornadaHoras').value = JORNADA_PADRAO_MINUTOS / 60;
+      document.getElementById('cfgEntradaSemana').value = JORNADA_SEMANA_ENTRADA;
+      document.getElementById('cfgIntervaloSemana').value = JORNADA_SEMANA_INTERVALO;
+      document.getElementById('cfgSaidaSemana').value = JORNADA_SEMANA_SAIDA;
+
+      document.getElementById('cfgSabadoAlternado').value = JORNADA_SABADO_ALTERNADO;
+      document.getElementById('cfgEntradaSabado').value = JORNADA_SABADO_ENTRADA;
+      document.getElementById('cfgIntervaloSabado').value = JORNADA_SABADO_INTERVALO;
+      document.getElementById('cfgSaidaSabado').value = JORNADA_SABADO_SAIDA;
+
+      toggleSabadoCampos();
       document.getElementById('modalJornada').classList.add('active');
+    }
+
+    function toggleSabadoCampos() {
+      const val = document.getElementById('cfgSabadoAlternado').value;
+      const container = document.getElementById('containerSabadoCampos');
+      if (val === 'sim') {
+        container.style.display = 'block';
+      } else {
+        container.style.display = 'none';
+      }
     }
 
     function fecharModalJornada() {
@@ -919,14 +985,25 @@
     }
 
     function salvarJornada() {
-      const h = parseInt(document.getElementById('cfgJornadaHoras').value);
-      if (isNaN(h) || h <= 0) {
-        alert("Digite um número de horas válido.");
-        return;
-      }
-      JORNADA_PADRAO_MINUTOS = h * 60;
-      localStorage.setItem('JORNADA_HORAS', h);
-      alert("Jornada diária atualizada!");
+      JORNADA_SEMANA_ENTRADA = document.getElementById('cfgEntradaSemana').value || '08:00';
+      JORNADA_SEMANA_INTERVALO = document.getElementById('cfgIntervaloSemana').value || '01:00';
+      JORNADA_SEMANA_SAIDA = document.getElementById('cfgSaidaSemana').value || '17:30';
+
+      JORNADA_SABADO_ALTERNADO = document.getElementById('cfgSabadoAlternado').value;
+      JORNADA_SABADO_ENTRADA = document.getElementById('cfgEntradaSabado').value || '08:00';
+      JORNADA_SABADO_INTERVALO = document.getElementById('cfgIntervaloSabado').value || '01:00';
+      JORNADA_SABADO_SAIDA = document.getElementById('cfgSaidaSabado').value || '12:00';
+
+      localStorage.setItem('JORNADA_SEMANA_ENTRADA', JORNADA_SEMANA_ENTRADA);
+      localStorage.setItem('JORNADA_SEMANA_INTERVALO', JORNADA_SEMANA_INTERVALO);
+      localStorage.setItem('JORNADA_SEMANA_SAIDA', JORNADA_SEMANA_SAIDA);
+
+      localStorage.setItem('JORNADA_SABADO_ALTERNADO', JORNADA_SABADO_ALTERNADO);
+      localStorage.setItem('JORNADA_SABADO_ENTRADA', JORNADA_SABADO_ENTRADA);
+      localStorage.setItem('JORNADA_SABADO_INTERVALO', JORNADA_SABADO_INTERVALO);
+      localStorage.setItem('JORNADA_SABADO_SAIDA', JORNADA_SABADO_SAIDA);
+
+      alert("Jornada de trabalho atualizada!");
       fecharModalJornada();
       carregarRelatorio();
     }
@@ -1086,41 +1163,126 @@
       return new Date(parts[2], parts[1] - 1, parts[0]);
     }
 
+    /* REGRAS DE HORA EXTRA DINÂMICAS */
     function calcularHorasExtras(p) {
       const e = timeToMinutes(p.entrada || p.Entrada);
       const sI = timeToMinutes(p.saida_intervalo || p.saiAlm || p['Sai Almoço']);
       const vI = timeToMinutes(p.volta_intervalo || p.voltAlm || p['Vol Almoço']);
       const sF = timeToMinutes(p.saida_final || p.saidaFin || p.Fim);
 
+      let extraManhaMinutos = 0;
+      let extraTardeMinutos = 0;
       let minutosExtra = 0;
 
       if (e !== null && sF !== null) {
         const dataObjeto = parseDateString(p.data);
-        const diaDaSemana = dataObjeto.getDay(); 
-        const ehFimDeSemana = (diaDaSemana === 0 || diaDaSemana === 6);
+        const diaDaSemana = dataObjeto.getDay(); // 0: Dom, 6: Sáb
+        const ehDomingo = (diaDaSemana === 0);
+        const ehSabado = (diaDaSemana === 6);
 
-        let intervalo = 0;
-        if (sI !== null && vI !== null && vI > sI) {
-          intervalo = vI - sI;
-        }
-
-        const totalTrabalhado = (sF - e) - intervalo;
-
-        if (ehFimDeSemana) {
+        if (ehDomingo || (ehSabado && JORNADA_SABADO_ALTERNADO === 'nao')) {
+          let intervalo = 0;
+          if (sI !== null && vI !== null && vI > sI) {
+            intervalo = vI - sI;
+          }
+          const totalTrabalhado = (sF - e) - intervalo;
           minutosExtra = totalTrabalhado > 0 ? totalTrabalhado : 0;
+          extraTardeMinutos = minutosExtra;
         } else {
-          minutosExtra = totalTrabalhado - JORNADA_PADRAO_MINUTOS;
-          if (minutosExtra < 0) minutosExtra = 0;
+          let entradaPadrao = timeToMinutes(JORNADA_SEMANA_ENTRADA) || 480;
+          let saidaPadrao = timeToMinutes(JORNADA_SEMANA_SAIDA) || 1050;
+
+          if (ehSabado && JORNADA_SABADO_ALTERNADO === 'sim') {
+            entradaPadrao = timeToMinutes(JORNADA_SABADO_ENTRADA) || 480;
+            saidaPadrao = timeToMinutes(JORNADA_SABADO_SAIDA) || 720;
+          }
+
+          // Tolerância ajustada dinamicamente conforme horário configurado
+          const LIMITE_ENTRADA_EXTRA = entradaPadrao - 30; 
+          const LIMITE_SAIDA_EXTRA = saidaPadrao + 30;      
+
+          if (e <= LIMITE_ENTRADA_EXTRA) {
+            extraManhaMinutos = entradaPadrao - e;
+          }
+
+          if (sF >= LIMITE_SAIDA_EXTRA) {
+            extraTardeMinutos = sF - saidaPadrao;
+          }
+
+          minutosExtra = extraManhaMinutos + extraTardeMinutos;
         }
       }
 
       const valorReais = (minutosExtra / 60) * VALOR_HORA_EXTRA;
 
       return {
+        extraManhaMinutos,
+        extraTardeMinutos,
         minutosExtra,
+        textoExtraManha: minutesToTime(extraManhaMinutos),
+        textoExtraTarde: minutesToTime(extraTardeMinutos),
         textoHoras: minutesToTime(minutosExtra),
         valorFormatado: valorReais.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
       };
+    }
+
+    /* EXPORTAR SOMENTE ENTRADAS E SAÍDAS DE HORAS EXTRAS PARA CSV */
+    function exportarCSV() {
+      const filtroMesAno = document.getElementById('filtroMesAno').value.trim();
+      
+      fetch(SHEETDB_URL)
+        .then(res => res.json())
+        .then(pontos => {
+          if (!Array.isArray(pontos) || pontos.length === 0) {
+            alert("Nenhum dado encontrado para exportação!");
+            return;
+          }
+
+          let pontosFiltrados = pontos.filter(p => {
+            if (!p.data) return false;
+            return p.data.endsWith(filtroMesAno) || p.data.includes('/' + filtroMesAno);
+          });
+
+          if (pontosFiltrados.length === 0) {
+            alert(`Nenhum registro encontrado para a data ${filtroMesAno}!`);
+            return;
+          }
+
+          pontosFiltrados.sort((a, b) => parseDateString(a.data) - parseDateString(b.data));
+
+          let csvContent = "\uFEFFData;Entrada Registrada;Extra Manha;Saida Registrada;Extra Tarde;Total Extra (Horas);Valor Extra (R$)\n";
+
+          let exportouLinha = false;
+
+          pontosFiltrados.forEach(p => {
+            const extra = calcularHorasExtras(p);
+
+            if (extra.minutosExtra > 0) {
+              const e = p.entrada || p.Entrada || '--:--';
+              const sF = p.saida_final || p.saidaFin || p.Fim || '--:--';
+
+              const valorMonetario = ((extra.minutosExtra / 60) * VALOR_HORA_EXTRA).toFixed(2).replace('.', ',');
+
+              csvContent += `"${p.data}";"${e}";"${extra.textoExtraManha}";"${sF}";"${extra.textoExtraTarde}";"${extra.textoHoras}";"R$ ${valorMonetario}"\n`;
+              exportouLinha = true;
+            }
+          });
+
+          if (!exportouLinha) {
+            alert("Não há registros com horas extras para exportar neste período.");
+            return;
+          }
+
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.setAttribute("href", url);
+          link.setAttribute("download", `Horas_Extras_${filtroMesAno.replace('/', '_')}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        })
+        .catch(() => alert("Erro ao exportar arquivo CSV."));
     }
 
     function abrirModalEdicao(dataStr, e, sI, vI, sF) {
@@ -1406,4 +1568,3 @@
 </script>
   </body>
 </html>
-
