@@ -3,7 +3,7 @@
   <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-	
+
 	<title>Ponto Fácil Web</title>
 
 	<!-- PWA & Favicon -->
@@ -78,6 +78,13 @@
     header h1 {
       font-size: 1.3rem;
       font-weight: 600;
+    }
+
+    /* Alinhamento dos botões do cabeçalho */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
     .menu-btn {
@@ -517,7 +524,10 @@
 	<!-- HEADER -->
 	<header>
 	  <h1>Ponto Fácil</h1>
-	  <button class="menu-btn" onclick="toggleMenu()">&#8942;</button>
+	  <div class="header-actions">
+		<button class="menu-btn" onclick="atualizarDoGithub()" title="Atualizar App">🔄</button>
+		<button class="menu-btn" onclick="toggleMenu()">&#8942;</button>
+	  </div>
 	  <div class="dropdown-menu" id="dropdownMenu">
 		<div class="dropdown-item" onclick="recalcularHistorico()"><span class="dropdown-icon">🔄</span> Recalcular Histórico</div>
 		<div class="dropdown-item" onclick="abrirModalManual()"><span class="dropdown-icon">📝</span> Adicionar Ponto Manual</div>
@@ -757,6 +767,13 @@
 
     document.getElementById('dataAtual').innerText = dataFormatadaExibicao;
     document.getElementById('filtroMesAno').value = mesAnoAtual;
+
+    // Recarrega a página forçando a MainActivity a buscar o HTML atualizado do GitHub
+    function atualizarDoGithub() {
+      if (confirm("Deseja buscar a versão mais recente do GitHub e atualizar o app?")) {
+        window.location.reload(true);
+      }
+    }
 
     // Função para calcular distância GPS em Metros (Haversine)
     function calcularDistanciaEmMetros(lat1, lon1, lat2, lon2) {
