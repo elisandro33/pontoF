@@ -2,427 +2,392 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Book de Moldes</title>
+  <title>Ponto Fácil</title>
   <style>
-    * { box-sizing: border-box; font-family: sans-serif; }
-    body { margin: 0; padding: 12px; background-color: #f4f6f8; color: #333; }
-    h2 { margin-top: 0; text-align: center; color: #1a73e8; font-size: 20px; }
-    .card { background: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    
-    .tabs-container { display: flex; gap: 6px; margin-bottom: 12px; }
-    .tab-btn { flex: 1; padding: 8px 4px; border: 2px solid #1a73e8; background: white; color: #1a73e8; border-radius: 6px; font-weight: bold; cursor: pointer; text-align: center; font-size: 12px; }
-    .tab-btn.active { background: #1a73e8; color: white; }
+    :root {
+      --bg-color: #f4f6fb;
+      --card-bg: #ffffff;
+      --primary: #2563eb;
+      --text: #1e293b;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+    }
 
-    input { width: 100%; padding: 10px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 15px; }
-    button { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 5px; font-size: 15px; font-weight: bold; cursor: pointer; }
-    button:active { background: #1557b0; }
-    .btn-reload { background: #34a853; margin-top: 5px; padding: 8px; font-size: 12px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; white-space: nowrap; }
-    th { background-color: #1a73e8; color: white; }
-    .btn-edit { background: #f39c12; padding: 6px 10px; border-radius: 4px; border: none; color: white; font-size: 12px; font-weight: bold; cursor: pointer; }
-    .status { text-align: center; font-size: 13px; margin-bottom: 10px; font-weight: bold; color: #555; }
-    .badge-aba { background: #e8f0fe; color: #1a73e8; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text); padding-bottom: 70px; }
+
+    header {
+      background-color: #3b52a4; padding: 14px 16px;
+      display: flex; justify-content: space-between; align-items: center; color: #fff;
+      position: relative;
+    }
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .btn-sync { background: #50e3c2; border: none; width: 34px; height: 34px; border-radius: 4px; cursor: pointer; font-size: 1.1rem; }
+    .btn-menu { background: none; border: none; color: #fff; font-size: 1.8rem; cursor: pointer; }
+
+    .dropdown-menu {
+      display: none; position: absolute; top: 55px; right: 12px;
+      background-color: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      z-index: 1000; width: 250px;
+    }
+    .dropdown-menu.active { display: block !important; }
+    .dropdown-item { padding: 12px 16px; color: var(--text); font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f1f5f9; }
+
+    main { padding: 16px; max-width: 500px; margin: 0 auto; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block !important; }
+
+    .status-gps { text-align: center; color: #15803d; font-weight: bold; margin-bottom: 12px; }
+    .data-destaque { text-align: center; font-size: 2.1rem; font-weight: 800; }
+    .proximo-registro { text-align: center; color: var(--text-secondary); margin-bottom: 24px; }
+    .icon-container { display: flex; justify-content: center; margin-bottom: 28px; cursor: pointer; }
+    .icon-signal { width: 70px; height: 70px; fill: #1e293b; }
+
+    .card-marcacoes { background: var(--card-bg); border-radius: 12px; padding: 20px; }
+    .card-title { color: #2563eb; font-size: 1.2rem; font-weight: bold; margin-bottom: 16px; }
+    .lista-marcacoes { display: flex; flex-direction: column; gap: 12px; }
+    .item-marcacao { display: flex; justify-content: space-between; font-size: 1.1rem; }
+
+    .filter-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .input-filter { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 6px; }
+    .btn-filtrar { background: #3b82f6; color: white; border: none; padding: 0 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+    .card-total { background: var(--card-bg); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+    .total-horas { font-size: 2.2rem; font-weight: 800; color: #16a34a; }
+    .total-valor { font-size: 1.3rem; font-weight: 700; color: #dc2626; margin-bottom: 12px; }
+    .btn-export { width: 100%; background: #2e7d32; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+    .lista-relatorio-itens { display: flex; flex-direction: column; gap: 10px; }
+    .item-relatorio-card { background: var(--card-bg); border-radius: 8px; padding: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+
+    nav.bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid var(--border); height: 60px; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: var(--text-secondary); cursor: pointer; }
+    .nav-item.active { color: #2563eb; font-weight: bold; }
+
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+    .modal.active { display: flex !important; }
+    .modal-content { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; }
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); }
+    .form-group input { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; }
+    .modal-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+    .btn-modal { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <h2>📦 Book de Moldes</h2>
+  <header>
+    <h1>Ponto Fácil</h1>
+    <div class="header-actions">
+      <button class="btn-sync" onclick="sincronizarComGoogleSheets()" title="Sincronizar">🔄</button>
+      <button class="btn-menu" id="btnMenu" onclick="toggleMenu(event)">⋮</button>
+    </div>
 
-  <div class="tabs-container">
-    <button id="tab-atualizada" class="tab-btn active" onclick="trocarAba('ATUALIZADA')">PLÁSTICO</button>
-    <button id="tab-qlx" class="tab-btn" onclick="trocarAba('Moldes QLX')">Moldes QLX</button>
-    <button id="tab-step" class="tab-btn" onclick="trocarAba('Transferências e Step Bay Step')">Step Bay Step</button>
-  </div>
+    <div class="dropdown-menu" id="dropdownMenu">
+      <div class="dropdown-item" onclick="recalcularHistorico(); closeMenu();"><span>🔄</span> Recalcular Histórico</div>
+      <div class="dropdown-item" onclick="abrirModalPontoManual(); closeMenu();"><span>📝</span> Adicionar Ponto Manual</div>
+      <div class="dropdown-item" onclick="abrirModalConfigJornada(); closeMenu();"><span>⚙️</span> Configurar Horário/Jornada</div>
+      <div class="dropdown-item" onclick="abrirModalConfigLocal(); closeMenu();"><span>📍</span> Configurar Local</div>
+      <div class="dropdown-item" onclick="abrirModalConfigSalario(); closeMenu();"><span>🤑</span> Configurar Salário</div>
+      <div class="dropdown-item" onclick="fazerBackupJSON(); closeMenu();"><span>💾</span> Fazer Backup JSON</div>
+      <div class="dropdown-item" onclick="triggerImportarJSON(); closeMenu();"><span>📁</span> Importar JSON</div>
+      <div class="dropdown-item" onclick="sincronizarComGoogleSheets(); closeMenu();"><span>🔄</span> Sincronizar Tudo</div>
+      <div class="dropdown-item" onclick="sairApp(); closeMenu();"><span>❌</span> Sair</div>
+    </div>
+  </header>
 
-  <div id="status-msg" class="status">Iniciando...</div>
-  <button class="btn-reload" onclick="carregarTodosDados()">🔄 Recarregar Dados</button>
+  <input type="file" id="fileInputJSON" accept=".json" style="display: none;" onchange="importarJSON(event)">
 
-  <!-- Formulário -->
-  <div class="card" id="card-formulario" style="margin-top: 10px;">
-    <h3 id="form-title" style="margin-top:0; font-size:16px;">Adicionar Registro</h3>
-    <input type="hidden" id="edit-codigo-orig" value="">
-    <input type="hidden" id="edit-chave-coluna" value="">
-    
-    <div id="form-campos"></div>
-    
-    <button onclick="salvarMolde()" id="btn-salvar">Salvar Registro</button>
-  </div>
+  <main>
+    <div id="tab-ponto" class="tab-content active">
+      <div class="status-gps" id="txt-status-gps">📍 GPS OK (Local não configurado)</div>
+      <div class="data-destaque" id="txt-data">--/--/----</div>
+      <div class="proximo-registro" id="txt-proximo">Próximo Registro: Entrada</div>
 
-  <!-- Consulta Global -->
-  <div class="card">
-    <h3 style="margin-top:0; font-size:16px;">🔍 Consulta Geral (Busca em Todas as Abas)</h3>
-    <input type="text" id="input-busca" placeholder="Digite Código, Local ou Descrição..." onkeyup="filtrarGeral()">
-  </div>
+      <div class="icon-container" onclick="registrarPontoAtual()">
+        <svg class="icon-signal" viewBox="0 0 24 24">
+          <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-1.46-1.81-2.35-4.1-2.35-6.4 0-5.52 4.48-10 10-10s10 4.48 10 10c0 2.3-.89 4.59-2.35 6.4l-0.62-1.79C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9zm0 4c-2.76 0-5 2.24-5 5 0 1.15.39 2.21 1.05 3.06l1.5-1.5C9.2 13.1 9 12.57 9 12c0-1.66 1.34-3 3-3s3 1.34 3 3c0 .57-.2 1.1-.55 1.56l1.5 1.5c.66-.85 1.05-1.91 1.05-3.06 0-2.76-2.24-5-5-5zm0 4c-.55 0-1 .45-1 1 0 .28.11.53.29.71l1.42-1.42c-.18-.18-.43-.29-.71-.29z"/>
+        </svg>
+      </div>
 
-  <!-- Tabela -->
-  <div class="card" style="overflow-x:auto;">
-    <table>
-      <thead>
-        <tr id="tabela-cabecalho"></tr>
-      </thead>
-      <tbody id="tabela-corpo"></tbody>
-    </table>
+      <div class="card-marcacoes">
+        <div class="card-title">Marcações de Hoje</div>
+        <div class="lista-marcacoes">
+          <div class="item-marcacao"><span>1 Entrada:</span><strong id="val-e">--:--</strong></div>
+          <div class="item-marcacao"><span>2 Saída Intervalo:</span><strong id="val-si">--:--</strong></div>
+          <div class="item-marcacao"><span>3 Volta Intervalo:</span><strong id="val-vi">--:--</strong></div>
+          <div class="item-marcacao"><span>4 Saída Final:</span><strong id="val-sf">--:--</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-relatorio" class="tab-content">
+      <h2 class="card-title">Filtros do Relatório</h2>
+      <div class="filter-row">
+        <input type="text" class="input-filter" id="filtro-mes" placeholder="MM/YYYY">
+        <button class="btn-filtrar" onclick="carregarRelatorio()">FILTRAR</button>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <input type="checkbox" id="chk-incompletos" onchange="carregarRelatorio()">
+        <label for="chk-incompletos">Visualizar apenas faltas/incompletos</label>
+      </div>
+
+      <div class="card-total">
+        <div>TOTAL ACUMULADO DE HORAS EXTRAS</div>
+        <div class="total-horas" id="txt-total-horas">00:00</div>
+        <div class="total-valor" id="txt-total-valor">R$ 0.00</div>
+        <button class="btn-export" onclick="exportarCSV()">EXPORTAR CSV</button>
+      </div>
+
+      <div class="lista-relatorio-itens" id="lista-relatorio"></div>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="btn-tab-ponto" onclick="alternarAba('ponto')">⏱️<span>Ponto</span></button>
+    <button class="nav-item" id="btn-tab-relatorio" onclick="alternarAba('relatorio')">📊<span>Relatório</span></button>
+  </nav>
+
+  <!-- MODAL MANUAL -->
+  <div class="modal" id="modalEdicao">
+    <div class="modal-content">
+      <h3 id="modal-title-data">Ponto Manual</h3>
+      <div class="form-group" id="group-data-manual"><label>Data (DD/MM/YYYY):</label><input type="text" id="edit-data-input"></div>
+      <input type="hidden" id="edit-chave">
+      <div class="form-group"><label>Entrada:</label><input type="text" id="edit-e"></div>
+      <div class="form-group"><label>Saída Int:</label><input type="text" id="edit-si"></div>
+      <div class="form-group"><label>Volta Int:</label><input type="text" id="edit-vi"></div>
+      <div class="form-group"><label>Saída Final:</label><input type="text" id="edit-sf"></div>
+      <div class="modal-buttons">
+        <button class="btn-modal" onclick="fecharModal('modalEdicao')">Cancelar</button>
+        <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarEdicao()">Salvar</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    const BASE_API = "https://script.google.com/macros/s/AKfycbzyvhHmnIH2ZpOj3bo8doFLP9BoLif_9h4ZvpVv7yqun7vxBEFuHfyceJ4DvSvW-dJz/exec";
-    
-    let abaAtual = "ATUALIZADA";
-    let bancoCompleto = {
-      "ATUALIZADA": [],
-      "Moldes QLX": [],
-      "Transferências e Step Bay Step": []
-    };
-    let listaExibida = [];
-    let timerBusca = null;
+    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzi6lqvkYaP68l3hyxCR46BzUj1CLJH6pPfqljiwAY_81crRpVkG270swIY-IuE6HZ/exec";
 
-    function acharChaveEValor(item, palavrasChave, indicePadrao = -1) {
-      if (!item) return { chave: '', valor: '-' };
-      const keys = Object.keys(item);
-      
-      for (let k of keys) {
-        const keyLimpa = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-        for (let p of palavrasChave) {
-          if (keyLimpa.includes(p)) {
-            const val = item[k] !== undefined && item[k] !== null && item[k] !== '' ? item[k] : '-';
-            return { chave: k, valor: val };
-          }
-        }
-      }
-      
-      if (indicePadrao >= 0 && keys[indicePadrao] !== undefined) {
-        return { chave: keys[indicePadrao], valor: item[keys[indicePadrao]] || '-' };
-      }
+    function toggleMenu(e) { if(e) e.stopPropagation(); document.getElementById('dropdownMenu').classList.toggle('active'); }
+    function closeMenu() { document.getElementById('dropdownMenu').classList.remove('active'); }
 
-      return { chave: keys[0] || '', valor: '-' };
+    function alternarAba(aba) {
+      document.getElementById('tab-ponto').classList.toggle('active', aba === 'ponto');
+      document.getElementById('tab-relatorio').classList.toggle('active', aba === 'relatorio');
+      document.getElementById('btn-tab-ponto').classList.toggle('active', aba === 'ponto');
+      document.getElementById('btn-tab-relatorio').classList.toggle('active', aba === 'relatorio');
+      if (aba === 'relatorio') carregarRelatorio();
+      else carregarPontosHoje();
     }
 
-    function acharCampo(item, palavrasChave, indicePadrao = -1) {
-      return acharChaveEValor(item, palavrasChave, indicePadrao).valor;
+    function obterDataHojeFormatada() {
+      const h = new Date();
+      const dia = String(h.getDate()).padStart(2, '0');
+      const mes = String(h.getMonth() + 1).padStart(2, '0');
+      const ano = h.getFullYear();
+      return { exibicao: `${dia}/${mes}/${ano}`, chave: `ponto_${ano}-${mes}-${dia}`, mesAno: `${mes}/${ano}` };
     }
 
-    function redefinirFormulario() {
-      const container = document.getElementById('form-campos');
-      container.innerHTML = '';
-
-      if (abaAtual === 'Transferências e Step Bay Step') {
-        container.innerHTML = `
-          <input type="text" id="input-col1" placeholder="Código Qualifix">
-          <input type="text" id="input-col2" placeholder="Código Arteb">
-          <input type="text" id="input-col3" placeholder="Descrição">
-          <input type="text" id="input-col4" placeholder="Mercado">
-          <input type="text" id="input-col5" placeholder="Maq.">
-          <input type="text" id="input-col6" placeholder="Troca de Versão">
-        `;
-      } else {
-        container.innerHTML = `
-          <input type="text" id="input-col1" placeholder="${abaAtual === 'Moldes QLX' ? 'Molde Nº (ex: 101)' : 'Local (ex: A1)'}">
-          <input type="text" id="input-col2" placeholder="Código">
-          <input type="text" id="input-col3" placeholder="Descrição">
-        `;
-      }
-    }
-
-    function trocarAba(novaAba) {
-      abaAtual = novaAba;
-
-      document.getElementById('tab-atualizada').classList.toggle('active', abaAtual === 'ATUALIZADA');
-      document.getElementById('tab-qlx').classList.toggle('active', abaAtual === 'Moldes QLX');
-      document.getElementById('tab-step').classList.toggle('active', abaAtual === 'Transferências e Step Bay Step');
-      
-      document.getElementById('input-busca').value = '';
-      redefinirFormulario();
-      limparFormulario();
-      renderTabelaAbaAtual();
-    }
-
-    async function carregarTodosDados() {
-      const statusDiv = document.getElementById('status-msg');
-      statusDiv.innerText = "Sincronizando com Google Sheets...";
-      statusDiv.style.color = "#1a73e8";
-
-      const abas = ["ATUALIZADA", "Moldes QLX", "Transferências e Step Bay Step"];
-
-      try {
-        for (let aba of abas) {
-          const resp = await fetch(`${BASE_API}?sheet=${encodeURIComponent(aba)}`, {
-            method: 'GET',
-            redirect: 'follow'
-          });
-
-          if (resp.ok) {
-            const texto = await resp.text();
-            bancoCompleto[aba] = JSON.parse(texto);
-          } else {
-            throw new Error("Erro na resposta");
-          }
-        }
-
-        renderTabelaAbaAtual();
-        const total = bancoCompleto["ATUALIZADA"].length + bancoCompleto["Moldes QLX"].length + bancoCompleto["Transferências e Step Bay Step"].length;
-        statusDiv.innerText = `Sincronizado! Total: ${total} itens.`;
-        statusDiv.style.color = "green";
-      } catch (error) {
-        console.error(error);
-        statusDiv.innerText = "Erro ao conectar com o Google Sheets. Verifique o Script e o ID da planilha.";
-        statusDiv.style.color = "red";
-      }
-    }
-
-    function renderTabelaAbaAtual() {
-      const dados = bancoCompleto[abaAtual] || [];
-      const dadosComAba = dados.map(item => ({ ...item, _abaOrigem: abaAtual }));
-      renderTabela(dadosComAba, false);
-    }
-
-    function renderTabela(dados, modoBuscaGlobal = false) {
-      listaExibida = dados;
-      const thead = document.getElementById('tabela-cabecalho');
-      const tbody = document.getElementById('tabela-corpo');
-      
-      tbody.innerHTML = '';
-
-      if (modoBuscaGlobal) {
-        thead.innerHTML = `
-          <th>Aba / Origem</th>
-          <th>Local / Molde</th>
-          <th>Código</th>
-          <th>Descrição</th>
-          <th>Ações</th>
-        `;
-      } else if (abaAtual === 'Transferências e Step Bay Step') {
-        thead.innerHTML = `
-          <th>Cód. Qualifix</th>
-          <th>Cód. Arteb</th>
-          <th>Descrição</th>
-          <th>Mercado</th>
-          <th>Maq.</th>
-          <th>Troca Versão</th>
-          <th>Ações</th>
-        `;
-      } else {
-        thead.innerHTML = `
-          <th>${abaAtual === 'Moldes QLX' ? 'Molde Nº' : 'Local'}</th>
-          <th>Código</th>
-          <th>Descrição</th>
-          <th>Ações</th>
-        `;
+    function carregarPontosHoje() {
+      const info = obterDataHojeFormatada();
+      document.getElementById('txt-data').innerText = info.exibicao;
+      if (!document.getElementById('filtro-mes').value) {
+        document.getElementById('filtro-mes').value = info.mesAno;
       }
 
-      if (!dados || dados.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">Nenhum registro encontrado.</td></tr>`;
+      const reg = JSON.parse(localStorage.getItem(info.chave)) || {};
+      document.getElementById('val-e').innerText = reg.e || '--:--';
+      document.getElementById('val-si').innerText = reg.si || '--:--';
+      document.getElementById('val-vi').innerText = reg.vi || '--:--';
+      document.getElementById('val-sf').innerText = reg.sf || '--:--';
+    }
+
+    function registrarPontoAtual() {
+      const info = obterDataHojeFormatada();
+      let reg = JSON.parse(localStorage.getItem(info.chave)) || {};
+      const h = new Date();
+      const hora = `${String(h.getHours()).padStart(2,'0')}:${String(h.getMinutes()).padStart(2,'0')}`;
+
+      if (!reg.e) reg.e = hora;
+      else if (!reg.si) reg.si = hora;
+      else if (!reg.vi) reg.vi = hora;
+      else if (!reg.sf) reg.sf = hora;
+      else { alert("Todas as marcações de hoje foram concluídas!"); return; }
+
+      localStorage.setItem(info.chave, JSON.stringify(reg));
+      carregarPontosHoje();
+    }
+
+    function carregarRelatorio() {
+      const lista = document.getElementById('lista-relatorio');
+      lista.innerHTML = '';
+
+      const filtroMes = document.getElementById('filtro-mes').value.trim();
+      const apenasIncompletos = document.getElementById('chk-incompletos').checked;
+
+      let chaves = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k.startsWith('ponto_')) chaves.push(k);
+      }
+
+      chaves.sort().reverse();
+
+      if (chaves.length === 0) {
+        lista.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Nenhum ponto registrado no sistema.</div>';
         return;
       }
 
-      const fragment = document.createDocumentFragment();
+      let exibidos = 0;
+      chaves.forEach(chave => {
+        const item = JSON.parse(localStorage.getItem(chave)) || {};
+        const p = chave.replace('ponto_', '').split('-');
+        if (p.length !== 3) return;
 
-      dados.forEach((item, index) => {
-        const tr = document.createElement('tr');
-        const abaOrigem = item._abaOrigem || abaAtual;
-        const nomeAbaExibicao = abaOrigem === 'ATUALIZADA' ? 'PLÁSTICO' : abaOrigem;
+        const dataFmt = `${p[2]}/${p[1]}/${p[0]}`;
+        const mesAno = `${p[1]}/${p[0]}`;
 
-        if (modoBuscaGlobal) {
-          const local = acharCampo(item, ['local', 'molde', 'num', 'nº', 'qualifix'], 0);
-          const codigo = acharCampo(item, ['cod', 'codigo', 'arteb'], 1);
-          const desc = acharCampo(item, ['desc', 'descricao'], 2);
+        if (filtroMes && mesAno !== filtroMes) return;
 
-          tr.innerHTML = `
-            <td><span class="badge-aba">${nomeAbaExibicao}</span></td>
-            <td><b>${local}</b></td>
-            <td>${codigo}</td>
-            <td>${desc}</td>
-            <td><button class="btn-edit" onclick="irParaItemEEditar('${abaOrigem}', ${index})">Ir / Editar</button></td>
-          `;
-        } else if (abaAtual === 'Transferências e Step Bay Step') {
-          const codQ = acharCampo(item, ['qualifix', 'col1'], 0);
-          const codA = acharCampo(item, ['arteb', 'col2'], 1);
-          const desc = acharCampo(item, ['desc', 'descricao'], 2);
-          const merc = acharCampo(item, ['mercado'], 3);
-          const maq = acharCampo(item, ['maq', 'maquina'], 4);
-          const troca = acharCampo(item, ['troca', 'versao'], 5);
+        const isIncompleto = !item.e || !item.si || !item.vi || !item.sf;
+        if (apenasIncompletos && !isIncompleto) return;
 
-          tr.innerHTML = `
-            <td><b>${codQ}</b></td>
-            <td>${codA}</td>
-            <td>${desc}</td>
-            <td>${merc}</td>
-            <td>${maq}</td>
-            <td>${troca}</td>
-            <td><button class="btn-edit" onclick="prepararEdicao(${index})">Editar</button></td>
-          `;
-        } else {
-          const local = acharCampo(item, ['local', 'molde', 'num', 'nº'], 0);
-          const codigo = acharCampo(item, ['cod', 'codigo'], 1);
-          const desc = acharCampo(item, ['desc', 'descricao'], 2);
-
-          tr.innerHTML = `
-            <td><b>${local}</b></td>
-            <td>${codigo}</td>
-            <td>${desc}</td>
-            <td><button class="btn-edit" onclick="prepararEdicao(${index})">Editar</button></td>
-          `;
-        }
-        fragment.appendChild(tr);
+        exibidos++;
+        const card = document.createElement('div');
+        card.className = 'item-relatorio-card';
+        card.innerHTML = `
+          <div>
+            <strong>${dataFmt}</strong>
+            <div style="font-size:0.85rem; color:#64748b;">
+              E: ${item.e || '--:--'} | SI: ${item.si || '--:--'} | VI: ${item.vi || '--:--'} | SF: ${item.sf || '--:--'}
+            </div>
+          </div>
+          <div>
+            <button onclick="abrirModalEdicao('${chave}')">✏️</button>
+            <button onclick="excluirPonto('${chave}')">🗑️</button>
+          </div>
+        `;
+        lista.appendChild(card);
       });
 
-      tbody.appendChild(fragment);
+      if (exibidos === 0) {
+        lista.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">Nenhum registro encontrado para o filtro "${filtroMes}".</div>`;
+      }
+
+      recalcularHistorico();
     }
 
-    function filtrarGeral() {
-      clearTimeout(timerBusca);
+    async function sincronizarComGoogleSheets() {
+      alert("Iniciando busca de dados no Google Sheets...");
+      try {
+        const res = await fetch(GOOGLE_SHEETS_URL, { redirect: "follow" });
+        const dados = await res.json();
 
-      timerBusca = setTimeout(() => {
-        const termo = document.getElementById('input-busca').value.trim().toLowerCase();
-
-        if (!termo) {
-          renderTabelaAbaAtual();
-          return;
-        }
-
-        let resultados = [];
-
-        Object.keys(bancoCompleto).forEach(nomeAba => {
-          const itensDaAba = bancoCompleto[nomeAba];
-          
-          itensDaAba.forEach(item => {
-            const textoCompleto = Object.values(item).join(' ').toLowerCase();
-            if (textoCompleto.includes(termo)) {
-              resultados.push({ ...item, _abaOrigem: nomeAba });
+        if (Array.isArray(dados) && dados.length > 0) {
+          let importados = 0;
+          dados.forEach(item => {
+            let rawData = item.data || item.Data || item.DATA;
+            if (rawData) {
+              let d = String(rawData).split('/');
+              if (d.length === 3) {
+                const dia = d[0].padStart(2, '0');
+                const mes = d[1].padStart(2, '0');
+                const ano = d[2].length === 2 ? `20${d[2]}` : d[2];
+                const chave = `ponto_${ano}-${mes}-${dia}`;
+                
+                const registro = {
+                  e: item.entrada || item.Entrada || '',
+                  si: item.saidaInt || item.SaidaInt || '',
+                  vi: item.voltaInt || item.VoltaInt || '',
+                  sf: item.saidaFin || item.SaidaFin || ''
+                };
+                localStorage.setItem(chave, JSON.stringify(registro));
+                importados++;
+              }
             }
           });
-        });
 
-        renderTabela(resultados, true);
-      }, 250);
-    }
-
-    function irParaItemEEditar(abaDestino, indexNaListaExibida) {
-      trocarAba(abaDestino);
-      const item = listaExibida[indexNaListaExibida];
-      if (item) {
-        prepararEdicaoDireta(item);
-      }
-    }
-
-    function prepararEdicaoDireta(item) {
-      if (!item) return;
-
-      if (abaAtual === 'Transferências e Step Bay Step') {
-        const campoQ = acharChaveEValor(item, ['qualifix'], 0);
-        document.getElementById('input-col1').value = campoQ.valor !== '-' ? campoQ.valor : '';
-        document.getElementById('input-col2').value = acharCampo(item, ['arteb'], 1);
-        document.getElementById('input-col3').value = acharCampo(item, ['desc'], 2);
-        document.getElementById('input-col4').value = acharCampo(item, ['mercado'], 3);
-        document.getElementById('input-col5').value = acharCampo(item, ['maq'], 4);
-        document.getElementById('input-col6').value = acharCampo(item, ['troca'], 5);
-        
-        document.getElementById('edit-codigo-orig').value = campoQ.valor;
-        document.getElementById('edit-chave-coluna').value = campoQ.chave;
-      } else {
-        const campoCod = acharChaveEValor(item, ['cod', 'codigo'], 1);
-        const campoLocal = acharChaveEValor(item, ['local', 'molde', 'num'], 0);
-
-        document.getElementById('input-col1').value = campoLocal.valor !== '-' ? campoLocal.valor : '';
-        document.getElementById('input-col2').value = campoCod.valor !== '-' ? campoCod.valor : '';
-        document.getElementById('input-col3').value = acharCampo(item, ['desc'], 2);
-        
-        if (campoCod.valor !== '-') {
-          document.getElementById('edit-codigo-orig').value = campoCod.valor;
-          document.getElementById('edit-chave-coluna').value = campoCod.chave;
+          alert(`Sincronização realizada! ${importados} registros atualizados.`);
+          carregarPontosHoje();
+          carregarRelatorio();
         } else {
-          document.getElementById('edit-codigo-orig').value = campoLocal.valor;
-          document.getElementById('edit-chave-coluna').value = campoLocal.chave;
+          alert("Sincronização concluída, mas nenhum dado foi retornado da planilha.");
         }
+      } catch (err) {
+        alert("Erro ao conectar com o Google Sheets. Verifique a URL ou permissões da WebApp.");
       }
-
-      document.getElementById('form-title').innerText = "Editar Registro";
-      document.getElementById('btn-salvar').innerText = "Atualizar Registro";
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function prepararEdicao(index) {
-      prepararEdicaoDireta(listaExibida[index]);
+    function abrirModalPontoManual() {
+      document.getElementById('edit-chave').value = '';
+      document.getElementById('edit-data-input').value = '';
+      document.getElementById('group-data-manual').style.display = 'block';
+      document.getElementById('modalEdicao').classList.add('active');
     }
 
-    async function salvarMolde() {
-      const col1 = document.getElementById('input-col1').value.trim();
-      const col2 = document.getElementById('input-col2').value.trim();
-      const col3 = document.getElementById('input-col3').value.trim();
-      const codigoOrig = document.getElementById('edit-codigo-orig').value;
-      const chaveColuna = document.getElementById('edit-chave-coluna').value;
+    function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
 
-      if (!col1 && !col2) {
-        alert('Preencha os campos principais!');
-        return;
+    function salvarEdicao() {
+      let chave = document.getElementById('edit-chave').value;
+      if (!chave) {
+        const txt = document.getElementById('edit-data-input').value.trim();
+        const p = txt.split('/');
+        if (p.length !== 3) { alert("Data inválida. Use DD/MM/YYYY"); return; }
+        chave = `ponto_${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
       }
 
-      const statusDiv = document.getElementById('status-msg');
-      statusDiv.innerText = "Enviando dados para o Google Sheets...";
-      statusDiv.style.color = "blue";
-
-      let payloadData = {};
-      const listaDaAba = bancoCompleto[abaAtual] || [];
-      const primeiroItem = listaDaAba[0] || {};
-      const keys = Object.keys(primeiroItem);
-
-      if (abaAtual === 'Transferências e Step Bay Step') {
-        payloadData[keys[0] || "CÓDIGO QUALIFIX"] = col1;
-        payloadData[keys[1] || "CÓDIGO ARTEB"] = col2;
-        payloadData[keys[2] || "DESCRIÇÃO"] = col3;
-        payloadData[keys[3] || "MERCADO"] = document.getElementById('input-col4').value.trim();
-        payloadData[keys[4] || "Maq."] = document.getElementById('input-col5').value.trim();
-        payloadData[keys[5] || "TROCA DE VERSÃO"] = document.getElementById('input-col6').value.trim();
-      } else if (abaAtual === 'Moldes QLX') {
-        payloadData[keys[0] || "molde número"] = col1;
-        payloadData[keys[1] || "código"] = col2;
-        payloadData[keys[2] || "descrição"] = col3;
-      } else {
-        payloadData[keys[0] || "LOCAL"] = col1;
-        payloadData[keys[1] || "CÓDIGO"] = col2;
-        payloadData[keys[2] || "DESCRIÇÃO"] = col3;
-      }
-
-      const bodyData = {
-        sheet: abaAtual,
-        action: codigoOrig ? "UPDATE" : "CREATE",
-        colunaBusca: chaveColuna || keys[0],
-        valorBusca: codigoOrig,
-        data: payloadData
+      const reg = {
+        e: document.getElementById('edit-e').value,
+        si: document.getElementById('edit-si').value,
+        vi: document.getElementById('edit-vi').value,
+        sf: document.getElementById('edit-sf').value
       };
 
-      try {
-        await fetch(BASE_API, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bodyData)
-        });
+      localStorage.setItem(chave, JSON.stringify(reg));
+      fecharModal('modalEdicao');
+      carregarRelatorio();
+      carregarPontosHoje();
+    }
 
-        statusDiv.innerText = "Salvo com sucesso!";
-        statusDiv.style.color = "green";
-        limparFormulario();
-        setTimeout(() => carregarTodosDados(), 1500);
-      } catch (error) {
-        console.error(error);
-        alert("Erro ao salvar os dados.");
-        statusDiv.innerText = "Falha ao salvar.";
-        statusDiv.style.color = "red";
+    function excluirPonto(chave) {
+      if (confirm("Excluir este ponto?")) {
+        localStorage.removeItem(chave);
+        carregarRelatorio();
+        carregarPontosHoje();
       }
     }
 
-    function limparFormulario() {
-      document.querySelectorAll('#form-campos input').forEach(i => i.value = '');
-      document.getElementById('edit-codigo-orig').value = '';
-      document.getElementById('edit-chave-coluna').value = '';
-      document.getElementById('form-title').innerText = "Adicionar Registro";
-      document.getElementById('btn-salvar').innerText = "Salvar Registro";
+    function recalcularHistorico() {
+      let totalMin = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k.startsWith('ponto_')) {
+          const item = JSON.parse(localStorage.getItem(k));
+          if (item.e && item.si && item.vi && item.sf) {
+            const m1 = convHora(item.e), m2 = convHora(item.si), m3 = convHora(item.vi), m4 = convHora(item.sf);
+            const trab = (m2 - m1) + (m4 - m3);
+            if (trab > 480) totalMin += (trab - 480);
+          }
+        }
+      }
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      document.getElementById('txt-total-horas').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
     }
 
-    redefinirFormulario();
-    carregarTodosDados();
+    function convHora(h) {
+      if (!h || !h.includes(':')) return 0;
+      const p = h.split(':');
+      return (parseInt(p[0]) * 60) + parseInt(p[1]);
+    }
+
+    window.onload = function() {
+      carregarPontosHoje();
+      carregarRelatorio();
+    };
   </script>
 </body>
 </html>
