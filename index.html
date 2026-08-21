@@ -838,34 +838,45 @@ function definirMesAnoAtualFiltro() {
 // --- INTEGRAÇÃO GOOGLE SHEETS ---
 async function sincronizarComGoogleSheets(silencioso = false) {
   try {
-    const response = await fetch(GOOGLE_SHEETS_URL);
+    // Usando redirect: 'follow' para permitir os redirecionamentos do Google
+    const response = await fetch(GOOGLE_SHEETS_URL, {
+      method: "GET",
+      redirect: "follow"
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro de rede: ${response.status}`);
+    }
+
     const dados = await response.json();
 
     if (Array.isArray(dados)) {
       dados.forEach(item => {
         let dataTxt = item.data || item.Data;
         if (dataTxt) {
-          // Trata formatos de data
-          if (dataTxt.includes('T')) {
+          // Trata formatos de data (DD/MM/AAAA)
+          let dia, mes, ano;
+
+          if (typeof dataTxt === 'string' && dataTxt.includes('T')) {
             dataTxt = dataTxt.split('T')[0];
-            const [ano, mes, dia] = dataTxt.split('-');
-            dataTxt = `${dia}/${mes}/${ano}`;
+            [ano, mes, dia] = dataTxt.split('-');
+          } else if (typeof dataTxt === 'string' && dataTxt.includes('/')) {
+            const partes = dataTxt.split('/');
+            if (partes.length === 3) {
+              dia = partes[0].padStart(2, '0');
+              mes = partes[1].padStart(2, '0');
+              ano = partes[2];
+            }
           }
 
-          const partes = dataTxt.toString().split('/');
-          if (partes.length === 3) {
-            const dia = partes[0].padStart(2, '0');
-            const mes = partes[1].padStart(2, '0');
-            const ano = partes[2];
+          if (dia && mes && ano) {
             const chave = `ponto_${ano}-${mes}-${dia}`;
-
             const registro = {
-              e: item.entrada || item.Entrada || '',
-              si: item.saidaInt || item.SaidaInt || item.si || '',
-              vi: item.voltaInt || item.VoltaInt || item.vi || '',
-              sf: item.saidaFin || item.SaidaFin || item.sf || ''
+              e: item.entrada || '',
+              si: item.saidaInt || '',
+              vi: item.voltaInt || '',
+              sf: item.saidaFin || ''
             };
-
             localStorage.setItem(chave, JSON.stringify(registro));
           }
         }
@@ -877,11 +888,10 @@ async function sincronizarComGoogleSheets(silencioso = false) {
     }
   } catch (erro) {
     console.error("Erro ao sincronizar com Google Sheets:", erro);
-    if (!silencioso) alert("Erro ao sincronizar com Google Sheets. Verifique a conexão.");
+    if (!silencioso) alert("Erro ao sincronizar com Google Sheets. Verifique a conexão e as permissões do Web App.");
   }
 }
-
-// --- NAVEGAÇÃO ENTRE ABAS ---
+	// --- NAVEGAÇÃO ENTRE ABAS ---
 function mudarAba(aba) {
   const abaPonto = document.getElementById('tabPonto');
   const abaRelatorio = document.getElementById('tabRelatorio');
