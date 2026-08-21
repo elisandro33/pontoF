@@ -89,17 +89,10 @@
     <div class="dropdown-menu" id="dropdownMenu">
       <div class="dropdown-item" onclick="recalcularHistorico(); closeMenu();"><span>🔄</span> Recalcular Histórico</div>
       <div class="dropdown-item" onclick="abrirModalPontoManual(); closeMenu();"><span>📝</span> Adicionar Ponto Manual</div>
-      <div class="dropdown-item" onclick="abrirModalConfigJornada(); closeMenu();"><span>⚙️</span> Configurar Horário/Jornada</div>
-      <div class="dropdown-item" onclick="abrirModalConfigLocal(); closeMenu();"><span>📍</span> Configurar Local</div>
-      <div class="dropdown-item" onclick="abrirModalConfigSalario(); closeMenu();"><span>🤑</span> Configurar Salário</div>
-      <div class="dropdown-item" onclick="fazerBackupJSON(); closeMenu();"><span>💾</span> Fazer Backup JSON</div>
-      <div class="dropdown-item" onclick="triggerImportarJSON(); closeMenu();"><span>📁</span> Importar JSON</div>
       <div class="dropdown-item" onclick="sincronizarComGoogleSheets(); closeMenu();"><span>🔄</span> Sincronizar Tudo</div>
-      <div class="dropdown-item" onclick="sairApp(); closeMenu();"><span>❌</span> Sair</div>
+      <div class="dropdown-item" onclick="closeMenu();"><span>❌</span> Sair</div>
     </div>
   </header>
-
-  <input type="file" id="fileInputJSON" accept=".json" style="display: none;" onchange="importarJSON(event)">
 
   <main>
     <div id="tab-ponto" class="tab-content active">
@@ -139,7 +132,6 @@
         <div>TOTAL ACUMULADO DE HORAS EXTRAS</div>
         <div class="total-horas" id="txt-total-horas">00:00</div>
         <div class="total-valor" id="txt-total-valor">R$ 0.00</div>
-        <button class="btn-export" onclick="exportarCSV()">EXPORTAR CSV</button>
       </div>
 
       <div class="lista-relatorio-itens" id="lista-relatorio"></div>
@@ -280,51 +272,123 @@
       recalcularHistorico();
     }
 
-    async function sincronizarComGoogleSheets() {
+    function sincronizarComGoogleSheets() {
       alert("Iniciando busca de dados no Google Sheets...");
-      try {
-        const res = await fetch(GOOGLE_SHEETS_URL, { redirect: "follow" });
-        const dados = await res.json();
 
-        if (Array.isArray(dados) && dados.length > 0) {
-          let importados = 0;
-          dados.forEach(item => {
-            let rawData = item.data || item.Data || item.DATA;
-            if (rawData) {
-              let d = String(rawData).split('/');
-              if (d.length === 3) {
-                const dia = d[0].padStart(2, '0');
-                const mes = d[1].padStart(2, '0');
-                const ano = d[2].length === 2 ? `20${d[2]}` : d[2];
-                const chave = `ponto_${ano}-${mes}-${dia}`;
-                
-                const registro = {
-                  e: item.entrada || item.Entrada || '',
-                  si: item.saidaInt || item.SaidaInt || '',
-                  vi: item.voltaInt || item.VoltaInt || '',
-                  sf: item.saidaFin || item.SaidaFin || ''
-                };
-                localStorage.setItem(chave, JSON.stringify(registro));
-                importados++;
-              }
-            }
-          });
-
-          alert(`Sincronização realizada! ${importados} registros atualizados.`);
-          carregarPontosHoje();
-          carregarRelatorio();
-        } else {
-          alert("Sincronização concluída, mas nenhum dado foi retornado da planilha.");
+      window.processarDadosSheets = function(dados) {
+        if (!dados) {
+          alert("Erro: A resposta da planilha veio vazia.");
+          return;
         }
-      } catch (err) {
-        alert("Erro ao conectar com o Google Sheets. Verifique a URL ou permissões da WebApp.");
-      }
+
+        if (dados.status === "error") {
+          alert("Erro na planilha: " + dados.message);
+          return;
+        }
+
+        if (!Array.isArray(dados) || dados.length === 0) {
+          alert("Sincronização concluída, mas nenhum registro foi encontrado.");
+          return;
+        }
+
+        let importados = 0;
+        let ultimoMesAno = "";
+
+        dados.forEach(item => {
+          let rawData = item.data || item.Data || item.DATA || item['data'] || item['DATA'];
+
+          if (rawData) {
+            let dataStr = String(rawData).trim();
+
+            if (dataStr.includes('T')) {
+              let dateObj = new Date(dataStr);
+              let dia = String(dateObj.getUTCDate()).padStart(2, '0');
+              let mes = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+              let ano = dateObj.getUTCFullYear();
+              dataStr = `${dia}/${mes}/${ano}`;
+            }
+
+            let partes = dataStr.split('/');
+            if (partes.length === 3) {
+              let dia = partes[0].trim().padStart(2, '0');
+              let mes = partes[1].trim().padStart(2, '0');
+              let ano = partes[2].trim();
+              if (ano.length === 2) ano = `20${ano}`;
+
+              let chave = `ponto_${ano}-${mes}-${dia}`;
+              ultimoMesAno = `${mes}/${ano}`;
+
+              const formatarHora = (val) => {
+                if (!val) return '';
+                let s = String(val).trim();
+                if (s.includes('T')) {
+                  let d = new Date(s);
+                  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                }
+                return s.substring(0, 5);
+              };
+
+              let registro = {
+                id: item.id || item.ID || null,
+                e: formatarHora(item.entrada || item.Entrada || item.ENTRADA || ''),
+                si: formatarHora(item.saidaInt || item.SaidaInt || item['Saida Intervalo'] || item['saida_int'] || ''),
+                vi: formatarHora(item.voltaInt || item.VoltaInt || item['Volta Intervalo'] || item['volta_int'] || ''),
+                sf: formatarHora(item.saidaFin || item.SaidaFin || item['Saida Final'] || item['saida_fin'] || '')
+              };
+
+              localStorage.setItem(chave, JSON.stringify(registro));
+              importados++;
+            }
+          }
+        });
+
+        if (ultimoMesAno) {
+          document.getElementById('filtro-mes').value = ultimoMesAno;
+        }
+
+        alert(`Sucesso! ${importados} registros sincronizados.`);
+        carregarPontosHoje();
+        carregarRelatorio();
+      };
+
+      const oldScript = document.getElementById('jsonp-sheets-script');
+      if (oldScript) oldScript.remove();
+
+      const script = document.createElement('script');
+      script.id = 'jsonp-sheets-script';
+      script.src = `${GOOGLE_SHEETS_URL}?sheet=ATUALIZADA&callback=processarDadosSheets&t=${new Date().getTime()}`;
+
+      script.onerror = function() {
+        alert("Falha de rede ao conectar com o Google Sheets. Verifique a URL do Web App.");
+      };
+
+      document.body.appendChild(script);
     }
 
     function abrirModalPontoManual() {
       document.getElementById('edit-chave').value = '';
       document.getElementById('edit-data-input').value = '';
+      document.getElementById('edit-e').value = '';
+      document.getElementById('edit-si').value = '';
+      document.getElementById('edit-vi').value = '';
+      document.getElementById('edit-sf').value = '';
       document.getElementById('group-data-manual').style.display = 'block';
+      document.getElementById('modalEdicao').classList.add('active');
+    }
+
+    function abrirModalEdicao(chave) {
+      const item = JSON.parse(localStorage.getItem(chave)) || {};
+      const p = chave.replace('ponto_', '').split('-');
+      
+      document.getElementById('edit-chave').value = chave;
+      document.getElementById('edit-data-input').value = `${p[2]}/${p[1]}/${p[0]}`;
+      document.getElementById('group-data-manual').style.display = 'none';
+      
+      document.getElementById('edit-e').value = item.e || '';
+      document.getElementById('edit-si').value = item.si || '';
+      document.getElementById('edit-vi').value = item.vi || '';
+      document.getElementById('edit-sf').value = item.sf || '';
+      
       document.getElementById('modalEdicao').classList.add('active');
     }
 
