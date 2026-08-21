@@ -352,7 +352,7 @@
     }
   }
 
-  function sincronizarComGoogleSheets() {
+function sincronizarComGoogleSheets() {
     alert("Iniciando busca de dados no Google Sheets...");
 
     window.processarDadosSheets = function(dados) {
@@ -369,8 +369,29 @@
       let importados = 0;
       let ultimoMesAno = "";
 
+      // Função para extrair HH:mm corretamente mesmo de objetos Date do Sheets
+      function formatarHoraGoogleSheets(valor) {
+        if (!valor) return '';
+        let str = String(valor).trim();
+        
+        // Se já estiver no formato HH:mm ou HH:mm:ss
+        if (/^\d{1,2}:\d{2}/.test(str)) {
+          let partes = str.split(':');
+          return `${partes[0].padStart(2, '0')}:${partes[1].padStart(2, '0')}`;
+        }
+        
+        // Se for um objeto Date convertido em String (ex: Sat Dec 30 1899 07:03:00 GMT...)
+        let dateObj = new Date(valor);
+        if (!isNaN(dateObj.getTime())) {
+          let h = String(dateObj.getHours()).padStart(2, '0');
+          let m = String(dateObj.getMinutes()).padStart(2, '0');
+          return `${h}:${m}`;
+        }
+        
+        return '';
+      }
+
       dados.forEach(item => {
-        // Mapeamento direto com o cabeçalho exato informado
         let rawData = item.data || item.Data;
         if (rawData) {
           let dataStr = String(rawData).trim();
@@ -392,13 +413,11 @@
             let chave = `ponto_${ano}-${mes}-${dia}`;
             ultimoMesAno = `${mes}/${ano}`;
 
-            const fmtH = (v) => v ? String(v).substring(0, 5) : '';
-
             let registro = {
-              e: fmtH(item.entrada),
-              si: fmtH(item.saida_intervalo),
-              vi: fmtH(item.volta_intervalo),
-              sf: fmtH(item.saida_final),
+              e: formatarHoraGoogleSheets(item.entrada),
+              si: formatarHoraGoogleSheets(item.saida_intervalo),
+              vi: formatarHoraGoogleSheets(item.volta_intervalo),
+              sf: formatarHoraGoogleSheets(item.saida_final),
               hora_extra: item.hora_extra || '',
               percentual: item.percentual || ''
             };
@@ -423,7 +442,6 @@
     script.src = `${GOOGLE_SHEETS_URL}?sheet=ATUALIZADA&callback=processarDadosSheets&t=${new Date().getTime()}`;
     document.body.appendChild(script);
   }
-
   function abrirModalConfigLocal() {
     document.getElementById('cfg-local-nome').value = localStorage.getItem('cfg_local_nome') || '';
     document.getElementById('cfg-local-coords').value = localStorage.getItem('cfg_local_coords') || '';
