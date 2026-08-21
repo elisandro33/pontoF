@@ -203,338 +203,377 @@
     </div>
   </div>
 
-  <script>
-    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzi6lqvkYaP68l3hyxCR46BzUj1CLJH6pPfqljiwAY_81crRpVkG270swYIy-IuE6HZ/exec";
+<script>
+  const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzi6lqvkYaP68l3hyxCR46BzUj1CLJH6pPfqljiwAY_81crRpVkG270swYIy-IuE6HZ/exec";
 
-    function toggleMenu(e) { if(e) e.stopPropagation(); document.getElementById('dropdownMenu').classList.toggle('active'); }
-    function closeMenu() { document.getElementById('dropdownMenu').classList.remove('active'); }
+  function toggleMenu(e) { if(e) e.stopPropagation(); document.getElementById('dropdownMenu').classList.toggle('active'); }
+  function closeMenu() { document.getElementById('dropdownMenu').classList.remove('active'); }
 
-    function alternarAba(aba) {
-      document.getElementById('tab-ponto').classList.toggle('active', aba === 'ponto');
-      document.getElementById('tab-relatorio').classList.toggle('active', aba === 'relatorio');
-      document.getElementById('btn-tab-ponto').classList.toggle('active', aba === 'ponto');
-      document.getElementById('btn-tab-relatorio').classList.toggle('active', aba === 'relatorio');
-      if (aba === 'relatorio') carregarRelatorio();
-      else carregarPontosHoje();
+  function alternarAba(aba) {
+    document.getElementById('tab-ponto').classList.toggle('active', aba === 'ponto');
+    document.getElementById('tab-relatorio').classList.toggle('active', aba === 'relatorio');
+    document.getElementById('btn-tab-ponto').classList.toggle('active', aba === 'ponto');
+    document.getElementById('btn-tab-relatorio').classList.toggle('active', aba === 'relatorio');
+    if (aba === 'relatorio') carregarRelatorio();
+    else carregarPontosHoje();
+  }
+
+  function obterDataHojeFormatada() {
+    const h = new Date();
+    const dia = String(h.getDate()).padStart(2, '0');
+    const mes = String(h.getMonth() + 1).padStart(2, '0');
+    const ano = h.getFullYear();
+    return { exibicao: `${dia}/${mes}/${ano}`, chave: `ponto_${ano}-${mes}-${dia}`, mesAno: `${mes}/${ano}` };
+  }
+
+  function carregarPontosHoje() {
+    const info = obterDataHojeFormatada();
+    document.getElementById('txt-data').innerText = info.exibicao;
+    if (!document.getElementById('filtro-mes').value) {
+      document.getElementById('filtro-mes').value = info.mesAno;
     }
 
-    function obterDataHojeFormatada() {
-      const h = new Date();
-      const dia = String(h.getDate()).padStart(2, '0');
-      const mes = String(h.getMonth() + 1).padStart(2, '0');
-      const ano = h.getFullYear();
-      return { exibicao: `${dia}/${mes}/${ano}`, chave: `ponto_${ano}-${mes}-${dia}`, mesAno: `${mes}/${ano}` };
+    const reg = JSON.parse(localStorage.getItem(info.chave)) || {};
+    document.getElementById('val-e').innerText = reg.e || '--:--';
+    document.getElementById('val-si').innerText = reg.si || '--:--';
+    document.getElementById('val-vi').innerText = reg.vi || '--:--';
+    document.getElementById('val-sf').innerText = reg.sf || '--:--';
+
+    const localCfg = localStorage.getItem('cfg_local_nome');
+    if (localCfg) {
+      document.getElementById('txt-status-gps').innerText = `📍 GPS OK (${localCfg})`;
+    }
+  }
+
+  function registrarPontoAtual() {
+    const info = obterDataHojeFormatada();
+    let reg = JSON.parse(localStorage.getItem(info.chave)) || {};
+    const h = new Date();
+    const hora = `${String(h.getHours()).padStart(2,'0')}:${String(h.getMinutes()).padStart(2,'0')}`;
+
+    if (!reg.e) reg.e = hora;
+    else if (!reg.si) reg.si = hora;
+    else if (!reg.vi) reg.vi = hora;
+    else if (!reg.sf) reg.sf = hora;
+    else { alert("Todas as marcações de hoje foram concluídas!"); return; }
+
+    localStorage.setItem(info.chave, JSON.stringify(reg));
+    carregarPontosHoje();
+  }
+
+  function carregarRelatorio() {
+    const lista = document.getElementById('lista-relatorio');
+    lista.innerHTML = '';
+
+    const filtroMes = document.getElementById('filtro-mes').value.trim();
+    const apenasIncompletos = document.getElementById('chk-incompletos').checked;
+
+    let chaves = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k.startsWith('ponto_')) chaves.push(k);
     }
 
-    function carregarPontosHoje() {
-      const info = obterDataHojeFormatada();
-      document.getElementById('txt-data').innerText = info.exibicao;
-      if (!document.getElementById('filtro-mes').value) {
-        document.getElementById('filtro-mes').value = info.mesAno;
+    chaves.sort().reverse();
+
+    if (chaves.length === 0) {
+      lista.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Nenhum ponto registrado no sistema.</div>';
+      return;
+    }
+
+    let exibidos = 0;
+    let minExtrasTotalAcumulado = 0;
+    const salarioBase = parseFloat(localStorage.getItem('cfg_salario') || 2000);
+    const horasMes = parseFloat(localStorage.getItem('cfg_horas_mes') || 220);
+    const valorHoraExtra = (salarioBase / horasMes) * 1.5;
+
+    chaves.forEach(chave => {
+      const item = JSON.parse(localStorage.getItem(chave)) || {};
+      const p = chave.replace('ponto_', '').split('-');
+      if (p.length !== 3) return;
+
+      const dataFmt = `${p[2]}/${p[1]}/${p[0]}`;
+      const mesAno = `${p[1]}/${p[0]}`;
+
+      if (filtroMes && mesAno !== filtroMes) return;
+
+      const isIncompleto = !item.e || !item.si || !item.vi || !item.sf;
+      if (apenasIncompletos && !isIncompleto) return;
+
+      let minTrab = 0;
+      let minExtraDia = 0;
+      let extraTexto = "00:00 (R$ 0,00)";
+      let intervaloTarde = "--:-- - --:--";
+
+      if (item.e && item.sf) {
+        let m1 = convHora(item.e);
+        let m2 = item.si ? convHora(item.si) : m1;
+        let m3 = item.vi ? convHora(item.vi) : m2;
+        let m4 = convHora(item.sf);
+
+        minTrab = (m2 - m1) + (m4 - m3);
+        if (minTrab > 480) minExtraDia = minTrab - 480;
+
+        if (item.hora_extra) {
+          extraTexto = `${item.hora_extra}`;
+        } else if (minExtraDia > 0) {
+          minExtrasTotalAcumulado += minExtraDia;
+          let hEx = Math.floor(minExtraDia / 60);
+          let mEx = minExtraDia % 60;
+          let valEx = (minExtraDia / 60) * valorHoraExtra;
+          extraTexto = `${String(hEx).padStart(2,'0')}:${String(mEx).padStart(2,'0')} (R$ ${valEx.toFixed(2).replace('.',',')})`;
+        }
+
+        if (m4 > convHora("16:30")) intervaloTarde = `16:30 - ${item.sf}`;
       }
 
-      const reg = JSON.parse(localStorage.getItem(info.chave)) || {};
-      document.getElementById('val-e').innerText = reg.e || '--:--';
-      document.getElementById('val-si').innerText = reg.si || '--:--';
-      document.getElementById('val-vi').innerText = reg.vi || '--:--';
-      document.getElementById('val-sf').innerText = reg.sf || '--:--';
+      exibidos++;
+      const card = document.createElement('div');
+      card.className = 'relatorio-card-item';
+      card.innerHTML = `
+        <div class="relatorio-linha">📅 <strong>Data: ${dataFmt}</strong></div>
+        <div class="relatorio-linha">🟩 Ent: ${item.e || '--:--'} | Sai Almoço: ${item.si || '--:--'}</div>
+        <div class="relatorio-linha">🟥 Vol Almoço: ${item.vi || '--:--'} | Fim: ${item.sf || '--:--'}</div>
+        <div class="relatorio-linha">⭐ Total Extra: ${extraTexto}</div>
+        <div class="relatorio-linha">🏢 Extra Tarde: ${intervaloTarde}</div>
+      `;
+      lista.appendChild(card);
+    });
+
+    const hTotal = Math.floor(minExtrasTotalAcumulado / 60);
+    const mTotal = minExtrasTotalAcumulado % 60;
+    const vTotal = (minExtrasTotalAcumulado / 60) * valorHoraExtra;
+
+    document.getElementById('txt-total-horas').innerText = `${String(hTotal).padStart(2,'0')}:${String(mTotal).padStart(2,'0')}`;
+    document.getElementById('txt-total-valor').innerText = `R$ ${vTotal.toFixed(2).replace('.',',')}`;
+
+    if (exibidos === 0) {
+      lista.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">Nenhum registro encontrado para "${filtroMes}".</div>`;
     }
+  }
 
-    function registrarPontoAtual() {
-      const info = obterDataHojeFormatada();
-      let reg = JSON.parse(localStorage.getItem(info.chave)) || {};
-      const h = new Date();
-      const hora = `${String(h.getHours()).padStart(2,'0')}:${String(h.getMinutes()).padStart(2,'0')}`;
+  function sincronizarComGoogleSheets() {
+    alert("Iniciando busca de dados no Google Sheets...");
 
-      if (!reg.e) reg.e = hora;
-      else if (!reg.si) reg.si = hora;
-      else if (!reg.vi) reg.vi = hora;
-      else if (!reg.sf) reg.sf = hora;
-      else { alert("Todas as marcações de hoje foram concluídas!"); return; }
-
-      localStorage.setItem(info.chave, JSON.stringify(reg));
-      carregarPontosHoje();
-    }
-
-    function carregarRelatorio() {
-      const lista = document.getElementById('lista-relatorio');
-      lista.innerHTML = '';
-
-      const filtroMes = document.getElementById('filtro-mes').value.trim();
-      const apenasIncompletos = document.getElementById('chk-incompletos').checked;
-
-      let chaves = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k.startsWith('ponto_')) chaves.push(k);
-      }
-
-      chaves.sort().reverse();
-
-      if (chaves.length === 0) {
-        lista.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Nenhum ponto registrado no sistema.</div>';
+    window.processarDadosSheets = function(dados) {
+      if (!dados || dados.status === "error") {
+        alert("Erro na planilha: " + (dados ? dados.message : "Vazia"));
         return;
       }
 
-      let exibidos = 0;
-      let minExtrasTotalAcumulado = 0;
-      const salarioBase = parseFloat(localStorage.getItem('cfg_salario') || 2000);
-      const horasMes = parseFloat(localStorage.getItem('cfg_horas_mes') || 220);
-      const valorHoraExtra = (salarioBase / horasMes) * 1.5;
+      if (!Array.isArray(dados) || dados.length === 0) {
+        alert("Sincronização concluída, mas sem registros.");
+        return;
+      }
 
-      chaves.forEach(chave => {
-        const item = JSON.parse(localStorage.getItem(chave)) || {};
-        const p = chave.replace('ponto_', '').split('-');
-        if (p.length !== 3) return;
+      let importados = 0;
+      let ultimoMesAno = "";
 
-        const dataFmt = `${p[2]}/${p[1]}/${p[0]}`;
-        const mesAno = `${p[1]}/${p[0]}`;
-
-        if (filtroMes && mesAno !== filtroMes) return;
-
-        const isIncompleto = !item.e || !item.si || !item.vi || !item.sf;
-        if (apenasIncompletos && !isIncompleto) return;
-
-        // Cálculos de horas trabalhadas e horas extras
-        let minTrab = 0;
-        let minExtraDia = 0;
-        let extraTexto = "00:00 (R$ 0,00)";
-        let intervaloManha = "--:-- - --:--";
-        let intervaloTarde = "--:-- - --:--";
-
-        if (item.e && item.sf) {
-          let m1 = convHora(item.e);
-          let m2 = item.si ? convHora(item.si) : m1;
-          let m3 = item.vi ? convHora(item.vi) : m2;
-          let m4 = convHora(item.sf);
-
-          minTrab = (m2 - m1) + (m4 - m3);
-          if (minTrab > 480) minExtraDia = minTrab - 480;
-
-          if (minExtraDia > 0) {
-            minExtrasTotalAcumulado += minExtraDia;
-            let hEx = Math.floor(minExtraDia / 60);
-            let mEx = minExtraDia % 60;
-            let valEx = (minExtraDia / 60) * valorHoraExtra;
-            extraTexto = `${String(hEx).padStart(2,'0')}:${String(mEx).padStart(2,'0')} (R$ ${valEx.toFixed(2).replace('.',',')})`;
+      dados.forEach(item => {
+        // Mapeamento direto com o cabeçalho exato informado
+        let rawData = item.data || item.Data;
+        if (rawData) {
+          let dataStr = String(rawData).trim();
+          if (dataStr.includes('T')) {
+            let dateObj = new Date(dataStr);
+            let dia = String(dateObj.getUTCDate()).padStart(2, '0');
+            let mes = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+            let ano = dateObj.getUTCFullYear();
+            dataStr = `${dia}/${mes}/${ano}`;
           }
 
-          if (m1 < convHora("07:00")) intervaloManha = `${item.e} - 07:00`;
-          if (m4 > convHora("16:30")) intervaloTarde = `16:30 - ${item.sf}`;
-        }
+          let partes = dataStr.split('/');
+          if (partes.length === 3) {
+            let dia = partes[0].trim().padStart(2, '0');
+            let mes = partes[1].trim().padStart(2, '0');
+            let ano = partes[2].trim();
+            if (ano.length === 2) ano = `20${ano}`;
 
-        exibidos++;
-        const card = document.createElement('div');
-        card.className = 'relatorio-card-item';
-        card.innerHTML = `
-          <div class="relatorio-linha">📅 <strong>Data: ${dataFmt}</strong></div>
-          <div class="relatorio-linha">🟩 Ent: ${item.e || '--:--'} | Sai Almoço: ${item.si || '--:--'}</div>
-          <div class="relatorio-linha">🟥 Vol Almoço: ${item.vi || '--:--'} | Fim: ${item.sf || '--:--'}</div>
-          <div class="relatorio-linha">⭐ Total Extra: ${extraTexto}</div>
-          <div class="relatorio-linha">🏢 Extra Tarde: ${intervaloTarde}</div>
-        `;
-        lista.appendChild(card);
+            let chave = `ponto_${ano}-${mes}-${dia}`;
+            ultimoMesAno = `${mes}/${ano}`;
+
+            const fmtH = (v) => v ? String(v).substring(0, 5) : '';
+
+            let registro = {
+              e: fmtH(item.entrada),
+              si: fmtH(item.saida_intervalo),
+              vi: fmtH(item.volta_intervalo),
+              sf: fmtH(item.saida_final),
+              hora_extra: item.hora_extra || '',
+              percentual: item.percentual || ''
+            };
+
+            localStorage.setItem(chave, JSON.stringify(registro));
+            importados++;
+          }
+        }
       });
 
-      // Atualiza Totais
-      const hTotal = Math.floor(minExtrasTotalAcumulado / 60);
-      const mTotal = minExtrasTotalAcumulado % 60;
-      const vTotal = (minExtrasTotalAcumulado / 60) * valorHoraExtra;
-
-      document.getElementById('txt-total-horas').innerText = `${String(hTotal).padStart(2,'0')}:${String(mTotal).padStart(2,'0')}`;
-      document.getElementById('txt-total-valor').innerText = `R$ ${vTotal.toFixed(2).replace('.',',')}`;
-
-      if (exibidos === 0) {
-        lista.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">Nenhum registro encontrado para "${filtroMes}".</div>`;
-      }
-    }
-
-    function sincronizarComGoogleSheets() {
-      alert("Iniciando busca de dados no Google Sheets...");
-
-      window.processarDadosSheets = function(dados) {
-        if (!dados || dados.status === "error") {
-          alert("Erro na planilha: " + (dados ? dados.message : "Vazia"));
-          return;
-        }
-
-        if (!Array.isArray(dados) || dados.length === 0) {
-          alert("Sincronização concluída, mas sem registros.");
-          return;
-        }
-
-        let importados = 0;
-        let ultimoMesAno = "";
-
-        dados.forEach(item => {
-          let rawData = item.data || item.Data || item.DATA;
-          if (rawData) {
-            let dataStr = String(rawData).trim();
-            if (dataStr.includes('T')) {
-              let dateObj = new Date(dataStr);
-              let dia = String(dateObj.getUTCDate()).padStart(2, '0');
-              let mes = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
-              let ano = dateObj.getUTCFullYear();
-              dataStr = `${dia}/${mes}/${ano}`;
-            }
-
-            let partes = dataStr.split('/');
-            if (partes.length === 3) {
-              let dia = partes[0].trim().padStart(2, '0');
-              let mes = partes[1].trim().padStart(2, '0');
-              let ano = partes[2].trim();
-              if (ano.length === 2) ano = `20${ano}`;
-
-              let chave = `ponto_${ano}-${mes}-${dia}`;
-              ultimoMesAno = `${mes}/${ano}`;
-
-              const fmtH = (v) => v ? String(v).substring(0, 5) : '';
-
-              let registro = {
-                id: item.id || item.ID || null,
-                e: fmtH(item.entrada || item.Entrada || item.ENTRADA),
-                si: fmtH(item.saidaInt || item.SaidaInt || item['Saida Intervalo']),
-                vi: fmtH(item.voltaInt || item.VoltaInt || item['Volta Intervalo']),
-                sf: fmtH(item.saidaFin || item.SaidaFin || item['Saida Final'])
-              };
-
-              localStorage.setItem(chave, JSON.stringify(registro));
-              importados++;
-            }
-          }
-        });
-
-        if (ultimoMesAno) document.getElementById('filtro-mes').value = ultimoMesAno;
-        alert(`Sucesso! ${importados} registros sincronizados.`);
-        carregarPontosHoje();
-        carregarRelatorio();
-      };
-
-      const oldScript = document.getElementById('jsonp-sheets-script');
-      if (oldScript) oldScript.remove();
-
-      const script = document.createElement('script');
-      script.id = 'jsonp-sheets-script';
-      script.src = `${GOOGLE_SHEETS_URL}?sheet=ATUALIZADA&callback=processarDadosSheets&t=${new Date().getTime()}`;
-      document.body.appendChild(script);
-    }
-
-    /* Ações adicionais do Menu */
-    function recalcularHistorico() {
-      carregarRelatorio();
-      alert("Histórico recalculado com sucesso!");
-    }
-
-    function abrirModalPontoManual() {
-      document.getElementById('edit-chave').value = '';
-      document.getElementById('edit-data-input').value = '';
-      document.getElementById('group-data-manual').style.display = 'block';
-      document.getElementById('modalEdicao').classList.add('active');
-    }
-
-    function abrirModalConfigJornada() { document.getElementById('modalJornada').classList.add('active'); }
-    function abrirModalConfigSalario() { document.getElementById('modalSalario').classList.add('active'); }
-    function abrirModalConfigLocal() { alert("Configuração GPS registrada para o local atual."); }
-
-    function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
-
-    function salvarConfigJornada() {
-      localStorage.setItem('cfg_jornada_e', document.getElementById('cfg-jornada-e').value);
-      localStorage.setItem('cfg_jornada_s', document.getElementById('cfg-jornada-s').value);
-      fecharModal('modalJornada');
-      alert("Jornada salva!");
-    }
-
-    function salvarConfigSalario() {
-      localStorage.setItem('cfg_salario', document.getElementById('cfg-salario-val').value);
-      localStorage.setItem('cfg_horas_mes', document.getElementById('cfg-horas-mes').value);
-      fecharModal('modalSalario');
-      carregarRelatorio();
-      alert("Configuração de Salário salva!");
-    }
-
-    function salvarEdicao() {
-      let chave = document.getElementById('edit-chave').value;
-      if (!chave) {
-        const txt = document.getElementById('edit-data-input').value.trim();
-        const p = txt.split('/');
-        if (p.length !== 3) { alert("Data inválida. Use DD/MM/YYYY"); return; }
-        chave = `ponto_${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
-      }
-
-      const reg = {
-        e: document.getElementById('edit-e').value,
-        si: document.getElementById('edit-si').value,
-        vi: document.getElementById('edit-vi').value,
-        sf: document.getElementById('edit-sf').value
-      };
-
-      localStorage.setItem(chave, JSON.stringify(reg));
-      fecharModal('modalEdicao');
-      carregarRelatorio();
-      carregarPontosHoje();
-    }
-
-    function fazerBackupJSON() {
-      let dados = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        let k = localStorage.key(i);
-        dados[k] = localStorage.getItem(k);
-      }
-      let blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
-      let a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'backup_ponto.json';
-      a.click();
-    }
-
-    function triggerImportarJSON() { document.getElementById('fileInputJSON').click(); }
-
-    function importarJSON(e) {
-      let file = e.target.files[0];
-      if (!file) return;
-      let reader = new FileReader();
-      reader.onload = function(evt) {
-        try {
-          let dados = JSON.parse(evt.target.result);
-          Object.keys(dados).forEach(k => localStorage.setItem(k, dados[k]));
-          alert("Backup restaurado com sucesso!");
-          carregarPontosHoje();
-          carregarRelatorio();
-        } catch(err) { alert("Arquivo JSON inválido."); }
-      };
-      reader.readAsText(file);
-    }
-
-    function exportarCSV() {
-      let csv = "Data;Entrada;Saida_Intervalo;Volta_Intervalo;Saida_Final\n";
-      for (let i = 0; i < localStorage.length; i++) {
-        let k = localStorage.key(i);
-        if (k.startsWith('ponto_')) {
-          let p = k.replace('ponto_', '').split('-');
-          let item = JSON.parse(localStorage.getItem(k));
-          csv += `${p[2]}/${p[1]}/${p[0]};${item.e||''};${item.si||''};${item.vi||''};${item.sf||''}\n`;
-        }
-      }
-      let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      let a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'relatorio_pontos.csv';
-      a.click();
-    }
-
-    function sairApp() { if(confirm("Deseja fechar a aplicação?")) window.close(); }
-
-    function convHora(h) {
-      if (!h || !h.includes(':')) return 0;
-      const p = h.split(':');
-      return (parseInt(p[0]) * 60) + parseInt(p[1]);
-    }
-
-    window.onload = function() {
+      if (ultimoMesAno) document.getElementById('filtro-mes').value = ultimoMesAno;
+      alert(`Sucesso! ${importados} registros sincronizados.`);
       carregarPontosHoje();
       carregarRelatorio();
     };
-  </script>
+
+    const oldScript = document.getElementById('jsonp-sheets-script');
+    if (oldScript) oldScript.remove();
+
+    const script = document.createElement('script');
+    script.id = 'jsonp-sheets-script';
+    script.src = `${GOOGLE_SHEETS_URL}?sheet=ATUALIZADA&callback=processarDadosSheets&t=${new Date().getTime()}`;
+    document.body.appendChild(script);
+  }
+
+  function abrirModalConfigLocal() {
+    document.getElementById('cfg-local-nome').value = localStorage.getItem('cfg_local_nome') || '';
+    document.getElementById('cfg-local-coords').value = localStorage.getItem('cfg_local_coords') || '';
+    document.getElementById('cfg-local-raio').value = localStorage.getItem('cfg_local_raio') || '100';
+    document.getElementById('modalLocal').classList.add('active');
+  }
+
+  function obterGpsAtual() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const coords = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
+          document.getElementById('cfg-local-coords').value = coords;
+          alert("Coordenadas capturadas!");
+        },
+        (err) => { alert("Erro ao obter GPS: " + err.message); }
+      );
+    } else {
+      alert("Geolocalização não é suportada neste navegador.");
+    }
+  }
+
+  function salvarConfigLocal() {
+    const nome = document.getElementById('cfg-local-nome').value.trim() || 'Sede';
+    const coords = document.getElementById('cfg-local-coords').value.trim();
+    const raio = document.getElementById('cfg-local-raio').value;
+
+    localStorage.setItem('cfg_local_nome', nome);
+    localStorage.setItem('cfg_local_coords', coords);
+    localStorage.setItem('cfg_local_raio', raio);
+
+    fecharModal('modalLocal');
+    carregarPontosHoje();
+    alert("Local configurado com sucesso!");
+  }
+
+  function recalcularHistorico() {
+    carregarRelatorio();
+    alert("Histórico recalculado com sucesso!");
+  }
+
+  function abrirModalPontoManual() {
+    document.getElementById('edit-chave').value = '';
+    document.getElementById('edit-data-input').value = '';
+    document.getElementById('group-data-manual').style.display = 'block';
+    document.getElementById('modalEdicao').classList.add('active');
+  }
+
+  function abrirModalConfigJornada() { document.getElementById('modalJornada').classList.add('active'); }
+  function abrirModalConfigSalario() { document.getElementById('modalSalario').classList.add('active'); }
+
+  function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
+
+  function salvarConfigJornada() {
+    localStorage.setItem('cfg_jornada_e', document.getElementById('cfg-jornada-e').value);
+    localStorage.setItem('cfg_jornada_s', document.getElementById('cfg-jornada-s').value);
+    fecharModal('modalJornada');
+    alert("Jornada salva!");
+  }
+
+  function salvarConfigSalario() {
+    localStorage.setItem('cfg_salario', document.getElementById('cfg-salario-val').value);
+    localStorage.setItem('cfg_horas_mes', document.getElementById('cfg-horas-mes').value);
+    fecharModal('modalSalario');
+    carregarRelatorio();
+    alert("Configuração de Salário salva!");
+  }
+
+  function salvarEdicao() {
+    let chave = document.getElementById('edit-chave').value;
+    if (!chave) {
+      const txt = document.getElementById('edit-data-input').value.trim();
+      const p = txt.split('/');
+      if (p.length !== 3) { alert("Data inválida. Use DD/MM/YYYY"); return; }
+      chave = `ponto_${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+    }
+
+    const reg = {
+      e: document.getElementById('edit-e').value,
+      si: document.getElementById('edit-si').value,
+      vi: document.getElementById('edit-vi').value,
+      sf: document.getElementById('edit-sf').value
+    };
+
+    localStorage.setItem(chave, JSON.stringify(reg));
+    fecharModal('modalEdicao');
+    carregarRelatorio();
+    carregarPontosHoje();
+  }
+
+  function fazerBackupJSON() {
+    let dados = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      let k = localStorage.key(i);
+      dados[k] = localStorage.getItem(k);
+    }
+    let blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'backup_ponto.json';
+    a.click();
+  }
+
+  function triggerImportarJSON() { document.getElementById('fileInputJSON').click(); }
+
+  function importarJSON(e) {
+    let file = e.target.files[0];
+    if (!file) return;
+    let reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        let dados = JSON.parse(evt.target.result);
+        Object.keys(dados).forEach(k => localStorage.setItem(k, dados[k]));
+        alert("Backup restaurado com sucesso!");
+        carregarPontosHoje();
+        carregarRelatorio();
+      } catch(err) { alert("Arquivo JSON inválido."); }
+    };
+    reader.readAsText(file);
+  }
+
+  function exportarCSV() {
+    let csv = "Data;Entrada;Saida_Intervalo;Volta_Intervalo;Saida_Final\n";
+    for (let i = 0; i < localStorage.length; i++) {
+      let k = localStorage.key(i);
+      if (k.startsWith('ponto_')) {
+        let p = k.replace('ponto_', '').split('-');
+        let item = JSON.parse(localStorage.getItem(k));
+        csv += `${p[2]}/${p[1]}/${p[0]};${item.e||''};${item.si||''};${item.vi||''};${item.sf||''}\n`;
+      }
+    }
+    let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'relatorio_pontos.csv';
+    a.click();
+  }
+
+  function sairApp() { if(confirm("Deseja fechar a aplicação?")) window.close(); }
+
+  function convHora(h) {
+    if (!h || !h.includes(':')) return 0;
+    const p = h.split(':');
+    return (parseInt(p[0]) * 60) + parseInt(p[1]);
+  }
+
+  window.onload = function() {
+    carregarPontosHoje();
+    carregarRelatorio();
+  };
+</script>
 </body>
 </html>
