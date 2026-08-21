@@ -1,1366 +1,428 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-	<title>Ponto Fácil Web</title>
-
-	<!-- PWA & Favicon -->
-	<meta name="mobile-web-app-capable" content="yes">
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-	<meta name="apple-mobile-web-app-title" content="Ponto Fácil">
-	<meta name="theme-color" content="#3b50b5">
-
-	<link rel="icon" type="image/jpeg" href="favicon.jpeg">
-	<link rel="apple-touch-icon" href="favicon.jpeg">
-	<link rel="shortcut icon" sizes="192x192" href="favicon.jpeg">
-
-<style>
-    :root {
-      --primary: #3b50b5;
-      --primary-blue: #2196F3;
-      --bg: #f5f6fa;
-      --card-bg: #ffffff;
-      --text: #333333;
-      --text-muted: #666666;
-      --danger: #d93025;
-      --success: #2e7d32;
-      --border: #e0e0e0;
-      --green-btn: #2e7d32;
-      --extra-green: #2e7d32;
-      --extra-red: #c62828;
-    }
-	
-	html, body {
-      width: 100%;
-      max-width: 100vw;
-      overflow-x: hidden;
-      margin: 0;
-      padding: 0;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      padding-bottom: 70px;
-    }
-
-    /* Header */
-    header {
-      background-color: var(--primary);
-      color: white;
-      padding: 16px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      position: relative;
-    }
-
-    header h1 {
-      font-size: 1.3rem;
-      font-weight: 600;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .menu-btn {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 1.5rem;
-      cursor: pointer;
-      padding: 0 5px;
-    }
-
-    /* Menu Suspenso */
-    .dropdown-menu {
-      display: none;
-      position: absolute;
-      top: 50px;
-      right: 15px;
-      background: white;
-      color: var(--text);
-      border-radius: 8px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-      width: 250px;
-      z-index: 1000;
-      overflow: hidden;
-    }
-
-    .dropdown-menu.show {
-      display: block;
-    }
-
-    .dropdown-item {
-      padding: 12px 16px;
-      font-size: 0.95rem;
-      cursor: pointer;
-      border-bottom: 1px solid #f0f0f0;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 500;
-    }
-
-    .dropdown-item:last-child {
-      border-bottom: none;
-    }
-
-    .dropdown-item:hover {
-      background-color: #f5f5f5;
-    }
-
-    .dropdown-icon {
-      font-size: 1.1rem;
-      width: 24px;
-      text-align: center;
-    }
-
-    /* Abas */
-    .tab-content {
-      display: none;
-      padding: 15px;
-      max-width: 500px;
-      margin: 0 auto;
-      width: 100%;
-    }
-
-    .tab-content.active {
-      display: block !important;
-    }
-
-    /* Tela Ponto */
-    .container {
-      text-align: center;
-    }
-
-    .status-location {
-      color: var(--danger);
-      font-weight: 600;
-      font-size: 0.95rem;
-      margin-bottom: 15px;
-    }
-
-    .status-location.inside {
-      color: var(--success);
-    }
-
-    .date-display {
-      font-size: 1.6rem;
-      font-weight: bold;
-      color: #222;
-      margin-top: 5px;
-    }
-
-    .next-register {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      margin-bottom: 25px;
-    }
-
-    .fingerprint-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      outline: none;
-      margin: 10px 0 30px 0;
-      transition: transform 0.1s ease;
-    }
-
-    .fingerprint-btn:active {
-      transform: scale(0.95);
-    }
-
-    .fingerprint-icon {
-      width: 90px;
-      height: 90px;
-      fill: none;
-      stroke: #1a1a1a;
-      stroke-width: 2.5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: left;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      margin-bottom: 12px;
-    }
-
-    .card h2 {
-      font-size: 1.1rem;
-      color: var(--primary);
-      margin-bottom: 15px;
-    }
-
-    .mark-item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 12px;
-      font-size: 0.95rem;
-    }
-
-    .mark-badge {
-      background-color: var(--primary);
-      color: white;
-      width: 22px;
-      height: 22px;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-      font-weight: bold;
-      margin-right: 12px;
-    }
-
-    .mark-label {
-      color: var(--text-muted);
-      flex: 1;
-    }
-
-    .mark-time {
-      font-weight: 600;
-    }
-
-    /* Tela Relatório */
-    .title-report {
-      color: var(--primary-blue);
-      font-size: 1.3rem;
-      font-weight: bold;
-      margin-bottom: 12px;
-    }
-
-    .filter-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
-      width: 100%;
-    }
-
-    .filter-input {
-      flex: 1;
-      min-width: 0;
-      padding: 10px 8px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.95rem;
-    }
-
-    .btn-filter {
-      background-color: var(--primary-blue);
-      color: white;
-      border: none;
-      padding: 10px 14px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 0.85rem;
-      cursor: pointer;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    .checkbox-container {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.9rem;
-      color: #444;
-      margin-bottom: 15px;
-    }
-
-    .accumulated-title {
-      font-size: 0.8rem;
-      font-weight: bold;
-      color: #666;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-    }
-
-    .accumulated-hours {
-      font-size: 2.2rem;
-      font-weight: bold;
-      color: var(--extra-green);
-      line-height: 1;
-    }
-
-    .accumulated-money {
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: var(--extra-red);
-      margin: 6px 0 12px 0;
-    }
-
-    .btn-export {
-      width: 100%;
-      background-color: var(--green-btn);
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 0.95rem;
-      cursor: pointer;
-      text-transform: uppercase;
-    }
-
-    .day-card {
-      background: white;
-      border-radius: 10px;
-      padding: 12px 16px;
-      margin-bottom: 10px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      cursor: pointer;
-      transition: background-color 0.2s, transform 0.1s;
-      position: relative;
-    }
-
-    .day-card:hover {
-      background-color: #f8f9fa;
-    }
-
-    .day-card:active {
-      transform: scale(0.99);
-    }
-
-    .day-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.95rem;
-      margin-bottom: 6px;
-      color: #333;
-    }
-
-    .day-row:last-child {
-      margin-bottom: 0;
-    }
-
-    .day-row strong {
-      font-weight: bold;
-    }
-
-    .edit-hint {
-      position: absolute;
-      top: 10px;
-      right: 12px;
-      font-size: 0.75rem;
-      color: var(--primary-blue);
-      font-weight: bold;
-    }
-
-    /* Modais */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 2000;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .modal-overlay.active {
-      display: flex;
-    }
-
-    .modal-box {
-      background: white;
-      border-radius: 12px;
-      width: 100%;
-      max-width: 400px;
-      padding: 20px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    .modal-header {
-      font-size: 1.1rem;
-      font-weight: bold;
-      color: var(--primary);
-      margin-bottom: 15px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 8px;
-    }
-
-    .modal-field {
-      margin-bottom: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .modal-field label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-
-    .modal-field input, .modal-field select {
-      padding: 10px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 1rem;
-    }
-
-    .modal-section-title {
-      font-size: 0.9rem;
-      font-weight: bold;
-      color: var(--primary-blue);
-      margin: 10px 0 6px 0;
-      border-bottom: 1px dashed var(--border);
-      padding-bottom: 2px;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 20px;
-    }
-
-    .btn-modal {
-      flex: 1;
-      padding: 12px 6px;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 0.85rem;
-      text-align: center;
-    }
-
-    .btn-save {
-      background-color: var(--primary-blue);
-      color: white;
-    }
-
-    .btn-delete {
-      background-color: var(--danger);
-      color: white;
-    }
-
-    .btn-cancel {
-      background-color: #e0e0e0;
-      color: #333;
-    }
-
-    .btn-gps-current {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      padding: 10px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 0.85rem;
-      margin-bottom: 15px;
-      width: 100%;
-      cursor: pointer;
-    }
-
-    /* Bottom Nav */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: white;
-      display: flex;
-      border-top: 1px solid var(--border);
-      height: 60px;
-      z-index: 900;
-    }
-
-    .nav-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 0.75rem;
-      background: none;
-      border: none;
-      cursor: pointer;
-    }
-
-    .nav-item.active {
-      color: var(--primary-blue);
-      font-weight: bold;
-    }
-
-    .nav-icon {
-      font-size: 1.2rem;
-      margin-bottom: 2px;
-    }
-</style>
-  </head>
-  <body>
-
-	<!-- HEADER -->
-	<header>
-	  <h1>Ponto Fácil</h1>
-	  <div class="header-actions">
-		<button class="menu-btn" onclick="atualizarDoGithub()" title="Atualizar App">🔄</button>
-		<button class="menu-btn" onclick="toggleMenu()">&#8942;</button>
-	  </div>
-	  <div class="dropdown-menu" id="dropdownMenu">
-		<div class="dropdown-item" onclick="recalcularHistorico()"><span class="dropdown-icon">🔄</span> Recalcular Histórico</div>
-		<div class="dropdown-item" onclick="abrirModalManual()"><span class="dropdown-icon">📝</span> Adicionar Ponto Manual</div>
-		<div class="dropdown-item" onclick="abrirModalJornada()"><span class="dropdown-icon">⚙️</span> Configurar Horário/Jornada</div>
-		<div class="dropdown-item" onclick="abrirConfigLocal()"><span class="dropdown-icon">📍</span> Configurar Local</div>
-		<div class="dropdown-item" onclick="abrirModalSalario()"><span class="dropdown-icon">🤑</span> Configurar Salário</div>
-		<div class="dropdown-item" onclick="fazerBackup()"><span class="dropdown-icon">💾</span> Fazer Backup JSON</div>
-		<div class="dropdown-item" onclick="importarBackup()"><span class="dropdown-icon">📁</span> Importar JSON</div>
-		<div class="dropdown-item" onclick="sincronizarTudo()"><span class="dropdown-icon">🔄</span> Sincronizar Tudo</div>
-		<div class="dropdown-item" onclick="sairApp()"><span class="dropdown-icon">❌</span> Sair</div>
-	  </div>
-	</header>
-
-	<input type="file" id="inputImportarJson" accept=".json" style="display:none;" onchange="processarArquivoImportado(event)">
-
-	<!-- ABA 1: PONTO -->
-	<div id="tabPonto" class="tab-content active">
-	  <div class="container">
-		<div class="status-location" id="statusPerimetro">
-		  ❌ Obtendo localização GPS...
-		</div>
-
-		<div class="date-display" id="dataAtual">--/--/----</div>
-		<div class="next-register">Próximo Registro: <span id="lblProximoReg">Entrada</span></div>
-
-		<button class="fingerprint-btn" onclick="baterPontoAutomatico()" title="Bater Ponto">
-		  <svg class="fingerprint-icon" viewBox="0 0 24 24">
-			<path d="M12 2a10 10 0 0 0-8 4"/>
-			<path d="M12 6a6 6 0 0 0-6 6c0 1.5.5 3 1.5 4"/>
-			<path d="M12 10a2 2 0 0 0-2 2c0 2 1 3.5 2 5"/>
-			<path d="M12 14a1 1 0 0 1 1 1c0 1.5-.5 2.5-1 3.5"/>
-			<path d="M16 8a8 8 0 0 1 4 7c0 2-1 4-2 5.5"/>
-			<path d="M19 12a7 7 0 0 1 1 3.5"/>
-		  </svg>
-		</button>
-
-		<div class="card">
-		  <h2>Marcações de Hoje</h2>
-		  <div class="mark-item">
-			<div class="mark-badge">1</div>
-			<div class="mark-label">Entrada:</div>
-			<div class="mark-time" id="dispE">--:--</div>
-		  </div>
-		  <div class="mark-item">
-			<div class="mark-badge">2</div>
-			<div class="mark-label">Saída Intervalo:</div>
-			<div class="mark-time" id="dispSI">--:--</div>
-		  </div>
-		  <div class="mark-item">
-			<div class="mark-badge">3</div>
-			<div class="mark-label">Volta Intervalo:</div>
-			<div class="mark-time" id="dispVI">--:--</div>
-		  </div>
-		  <div class="mark-item">
-			<div class="mark-badge">4</div>
-			<div class="mark-label">Saída Final:</div>
-			<div class="mark-time" id="dispSF">--:--</div>
-		  </div>
-		</div>
-	  </div>
-	</div>
-
-	<!-- ABA 2: RELATÓRIO -->
-	<div id="tabRelatorio" class="tab-content">
-	  <div class="title-report">Filtros do Relatório</div>
-
-	  <div class="filter-row">
-		<input type="text" class="filter-input" id="filtroMesAno" placeholder="MM/AAAA">
-		<button class="btn-filter" onclick="carregarRelatorio()">FILTRAR</button>
-	  </div>
-
-	  <div class="checkbox-container">
-		<input type="checkbox" id="chkFaltas" onchange="carregarRelatorio()">
-		<label for="chkFaltas">Visualizar apenas faltas/incompletos</label>
-	  </div>
-
-	  <div class="card">
-		<div class="accumulated-title">TOTAL ACUMULADO DE HORAS EXTRAS</div>
-		<div class="accumulated-hours" id="totalHorasExtra">00:00</div>
-		<div class="accumulated-money" id="totalValorExtra">R$ 0,00</div>
-		<button class="btn-export" onclick="exportarCSV()">EXPORTAR CSV</button>
-	  </div>
-
-	  <div id="listaCardsRelatorio"></div>
-	</div>
-
-	<!-- MODAL DE EDIÇÃO DE REGISTRO -->
-	<div class="modal-overlay" id="modalEdicao">
-	  <div class="modal-box">
-		<div class="modal-header" id="modalTitulo">Editar Registro</div>
-		<div class="modal-field">
-		  <label>Entrada</label>
-		  <input type="text" id="editEntrada" placeholder="HH:MM">
-		</div>
-		<div class="modal-field">
-		  <label>Saída Intervalo</label>
-		  <input type="text" id="editSaidaInt" placeholder="HH:MM">
-		</div>
-		<div class="modal-field">
-		  <label>Volta Intervalo</label>
-		  <input type="text" id="editVoltaInt" placeholder="HH:MM">
-		</div>
-		<div class="modal-field">
-		  <label>Saída Final</label>
-		  <input type="text" id="editSaidaFin" placeholder="HH:MM">
-		</div>
-		<div class="modal-actions">
-		  <button class="btn-modal btn-cancel" onclick="fecharModal()">CANCELAR</button>
-		  <button class="btn-modal btn-delete" onclick="deletarRegistro()">DELETAR</button>
-		  <button class="btn-modal btn-save" onclick="salvarModal()">SALVAR</button>
-		</div>
-	  </div>
-	</div>
-
-	<!-- MODAL ADICIONAR PONTO MANUAL -->
-	<div class="modal-overlay" id="modalManual">
-	  <div class="modal-box">
-		<div class="modal-header">Adicionar Ponto Manual</div>
-		<div class="modal-field">
-		  <label>Data (DD/MM/AAAA)</label>
-		  <input type="text" id="manData" placeholder="Ex: 15/08/2026">
-		</div>
-		<div class="modal-field">
-		  <label>Entrada</label>
-		  <input type="text" id="manEntrada" placeholder="08:00">
-		</div>
-		<div class="modal-field">
-		  <label>Saída Intervalo</label>
-		  <input type="text" id="manSaidaInt" placeholder="12:00">
-		</div>
-		<div class="modal-field">
-		  <label>Volta Intervalo</label>
-		  <input type="text" id="manVoltaInt" placeholder="13:00">
-		</div>
-		<div class="modal-field">
-		  <label>Saída Final</label>
-		  <input type="text" id="manSaidaFin" placeholder="17:00">
-		</div>
-		<div class="modal-actions">
-		  <button class="btn-modal btn-cancel" onclick="fecharModalManual()">CANCELAR</button>
-		  <button class="btn-modal btn-save" onclick="salvarPontoManual()">SALVAR</button>
-		</div>
-	  </div>
-	</div>
-
-	<!-- MODAL CONFIGURAR SALÁRIO -->
-	<div class="modal-overlay" id="modalSalario">
-	  <div class="modal-box">
-		<div class="modal-header">Configurar Salário / Hora Extra</div>
-		<div class="modal-field">
-		  <label>Valor por Hora Extra (R$)</label>
-		  <input type="number" step="0.01" id="cfgValorHora" placeholder="Ex: 38.00">
-		</div>
-		<div class="modal-actions">
-		  <button class="btn-modal btn-cancel" onclick="fecharModalSalario()">CANCELAR</button>
-		  <button class="btn-modal btn-save" onclick="salvarSalario()">SALVAR</button>
-		</div>
-	  </div>
-	</div>
-
-	<!-- MODAL CONFIGURAR JORNADA -->
-	<div class="modal-overlay" id="modalJornada">
-	  <div class="modal-box">
-		<div class="modal-header">Configurar Jornada de Trabalho</div>
-		
-		<div class="modal-section-title">Segunda a Sexta</div>
-		<div class="modal-field">
-		  <label>Hora de Entrada</label>
-		  <input type="time" id="cfgEntradaSemana" value="08:00">
-		</div>
-		<div class="modal-field">
-		  <label>Intervalo (Refeição)</label>
-		  <input type="text" id="cfgIntervaloSemana" value="01:00" placeholder="01:00">
-		</div>
-		<div class="modal-field">
-		  <label>Hora de Saída</label>
-		  <input type="time" id="cfgSaidaSemana" value="17:30">
-		</div>
-
-		<div class="modal-section-title">Sábados</div>
-		<div class="modal-field">
-		  <label>Sábados Alternados?</label>
-		  <select id="cfgSabadoAlternado" onchange="toggleSabadoCampos()">
-		    <option value="nao">Não</option>
-		    <option value="sim">Sim</option>
-		  </select>
-		</div>
-
-		<div id="containerSabadoCampos" style="display: none;">
-		  <div class="modal-field">
-		    <label>Hora de Entrada (Sábado)</label>
-		    <input type="time" id="cfgEntradaSabado" value="08:00">
-		  </div>
-		  <div class="modal-field">
-		    <label>Intervalo de Refeição (Sábado)</label>
-		    <input type="text" id="cfgIntervaloSabado" value="01:00" placeholder="01:00">
-		  </div>
-		  <div class="modal-field">
-		    <label>Hora de Saída (Sábado)</label>
-		    <input type="time" id="cfgSaidaSabado" value="12:00">
-		  </div>
-		</div>
-
-		<div class="modal-actions">
-		  <button class="btn-modal btn-cancel" onclick="fecharModalJornada()">CANCELAR</button>
-		  <button class="btn-modal btn-save" onclick="salvarJornada()">SALVAR</button>
-		</div>
-	  </div>
-	</div>
-
-	<!-- MODAL DE CONFIGURAÇÃO DE LOCAL -->
-	<div class="modal-overlay" id="modalLocal">
-	  <div class="modal-box">
-		<div class="modal-header">Configurar Perímetro GPS</div>
-
-		<button class="btn-gps-current" onclick="usarGpsAtual()">📍 USAR MINHA LOCALIZAÇÃO ATUAL</button>
-
-		<div class="modal-field">
-		  <label>Latitude da Empresa</label>
-		  <input type="text" id="cfgLat" placeholder="Ex: -23.550520">
-		</div>
-		<div class="modal-field">
-		  <label>Longitude da Empresa</label>
-		  <input type="text" id="cfgLng" placeholder="Ex: -46.633308">
-		</div>
-		<div class="modal-field">
-		  <label>Raio Permitido (Metros)</label>
-		  <input type="number" id="cfgRaio" placeholder="Ex: 200">
-		</div>
-
-		<div class="modal-actions">
-		  <button class="btn-modal btn-cancel" onclick="fecharModalLocal()">CANCELAR</button>
-		  <button class="btn-modal btn-save" onclick="salvarConfigLocal()">SALVAR</button>
-		</div>
-	  </div>
-	</div>
-
-	<!-- NAVEGAÇÃO INFERIOR -->
-	<nav class="bottom-nav">
-	  <button class="nav-item active" id="btnNavPonto" onclick="mudarAba('ponto')">
-		<span class="nav-icon">🕒</span>
-		Ponto
-	  </button>
-	  <button class="nav-item" id="btnNavRelatorio" onclick="mudarAba('relatorio')">
-		<span class="nav-icon">📊</span>
-		Relatório
-	  </button>
-	</nav>
-
-<script>
-// --- URL DO GOOGLE APPS SCRIPT ---
-const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzi6lqvkYaP68l3hyxCR46BzUj1CLJH6pPfqljiwAY_81crRpVkG270swYIy-IuE6HZ/exec";
-
-// --- VARIÁVEIS GLOBAIS E ESTADO ---
-let config = {
-  lat: null,
-  lng: null,
-  raio: 200,
-  valorHora: 0,
-  jornadaSemana: { entrada: "08:00", intervalo: "01:00", saida: "17:30" },
-  jornadaSabado: { ativo: "nao", entrada: "08:00", intervalo: "01:00", saida: "12:00" }
-};
-
-let dentroDoPerimetro = false;
-let dataEditando = null;
-
-// --- INICIALIZAÇÃO ---
-window.onload = function() {
-  carregarConfiguracoes();
-  atualizarDataCabecalho();
-  carregarPontosHoje();
-  iniciarMonitoramentoGPS();
-  definirMesAnoAtualFiltro();
-  sincronizarComGoogleSheets(true); // Sincroniza dados da planilha silenciosamente ao abrir
-};
-
-function carregarConfiguracoes() {
-  try {
-    const cfgSalva = localStorage.getItem('pf_config');
-    if (cfgSalva) {
-      config = JSON.parse(cfgSalva);
-    }
-  } catch(e) {
-    console.error("Erro ao carregar configurações", e);
-  }
-}
-
-function salvarConfiguracoes() {
-  localStorage.setItem('pf_config', JSON.stringify(config));
-}
-
-function atualizarDataCabecalho() {
-  const hoje = new Date();
-  const dia = String(hoje.getDate()).padStart(2, '0');
-  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-  const ano = hoje.getFullYear();
-  document.getElementById('dataAtual').innerText = `${dia}/${mes}/${ano}`;
-}
-
-function definirMesAnoAtualFiltro() {
-  const hoje = new Date();
-  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-  const ano = hoje.getFullYear();
-  document.getElementById('filtroMesAno').value = `${mes}/${ano}`;
-}
-
-// --- INTEGRAÇÃO GOOGLE SHEETS ---
-function sincronizarComGoogleSheets(silencioso = false) {
-  window.processarDadosSheets = function(dados) {
-    if (Array.isArray(dados)) {
-      dados.forEach(item => {
-        let dataTxt = item.data || item.Data;
-        if (dataTxt) {
-          let dia, mes, ano;
-
-          if (typeof dataTxt === 'string' && dataTxt.includes('T')) {
-            dataTxt = dataTxt.split('T')[0];
-            [ano, mes, dia] = dataTxt.split('-');
-          } else if (typeof dataTxt === 'string' && dataTxt.includes('/')) {
-            const partes = dataTxt.split('/');
-            if (partes.length === 3) {
-              dia = partes[0].padStart(2, '0');
-              mes = partes[1].padStart(2, '0');
-              ano = partes[2];
-            }
-          }
-
-          if (dia && mes && ano) {
-            const chave = `ponto_${ano}-${mes}-${dia}`;
-            const registro = {
-              e: item.entrada || '',
-              si: item.saidaInt || '',
-              vi: item.voltaInt || '',
-              sf: item.saidaFin || ''
-            };
-            localStorage.setItem(chave, JSON.stringify(registro));
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book de Moldes</title>
+  <style>
+    * { box-sizing: border-box; font-family: sans-serif; }
+    body { margin: 0; padding: 12px; background-color: #f4f6f8; color: #333; }
+    h2 { margin-top: 0; text-align: center; color: #1a73e8; font-size: 20px; }
+    .card { background: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    
+    .tabs-container { display: flex; gap: 6px; margin-bottom: 12px; }
+    .tab-btn { flex: 1; padding: 8px 4px; border: 2px solid #1a73e8; background: white; color: #1a73e8; border-radius: 6px; font-weight: bold; cursor: pointer; text-align: center; font-size: 12px; }
+    .tab-btn.active { background: #1a73e8; color: white; }
+
+    input { width: 100%; padding: 10px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 15px; }
+    button { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 5px; font-size: 15px; font-weight: bold; cursor: pointer; }
+    button:active { background: #1557b0; }
+    .btn-reload { background: #34a853; margin-top: 5px; padding: 8px; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; white-space: nowrap; }
+    th { background-color: #1a73e8; color: white; }
+    .btn-edit { background: #f39c12; padding: 6px 10px; border-radius: 4px; border: none; color: white; font-size: 12px; font-weight: bold; cursor: pointer; }
+    .status { text-align: center; font-size: 13px; margin-bottom: 10px; font-weight: bold; color: #555; }
+    .badge-aba { background: #e8f0fe; color: #1a73e8; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block; }
+  </style>
+</head>
+<body>
+
+  <h2>📦 Book de Moldes</h2>
+
+  <div class="tabs-container">
+    <button id="tab-atualizada" class="tab-btn active" onclick="trocarAba('ATUALIZADA')">PLÁSTICO</button>
+    <button id="tab-qlx" class="tab-btn" onclick="trocarAba('Moldes QLX')">Moldes QLX</button>
+    <button id="tab-step" class="tab-btn" onclick="trocarAba('Transferências e Step Bay Step')">Step Bay Step</button>
+  </div>
+
+  <div id="status-msg" class="status">Iniciando...</div>
+  <button class="btn-reload" onclick="carregarTodosDados()">🔄 Recarregar Dados</button>
+
+  <!-- Formulário -->
+  <div class="card" id="card-formulario" style="margin-top: 10px;">
+    <h3 id="form-title" style="margin-top:0; font-size:16px;">Adicionar Registro</h3>
+    <input type="hidden" id="edit-codigo-orig" value="">
+    <input type="hidden" id="edit-chave-coluna" value="">
+    
+    <div id="form-campos"></div>
+    
+    <button onclick="salvarMolde()" id="btn-salvar">Salvar Registro</button>
+  </div>
+
+  <!-- Consulta Global -->
+  <div class="card">
+    <h3 style="margin-top:0; font-size:16px;">🔍 Consulta Geral (Busca em Todas as Abas)</h3>
+    <input type="text" id="input-busca" placeholder="Digite Código, Local ou Descrição..." onkeyup="filtrarGeral()">
+  </div>
+
+  <!-- Tabela -->
+  <div class="card" style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr id="tabela-cabecalho"></tr>
+      </thead>
+      <tbody id="tabela-corpo"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const BASE_API = "https://script.google.com/macros/s/AKfycbzyvhHmnIH2ZpOj3bo8doFLP9BoLif_9h4ZvpVv7yqun7vxBEFuHfyceJ4DvSvW-dJz/exec";
+    
+    let abaAtual = "ATUALIZADA";
+    let bancoCompleto = {
+      "ATUALIZADA": [],
+      "Moldes QLX": [],
+      "Transferências e Step Bay Step": []
+    };
+    let listaExibida = [];
+    let timerBusca = null;
+
+    function acharChaveEValor(item, palavrasChave, indicePadrao = -1) {
+      if (!item) return { chave: '', valor: '-' };
+      const keys = Object.keys(item);
+      
+      for (let k of keys) {
+        const keyLimpa = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        for (let p of palavrasChave) {
+          if (keyLimpa.includes(p)) {
+            const val = item[k] !== undefined && item[k] !== null && item[k] !== '' ? item[k] : '-';
+            return { chave: k, valor: val };
           }
         }
+      }
+      
+      if (indicePadrao >= 0 && keys[indicePadrao] !== undefined) {
+        return { chave: keys[indicePadrao], valor: item[keys[indicePadrao]] || '-' };
+      }
+
+      return { chave: keys[0] || '', valor: '-' };
+    }
+
+    function acharCampo(item, palavrasChave, indicePadrao = -1) {
+      return acharChaveEValor(item, palavrasChave, indicePadrao).valor;
+    }
+
+    function redefinirFormulario() {
+      const container = document.getElementById('form-campos');
+      container.innerHTML = '';
+
+      if (abaAtual === 'Transferências e Step Bay Step') {
+        container.innerHTML = `
+          <input type="text" id="input-col1" placeholder="Código Qualifix">
+          <input type="text" id="input-col2" placeholder="Código Arteb">
+          <input type="text" id="input-col3" placeholder="Descrição">
+          <input type="text" id="input-col4" placeholder="Mercado">
+          <input type="text" id="input-col5" placeholder="Maq.">
+          <input type="text" id="input-col6" placeholder="Troca de Versão">
+        `;
+      } else {
+        container.innerHTML = `
+          <input type="text" id="input-col1" placeholder="${abaAtual === 'Moldes QLX' ? 'Molde Nº (ex: 101)' : 'Local (ex: A1)'}">
+          <input type="text" id="input-col2" placeholder="Código">
+          <input type="text" id="input-col3" placeholder="Descrição">
+        `;
+      }
+    }
+
+    function trocarAba(novaAba) {
+      abaAtual = novaAba;
+
+      document.getElementById('tab-atualizada').classList.toggle('active', abaAtual === 'ATUALIZADA');
+      document.getElementById('tab-qlx').classList.toggle('active', abaAtual === 'Moldes QLX');
+      document.getElementById('tab-step').classList.toggle('active', abaAtual === 'Transferências e Step Bay Step');
+      
+      document.getElementById('input-busca').value = '';
+      redefinirFormulario();
+      limparFormulario();
+      renderTabelaAbaAtual();
+    }
+
+    async function carregarTodosDados() {
+      const statusDiv = document.getElementById('status-msg');
+      statusDiv.innerText = "Sincronizando com Google Sheets...";
+      statusDiv.style.color = "#1a73e8";
+
+      const abas = ["ATUALIZADA", "Moldes QLX", "Transferências e Step Bay Step"];
+
+      try {
+        for (let aba of abas) {
+          const resp = await fetch(`${BASE_API}?sheet=${encodeURIComponent(aba)}`, {
+            method: 'GET',
+            redirect: 'follow'
+          });
+
+          if (resp.ok) {
+            const texto = await resp.text();
+            bancoCompleto[aba] = JSON.parse(texto);
+          } else {
+            throw new Error("Erro na resposta");
+          }
+        }
+
+        renderTabelaAbaAtual();
+        const total = bancoCompleto["ATUALIZADA"].length + bancoCompleto["Moldes QLX"].length + bancoCompleto["Transferências e Step Bay Step"].length;
+        statusDiv.innerText = `Sincronizado! Total: ${total} itens.`;
+        statusDiv.style.color = "green";
+      } catch (error) {
+        console.error(error);
+        statusDiv.innerText = "Erro ao conectar com o Google Sheets. Verifique o Script e o ID da planilha.";
+        statusDiv.style.color = "red";
+      }
+    }
+
+    function renderTabelaAbaAtual() {
+      const dados = bancoCompleto[abaAtual] || [];
+      const dadosComAba = dados.map(item => ({ ...item, _abaOrigem: abaAtual }));
+      renderTabela(dadosComAba, false);
+    }
+
+    function renderTabela(dados, modoBuscaGlobal = false) {
+      listaExibida = dados;
+      const thead = document.getElementById('tabela-cabecalho');
+      const tbody = document.getElementById('tabela-corpo');
+      
+      tbody.innerHTML = '';
+
+      if (modoBuscaGlobal) {
+        thead.innerHTML = `
+          <th>Aba / Origem</th>
+          <th>Local / Molde</th>
+          <th>Código</th>
+          <th>Descrição</th>
+          <th>Ações</th>
+        `;
+      } else if (abaAtual === 'Transferências e Step Bay Step') {
+        thead.innerHTML = `
+          <th>Cód. Qualifix</th>
+          <th>Cód. Arteb</th>
+          <th>Descrição</th>
+          <th>Mercado</th>
+          <th>Maq.</th>
+          <th>Troca Versão</th>
+          <th>Ações</th>
+        `;
+      } else {
+        thead.innerHTML = `
+          <th>${abaAtual === 'Moldes QLX' ? 'Molde Nº' : 'Local'}</th>
+          <th>Código</th>
+          <th>Descrição</th>
+          <th>Ações</th>
+        `;
+      }
+
+      if (!dados || dados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">Nenhum registro encontrado.</td></tr>`;
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+
+      dados.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        const abaOrigem = item._abaOrigem || abaAtual;
+        const nomeAbaExibicao = abaOrigem === 'ATUALIZADA' ? 'PLÁSTICO' : abaOrigem;
+
+        if (modoBuscaGlobal) {
+          const local = acharCampo(item, ['local', 'molde', 'num', 'nº', 'qualifix'], 0);
+          const codigo = acharCampo(item, ['cod', 'codigo', 'arteb'], 1);
+          const desc = acharCampo(item, ['desc', 'descricao'], 2);
+
+          tr.innerHTML = `
+            <td><span class="badge-aba">${nomeAbaExibicao}</span></td>
+            <td><b>${local}</b></td>
+            <td>${codigo}</td>
+            <td>${desc}</td>
+            <td><button class="btn-edit" onclick="irParaItemEEditar('${abaOrigem}', ${index})">Ir / Editar</button></td>
+          `;
+        } else if (abaAtual === 'Transferências e Step Bay Step') {
+          const codQ = acharCampo(item, ['qualifix', 'col1'], 0);
+          const codA = acharCampo(item, ['arteb', 'col2'], 1);
+          const desc = acharCampo(item, ['desc', 'descricao'], 2);
+          const merc = acharCampo(item, ['mercado'], 3);
+          const maq = acharCampo(item, ['maq', 'maquina'], 4);
+          const troca = acharCampo(item, ['troca', 'versao'], 5);
+
+          tr.innerHTML = `
+            <td><b>${codQ}</b></td>
+            <td>${codA}</td>
+            <td>${desc}</td>
+            <td>${merc}</td>
+            <td>${maq}</td>
+            <td>${troca}</td>
+            <td><button class="btn-edit" onclick="prepararEdicao(${index})">Editar</button></td>
+          `;
+        } else {
+          const local = acharCampo(item, ['local', 'molde', 'num', 'nº'], 0);
+          const codigo = acharCampo(item, ['cod', 'codigo'], 1);
+          const desc = acharCampo(item, ['desc', 'descricao'], 2);
+
+          tr.innerHTML = `
+            <td><b>${local}</b></td>
+            <td>${codigo}</td>
+            <td>${desc}</td>
+            <td><button class="btn-edit" onclick="prepararEdicao(${index})">Editar</button></td>
+          `;
+        }
+        fragment.appendChild(tr);
       });
 
-      carregarPontosHoje();
-      carregarRelatorio();
-      if (!silencioso) alert("Sincronização com Google Sheets concluída!");
+      tbody.appendChild(fragment);
     }
-    // Remove o tag script dinâmico criado
-    const scriptTag = document.getElementById('jsonp_script');
-    if (scriptTag) scriptTag.remove();
-  };
 
-  const oldScript = document.getElementById('jsonp_script');
-  if (oldScript) oldScript.remove();
+    function filtrarGeral() {
+      clearTimeout(timerBusca);
 
-  const script = document.createElement('script');
-  script.id = 'jsonp_script';
-  script.src = `${GOOGLE_SHEETS_URL}?callback=processarDadosSheets&t=${new Date().getTime()}`;
-  
-  script.onerror = function() {
-    if (!silencioso) alert("Erro ao sincronizar com Google Sheets. Verifique a conexão e as permissões do Web App.");
-  };
+      timerBusca = setTimeout(() => {
+        const termo = document.getElementById('input-busca').value.trim().toLowerCase();
 
-  document.body.appendChild(script);
-}
-// --- NAVEGAÇÃO ENTRE ABAS ---
-function mudarAba(aba) {
-  const abaPonto = document.getElementById('tabPonto');
-  const abaRelatorio = document.getElementById('tabRelatorio');
-  const btnPonto = document.getElementById('btnNavPonto');
-  const btnRelatorio = document.getElementById('btnNavRelatorio');
+        if (!termo) {
+          renderTabelaAbaAtual();
+          return;
+        }
 
-  if (aba === 'ponto') {
-    abaPonto.classList.add('active');
-    abaRelatorio.classList.remove('active');
-    btnPonto.classList.add('active');
-    btnRelatorio.classList.remove('active');
-  } else if (aba === 'relatorio') {
-    abaRelatorio.classList.add('active');
-    abaPonto.classList.remove('active');
-    btnRelatorio.classList.add('active');
-    btnPonto.classList.remove('active');
-    carregarRelatorio();
-  }
-}
+        let resultados = [];
 
-function toggleMenu() {
-  document.getElementById('dropdownMenu').classList.toggle('show');
-}
+        Object.keys(bancoCompleto).forEach(nomeAba => {
+          const itensDaAba = bancoCompleto[nomeAba];
+          
+          itensDaAba.forEach(item => {
+            const textoCompleto = Object.values(item).join(' ').toLowerCase();
+            if (textoCompleto.includes(termo)) {
+              resultados.push({ ...item, _abaOrigem: nomeAba });
+            }
+          });
+        });
 
-window.onclick = function(event) {
-  if (!event.target.matches('.menu-btn')) {
-    const dropdown = document.getElementById('dropdownMenu');
-    if (dropdown && dropdown.classList.contains('show')) {
-      dropdown.classList.remove('show');
+        renderTabela(resultados, true);
+      }, 250);
     }
-  }
-};
 
-// --- GEOLOCALIZAÇÃO (GPS) ---
-function iniciarMonitoramentoGPS() {
-  if ("geolocation" in navigator) {
-    navigator.geolocation.watchPosition(
-      posicaoSucesso,
-      posicaoErro,
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
-  } else {
-    dentroDoPerimetro = true;
-    document.getElementById('statusPerimetro').className = "status-location inside";
-    document.getElementById('statusPerimetro').innerHTML = "📍 GPS não suportado (Liberado)";
-  }
-}
+    function irParaItemEEditar(abaDestino, indexNaListaExibida) {
+      trocarAba(abaDestino);
+      const item = listaExibida[indexNaListaExibida];
+      if (item) {
+        prepararEdicaoDireta(item);
+      }
+    }
 
-function posicaoSucesso(pos) {
-  const latUser = pos.coords.latitude;
-  const lngUser = pos.coords.longitude;
+    function prepararEdicaoDireta(item) {
+      if (!item) return;
 
-  if (!config.lat || !config.lng) {
-    document.getElementById('statusPerimetro').className = "status-location inside";
-    document.getElementById('statusPerimetro').innerHTML = "📍 GPS OK (Local não configurado)";
-    dentroDoPerimetro = true;
-    return;
-  }
+      if (abaAtual === 'Transferências e Step Bay Step') {
+        const campoQ = acharChaveEValor(item, ['qualifix'], 0);
+        document.getElementById('input-col1').value = campoQ.valor !== '-' ? campoQ.valor : '';
+        document.getElementById('input-col2').value = acharCampo(item, ['arteb'], 1);
+        document.getElementById('input-col3').value = acharCampo(item, ['desc'], 2);
+        document.getElementById('input-col4').value = acharCampo(item, ['mercado'], 3);
+        document.getElementById('input-col5').value = acharCampo(item, ['maq'], 4);
+        document.getElementById('input-col6').value = acharCampo(item, ['troca'], 5);
+        
+        document.getElementById('edit-codigo-orig').value = campoQ.valor;
+        document.getElementById('edit-chave-coluna').value = campoQ.chave;
+      } else {
+        const campoCod = acharChaveEValor(item, ['cod', 'codigo'], 1);
+        const campoLocal = acharChaveEValor(item, ['local', 'molde', 'num'], 0);
 
-  const dist = calcularDistanciaMetros(latUser, lngUser, config.lat, config.lng);
+        document.getElementById('input-col1').value = campoLocal.valor !== '-' ? campoLocal.valor : '';
+        document.getElementById('input-col2').value = campoCod.valor !== '-' ? campoCod.valor : '';
+        document.getElementById('input-col3').value = acharCampo(item, ['desc'], 2);
+        
+        if (campoCod.valor !== '-') {
+          document.getElementById('edit-codigo-orig').value = campoCod.valor;
+          document.getElementById('edit-chave-coluna').value = campoCod.chave;
+        } else {
+          document.getElementById('edit-codigo-orig').value = campoLocal.valor;
+          document.getElementById('edit-chave-coluna').value = campoLocal.chave;
+        }
+      }
 
-  if (dist <= config.raio) {
-    dentroDoPerimetro = true;
-    document.getElementById('statusPerimetro').className = "status-location inside";
-    document.getElementById('statusPerimetro').innerHTML = `✔️ Dentro do Perímetro (${Math.round(dist)}m)`;
-  } else {
-    dentroDoPerimetro = false;
-    document.getElementById('statusPerimetro').className = "status-location";
-    document.getElementById('statusPerimetro').innerHTML = `❌ Fora do Perímetro (${Math.round(dist)}m)`;
-  }
-}
+      document.getElementById('form-title').innerText = "Editar Registro";
+      document.getElementById('btn-salvar').innerText = "Atualizar Registro";
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-function posicaoErro(err) {
-  console.warn("Erro GPS:", err);
-  if (!config.lat || !config.lng) {
-    dentroDoPerimetro = true;
-    document.getElementById('statusPerimetro').className = "status-location inside";
-    document.getElementById('statusPerimetro').innerHTML = "⚠️ Sem GPS (Empresa sem coordenadas configuradas)";
-  } else {
-    dentroDoPerimetro = false;
-    document.getElementById('statusPerimetro').className = "status-location";
-    document.getElementById('statusPerimetro').innerHTML = "❌ Erro ao obter GPS (Ative a Localização)";
-  }
-}
+    function prepararEdicao(index) {
+      prepararEdicaoDireta(listaExibida[index]);
+    }
 
-function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
-  const R = 6371e3;
-  const φ1 = lat1 * Math.PI / 180;
-  const φ2 = lat2 * Math.PI / 180;
-  const Δφ = (lat2 - lat1) * Math.PI / 180;
-  const Δλ = (lon2 - lon1) * Math.PI / 180;
+    async function salvarMolde() {
+      const col1 = document.getElementById('input-col1').value.trim();
+      const col2 = document.getElementById('input-col2').value.trim();
+      const col3 = document.getElementById('input-col3').value.trim();
+      const codigoOrig = document.getElementById('edit-codigo-orig').value;
+      const chaveColuna = document.getElementById('edit-chave-coluna').value;
 
-  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-            Math.cos(φ1) * Math.cos(φ2) *
-            Math.sin(Δλ/2) * Math.sin(Δλ/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      if (!col1 && !col2) {
+        alert('Preencha os campos principais!');
+        return;
+      }
 
-  return R * c;
-}
+      const statusDiv = document.getElementById('status-msg');
+      statusDiv.innerText = "Enviando dados para o Google Sheets...";
+      statusDiv.style.color = "blue";
 
-// --- BATER PONTO AUTOMÁTICO ---
-function baterPontoAutomatico() {
-  if (!dentroDoPerimetro) {
-    alert("Você precisa estar dentro do raio permitido ou ativar a localização do dispositivo.");
-    return;
-  }
+      let payloadData = {};
+      const listaDaAba = bancoCompleto[abaAtual] || [];
+      const primeiroItem = listaDaAba[0] || {};
+      const keys = Object.keys(primeiroItem);
 
-  const chaveHoje = obterChaveHoje();
-  let pontoHoje = JSON.parse(localStorage.getItem(chaveHoje)) || { e: '', si: '', vi: '', sf: '' };
+      if (abaAtual === 'Transferências e Step Bay Step') {
+        payloadData[keys[0] || "CÓDIGO QUALIFIX"] = col1;
+        payloadData[keys[1] || "CÓDIGO ARTEB"] = col2;
+        payloadData[keys[2] || "DESCRIÇÃO"] = col3;
+        payloadData[keys[3] || "MERCADO"] = document.getElementById('input-col4').value.trim();
+        payloadData[keys[4] || "Maq."] = document.getElementById('input-col5').value.trim();
+        payloadData[keys[5] || "TROCA DE VERSÃO"] = document.getElementById('input-col6').value.trim();
+      } else if (abaAtual === 'Moldes QLX') {
+        payloadData[keys[0] || "molde número"] = col1;
+        payloadData[keys[1] || "código"] = col2;
+        payloadData[keys[2] || "descrição"] = col3;
+      } else {
+        payloadData[keys[0] || "LOCAL"] = col1;
+        payloadData[keys[1] || "CÓDIGO"] = col2;
+        payloadData[keys[2] || "DESCRIÇÃO"] = col3;
+      }
 
-  const agora = new Date();
-  const horaFormatada = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
+      const bodyData = {
+        sheet: abaAtual,
+        action: codigoOrig ? "UPDATE" : "CREATE",
+        colunaBusca: chaveColuna || keys[0],
+        valorBusca: codigoOrig,
+        data: payloadData
+      };
 
-  if (!pontoHoje.e) {
-    pontoHoje.e = horaFormatada;
-  } else if (!pontoHoje.si) {
-    pontoHoje.si = horaFormatada;
-  } else if (!pontoHoje.vi) {
-    pontoHoje.vi = horaFormatada;
-  } else if (!pontoHoje.sf) {
-    pontoHoje.sf = horaFormatada;
-  } else {
-    alert("Todas as 4 marcações de hoje já foram realizadas!");
-    return;
-  }
-
-  localStorage.setItem(chaveHoje, JSON.stringify(pontoHoje));
-  carregarPontosHoje();
-}
-
-function carregarPontosHoje() {
-  const chaveHoje = obterChaveHoje();
-  const pontoHoje = JSON.parse(localStorage.getItem(chaveHoje)) || { e: '', si: '', vi: '', sf: '' };
-
-  document.getElementById('dispE').innerText = pontoHoje.e || '--:--';
-  document.getElementById('dispSI').innerText = pontoHoje.si || '--:--';
-  document.getElementById('dispVI').innerText = pontoHoje.vi || '--:--';
-  document.getElementById('dispSF').innerText = pontoHoje.sf || '--:--';
-
-  let proximo = "Entrada";
-  if (pontoHoje.e && !pontoHoje.si) proximo = "Saída Intervalo";
-  else if (pontoHoje.si && !pontoHoje.vi) proximo = "Volta Intervalo";
-  else if (pontoHoje.vi && !pontoHoje.sf) proximo = "Saída Final";
-  else if (pontoHoje.sf) proximo = "Jornada Concluída";
-
-  document.getElementById('lblProximoReg').innerText = proximo;
-}
-
-function obterChaveHoje() {
-  const d = new Date();
-  return `ponto_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-// --- RELATÓRIO E CÁLCULO DE HORAS ---
-function carregarRelatorio() {
-  const filtro = document.getElementById('filtroMesAno').value.trim();
-  const apenasFaltas = document.getElementById('chkFaltas').checked;
-  const listaContainer = document.getElementById('listaCardsRelatorio');
-  listaContainer.innerHTML = '';
-
-  let totalMinutosExtra = 0;
-
-  Object.keys(localStorage).sort().reverse().forEach(key => {
-    if (key.startsWith('ponto_')) {
-      const dataIso = key.replace('ponto_', '');
-      const partes = dataIso.split('-');
-      if (partes.length !== 3) return;
-
-      const [ano, mes, dia] = partes;
-      const dataFmt = `${dia}/${mes}/${ano}`;
-      const mesAnoFmt = `${mes}/${ano}`;
-
-      if (filtro && mesAnoFmt !== filtro) return;
-
-      let p = { e: '', si: '', vi: '', sf: '' };
       try {
-        p = JSON.parse(localStorage.getItem(key));
-      } catch(e) { return; }
+        await fetch(BASE_API, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bodyData)
+        });
 
-      const incompleto = !p.e || !p.si || !p.vi || !p.sf;
-
-      if (apenasFaltas && !incompleto) return;
-
-      const minTrabalhados = calcularMinutosTrabalhados(p);
-      const minJornada = obterMinutosJornadaEsperada(new Date(ano, mes - 1, dia));
-      const minExtra = (p.e && p.sf) ? (minTrabalhados - minJornada) : 0;
-      
-      totalMinutosExtra += minExtra;
-
-      const card = document.createElement('div');
-      card.className = 'day-card';
-      card.onclick = () => abrirModalEdicao(key, dataFmt, p);
-
-      card.innerHTML = `
-        <span class="edit-hint">✏️ Editar</span>
-        <div class="day-row"><strong>Data:</strong> ${dataFmt}</div>
-        <div class="day-row"><strong>Ent:</strong> ${p.e || '--:--'} | <strong>S.Int:</strong> ${p.si || '--:--'} | <strong>V.Int:</strong> ${p.vi || '--:--'} | <strong>Saí:</strong> ${p.sf || '--:--'}</div>
-        <div class="day-row"><strong>Trabalhado:</strong> ${formatarMinutosHora(minTrabalhados)} | <strong>Extra:</strong> ${formatarMinutosHora(minExtra)}</div>
-      `;
-      listaContainer.appendChild(card);
+        statusDiv.innerText = "Salvo com sucesso!";
+        statusDiv.style.color = "green";
+        limparFormulario();
+        setTimeout(() => carregarTodosDados(), 1500);
+      } catch (error) {
+        console.error(error);
+        alert("Erro ao salvar os dados.");
+        statusDiv.innerText = "Falha ao salvar.";
+        statusDiv.style.color = "red";
+      }
     }
-  });
 
-  document.getElementById('totalHorasExtra').innerText = formatarMinutosHora(totalMinutosExtra);
-  const valorExtraTotal = (totalMinutosExtra / 60) * (config.valorHora || 0);
-  document.getElementById('totalValorExtra').innerText = `R$ ${valorExtraTotal.toFixed(2)}`;
-}
-
-function calcularMinutosTrabalhados(p) {
-  if (!p.e || !p.sf) return 0;
-  let t1 = horaParaMinutos(p.sf) - horaParaMinutos(p.e);
-  let tIntervalo = 0;
-  if (p.si && p.vi) {
-    tIntervalo = horaParaMinutos(p.vi) - horaParaMinutos(p.si);
-  }
-  return Math.max(0, t1 - tIntervalo);
-}
-
-function obterMinutosJornadaEsperada(dataObj) {
-  const diaSemana = dataObj.getDay();
-  if (diaSemana === 0) return 0;
-
-  if (diaSemana === 6) {
-    if (config.jornadaSabado.ativo === 'sim') {
-      const e = horaParaMinutos(config.jornadaSabado.entrada);
-      const s = horaParaMinutos(config.jornadaSabado.saida);
-      const i = horaParaMinutos(config.jornadaSabado.intervalo);
-      return (s - e) - i;
+    function limparFormulario() {
+      document.querySelectorAll('#form-campos input').forEach(i => i.value = '');
+      document.getElementById('edit-codigo-orig').value = '';
+      document.getElementById('edit-chave-coluna').value = '';
+      document.getElementById('form-title').innerText = "Adicionar Registro";
+      document.getElementById('btn-salvar').innerText = "Salvar Registro";
     }
-    return 0;
-  }
 
-  const e = horaParaMinutos(config.jornadaSemana.entrada);
-  const s = horaParaMinutos(config.jornadaSemana.saida);
-  const i = horaParaMinutos(config.jornadaSemana.intervalo);
-  return (s - e) - i;
-}
-
-function horaParaMinutos(h) {
-  if (!h || !h.includes(':')) return 0;
-  const [hrs, mins] = h.split(':').map(Number);
-  return (hrs * 60) + mins;
-}
-
-function formatarMinutosHora(minutosTotais) {
-  const sinal = minutosTotais < 0 ? "-" : "";
-  const absMin = Math.abs(minutosTotais);
-  const hrs = Math.floor(absMin / 60);
-  const mins = absMin % 60;
-  return `${sinal}${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
-}
-
-// --- MODAIS E CONFIGURAÇÕES ---
-function abrirModalEdicao(chave, dataFmt, p) {
-  dataEditando = chave;
-  document.getElementById('modalTitulo').innerText = `Editar: ${dataFmt}`;
-  document.getElementById('editEntrada').value = p.e || '';
-  document.getElementById('editSaidaInt').value = p.si || '';
-  document.getElementById('editVoltaInt').value = p.vi || '';
-  document.getElementById('editSaidaFin').value = p.sf || '';
-  document.getElementById('modalEdicao').classList.add('active');
-}
-
-function fecharModal() {
-  document.getElementById('modalEdicao').classList.remove('active');
-}
-
-function salvarModal() {
-  if (!dataEditando) return;
-  const p = {
-    e: document.getElementById('editEntrada').value.trim(),
-    si: document.getElementById('editSaidaInt').value.trim(),
-    vi: document.getElementById('editVoltaInt').value.trim(),
-    sf: document.getElementById('editSaidaFin').value.trim()
-  };
-  localStorage.setItem(dataEditando, JSON.stringify(p));
-  fecharModal();
-  carregarPontosHoje();
-  carregarRelatorio();
-}
-
-function deletarRegistro() {
-  if (dataEditando && confirm("Tem certeza que deseja excluir este registro?")) {
-    localStorage.removeItem(dataEditando);
-    fecharModal();
-    carregarPontosHoje();
-    carregarRelatorio();
-  }
-}
-
-// Ponto Manual
-function abrirModalManual() {
-  document.getElementById('modalManual').classList.add('active');
-}
-function fecharModalManual() {
-  document.getElementById('modalManual').classList.remove('active');
-}
-function salvarPontoManual() {
-  const dataTxt = document.getElementById('manData').value.trim();
-  if (!dataTxt || dataTxt.length !== 10) {
-    alert("Digite a data no formato DD/MM/AAAA");
-    return;
-  }
-  const [dia, mes, ano] = dataTxt.split('/');
-  const chave = `ponto_${ano}-${mes}-${dia}`;
-  const p = {
-    e: document.getElementById('manEntrada').value.trim(),
-    si: document.getElementById('manSaidaInt').value.trim(),
-    vi: document.getElementById('manVoltaInt').value.trim(),
-    sf: document.getElementById('manSaidaFin').value.trim()
-  };
-  localStorage.setItem(chave, JSON.stringify(p));
-  fecharModalManual();
-  carregarPontosHoje();
-  carregarRelatorio();
-}
-
-// Config Salário
-function abrirModalSalario() {
-  document.getElementById('cfgValorHora').value = config.valorHora || '';
-  document.getElementById('modalSalario').classList.add('active');
-}
-function fecharModalSalario() {
-  document.getElementById('modalSalario').classList.remove('active');
-}
-function salvarSalario() {
-  config.valorHora = parseFloat(document.getElementById('cfgValorHora').value) || 0;
-  salvarConfiguracoes();
-  fecharModalSalario();
-  carregarRelatorio();
-}
-
-// Config Jornada
-function abrirModalJornada() {
-  document.getElementById('cfgEntradaSemana').value = config.jornadaSemana.entrada;
-  document.getElementById('cfgIntervaloSemana').value = config.jornadaSemana.intervalo;
-  document.getElementById('cfgSaidaSemana').value = config.jornadaSemana.saida;
-
-  document.getElementById('cfgSabadoAlternado').value = config.jornadaSabado.ativo;
-  document.getElementById('cfgEntradaSabado').value = config.jornadaSabado.entrada;
-  document.getElementById('cfgIntervaloSabado').value = config.jornadaSabado.intervalo;
-  document.getElementById('cfgSaidaSabado').value = config.jornadaSabado.saida;
-
-  toggleSabadoCampos();
-  document.getElementById('modalJornada').classList.add('active');
-}
-function fecharModalJornada() {
-  document.getElementById('modalJornada').classList.remove('active');
-}
-function toggleSabadoCampos() {
-  const val = document.getElementById('cfgSabadoAlternado').value;
-  document.getElementById('containerSabadoCampos').style.display = (val === 'sim') ? 'block' : 'none';
-}
-function salvarJornada() {
-  config.jornadaSemana = {
-    entrada: document.getElementById('cfgEntradaSemana').value,
-    intervalo: document.getElementById('cfgIntervaloSemana').value,
-    saida: document.getElementById('cfgSaidaSemana').value
-  };
-  config.jornadaSabado = {
-    ativo: document.getElementById('cfgSabadoAlternado').value,
-    entrada: document.getElementById('cfgEntradaSabado').value,
-    intervalo: document.getElementById('cfgIntervaloSabado').value,
-    saida: document.getElementById('cfgSaidaSabado').value
-  };
-  salvarConfiguracoes();
-  fecharModalJornada();
-  carregarRelatorio();
-}
-
-// Config Local
-function abrirConfigLocal() {
-  document.getElementById('cfgLat').value = config.lat || '';
-  document.getElementById('cfgLng').value = config.lng || '';
-  document.getElementById('cfgRaio').value = config.raio || 200;
-  document.getElementById('modalLocal').classList.add('active');
-}
-function fecharModalLocal() {
-  document.getElementById('modalLocal').classList.remove('active');
-}
-function usarGpsAtual() {
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      document.getElementById('cfgLat').value = pos.coords.latitude;
-      document.getElementById('cfgLng').value = pos.coords.longitude;
-      alert("Localização obtida com sucesso!");
-    }, (err) => alert("Erro ao obter GPS atual: " + err.message));
-  } else {
-    alert("Geolocalização não suportada.");
-  }
-}
-function salvarConfigLocal() {
-  config.lat = parseFloat(document.getElementById('cfgLat').value) || null;
-  config.lng = parseFloat(document.getElementById('cfgLng').value) || null;
-  config.raio = parseInt(document.getElementById('cfgRaio').value) || 200;
-  salvarConfiguracoes();
-  fecharModalLocal();
-  iniciarMonitoramentoGPS();
-}
-
-// --- UTILS & BACKUP ---
-function fazerBackup() {
-  const dados = {};
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    dados[key] = localStorage.getItem(key);
-  }
-  const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `ponto_facil_backup_${new Date().toISOString().slice(0, 10)}.json`;
-  a.click();
-}
-
-function importarBackup() {
-  document.getElementById('inputImportarJson').click();
-}
-
-function processarArquivoImportado(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    try {
-      const dados = JSON.parse(evt.target.result);
-      Object.keys(dados).forEach(key => localStorage.setItem(key, dados[key]));
-      alert("Backup importado com sucesso!");
-      location.reload();
-    } catch (err) {
-      alert("Erro ao importar JSON. Arquivo inválido.");
-    }
-  };
-  reader.readAsText(file);
-}
-
-function exportarCSV() {
-  let csv = "Data,Entrada,Saida Intervalo,Volta Intervalo,Saida Final\n";
-  Object.keys(localStorage).sort().forEach(key => {
-    if (key.startsWith('ponto_')) {
-      const dataIso = key.replace('ponto_', '');
-      const p = JSON.parse(localStorage.getItem(key));
-      csv += `${dataIso},${p.e || ''},${p.si || ''},${p.vi || ''},${p.sf || ''}\n`;
-    }
-  });
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `relatorio_ponto_${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
-}
-
-function recalcularHistorico() {
-  carregarRelatorio();
-  alert("Histórico recalculado!");
-}
-
-function atualizarDoGithub() {
-  location.reload(true);
-}
-
-function sincronizarTudo() {
-  sincronizarComGoogleSheets(false);
-}
-
-function sairApp() {
-  if (confirm("Deseja fechar o aplicativo?")) {
-    window.close();
-  }
-}
-</script>
+    redefinirFormulario();
+    carregarTodosDados();
+  </script>
 </body>
 </html>
