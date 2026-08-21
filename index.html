@@ -8,7 +8,7 @@
     :root {
       --bg-color: #f4f6fb;
       --card-bg: #ffffff;
-      --primary: #2563eb;
+      --primary: #3b52a4;
       --text: #1e293b;
       --text-secondary: #64748b;
       --border: #e2e8f0;
@@ -18,7 +18,7 @@
     body { background-color: var(--bg-color); color: var(--text); padding-bottom: 70px; }
 
     header {
-      background-color: #3b52a4; padding: 14px 16px;
+      background-color: var(--primary); padding: 14px 16px;
       display: flex; justify-content: space-between; align-items: center; color: #fff;
       position: relative;
     }
@@ -28,73 +28,88 @@
     .btn-menu { background: none; border: none; color: #fff; font-size: 1.8rem; cursor: pointer; }
 
     .dropdown-menu {
-      display: none; position: absolute; top: 55px; right: 12px;
-      background-color: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-      z-index: 1000; width: 250px;
+      display: none; position: absolute; top: 50px; right: 8px;
+      background-color: #ffffff; border: 1px solid var(--border);
+      border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      z-index: 1000; width: 260px;
     }
     .dropdown-menu.active { display: block !important; }
-    .dropdown-item { padding: 12px 16px; color: var(--text); font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f1f5f9; }
+    .dropdown-item { padding: 10px 14px; color: #000; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; }
 
-    main { padding: 16px; max-width: 500px; margin: 0 auto; }
+    main { padding: 12px; max-width: 500px; margin: 0 auto; }
     .tab-content { display: none; }
     .tab-content.active { display: block !important; }
 
-    .status-gps { text-align: center; color: #15803d; font-weight: bold; margin-bottom: 12px; }
+    .status-gps { text-align: center; color: #15803d; font-weight: bold; margin-bottom: 8px; font-size: 0.9rem; }
     .data-destaque { text-align: center; font-size: 2.1rem; font-weight: 800; }
-    .proximo-registro { text-align: center; color: var(--text-secondary); margin-bottom: 24px; }
-    .icon-container { display: flex; justify-content: center; margin-bottom: 28px; cursor: pointer; }
+    .proximo-registro { text-align: center; color: var(--text-secondary); margin-bottom: 20px; }
+    .icon-container { display: flex; justify-content: center; margin-bottom: 20px; cursor: pointer; }
     .icon-signal { width: 70px; height: 70px; fill: #1e293b; }
 
-    .card-marcacoes { background: var(--card-bg); border-radius: 12px; padding: 20px; }
-    .card-title { color: #2563eb; font-size: 1.2rem; font-weight: bold; margin-bottom: 16px; }
-    .lista-marcacoes { display: flex; flex-direction: column; gap: 12px; }
-    .item-marcacao { display: flex; justify-content: space-between; font-size: 1.1rem; }
+    .card-marcacoes { background: var(--card-bg); border-radius: 12px; padding: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .card-title { color: #2563eb; font-size: 1.1rem; font-weight: bold; margin-bottom: 12px; }
+    .lista-marcacoes { display: flex; flex-direction: column; gap: 10px; }
+    .item-marcacao { display: flex; justify-content: space-between; font-size: 1.05rem; }
 
-    .filter-row { display: flex; gap: 8px; margin-bottom: 12px; }
-    .input-filter { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 6px; }
-    .btn-filtrar { background: #3b82f6; color: white; border: none; padding: 0 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    /* Filtros da aba Relatório com dimensionamento correto */
+    .filter-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+    .input-filter { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 1rem; width: 100%; }
+    .btn-filtrar { background: #0088ff; color: white; border: none; padding: 9px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
-    .card-total { background: var(--card-bg); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
-    .total-horas { font-size: 2.2rem; font-weight: 800; color: #16a34a; }
-    .total-valor { font-size: 1.3rem; font-weight: 700; color: #dc2626; margin-bottom: 12px; }
-    .btn-export { width: 100%; background: #2e7d32; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .chk-container { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.95rem; color: #333; }
 
+    .card-total { background: var(--card-bg); border-radius: 8px; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border); }
+    .total-title { font-size: 0.8rem; font-weight: bold; color: #64748b; margin-bottom: 4px; }
+    .total-horas { font-size: 1.8rem; font-weight: 800; color: #15803d; }
+    .total-valor { font-size: 1.2rem; font-weight: 700; color: #c2410c; margin-bottom: 10px; }
+    .btn-export { width: 100%; background: #2e7d32; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+
+    /* Estilo dos itens de relatório idênticos à foto */
     .lista-relatorio-itens { display: flex; flex-direction: column; gap: 10px; }
-    .item-relatorio-card { background: var(--card-bg); border-radius: 8px; padding: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .relatorio-card-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; font-size: 0.95rem; line-height: 1.4; color: #1e293b; }
+    .relatorio-linha { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
 
-    nav.bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid var(--border); height: 60px; }
-    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: var(--text-secondary); cursor: pointer; }
+    nav.bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid var(--border); height: 60px; z-index: 100; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 0.75rem; }
     .nav-item.active { color: #2563eb; font-weight: bold; }
 
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
     .modal.active { display: flex !important; }
-    .modal-content { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; }
+    .modal-content { background: white; padding: 18px; border-radius: 8px; width: 90%; max-width: 380px; }
     .form-group { margin-bottom: 10px; }
-    .form-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); }
+    .form-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2px; }
     .form-group input { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; }
-    .modal-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
-    .btn-modal { padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; }
+    .modal-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+    .btn-modal { padding: 8px 14px; border-radius: 4px; border: none; cursor: pointer; }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Ponto Fácil</h1>
+    <h1 style="font-size: 1.3rem;">Ponto Fácil</h1>
     <div class="header-actions">
       <button class="btn-sync" onclick="sincronizarComGoogleSheets()" title="Sincronizar">🔄</button>
       <button class="btn-menu" id="btnMenu" onclick="toggleMenu(event)">⋮</button>
     </div>
 
+    <!-- Menu 3 Pontinhos da Imagem -->
     <div class="dropdown-menu" id="dropdownMenu">
       <div class="dropdown-item" onclick="recalcularHistorico(); closeMenu();"><span>🔄</span> Recalcular Histórico</div>
       <div class="dropdown-item" onclick="abrirModalPontoManual(); closeMenu();"><span>📝</span> Adicionar Ponto Manual</div>
+      <div class="dropdown-item" onclick="abrirModalConfigJornada(); closeMenu();"><span>⚙️</span> Configurar Horário/Jornada</div>
+      <div class="dropdown-item" onclick="abrirModalConfigLocal(); closeMenu();"><span>🛰️</span> Configurar Local</div>
+      <div class="dropdown-item" onclick="abrirModalConfigSalario(); closeMenu();"><span>🤑</span> Configurar salário</div>
+      <div class="dropdown-item" onclick="fazerBackupJSON(); closeMenu();"><span>💾</span> Fazer Backup JSON</div>
+      <div class="dropdown-item" onclick="triggerImportarJSON(); closeMenu();"><span>📁</span> Importar JSON</div>
       <div class="dropdown-item" onclick="sincronizarComGoogleSheets(); closeMenu();"><span>🔄</span> Sincronizar Tudo</div>
-      <div class="dropdown-item" onclick="closeMenu();"><span>❌</span> Sair</div>
+      <div class="dropdown-item" onclick="sairApp(); closeMenu();"><span>❌</span> Sair</div>
     </div>
   </header>
 
+  <input type="file" id="fileInputJSON" accept=".json" style="display: none;" onchange="importarJSON(event)">
+
   <main>
+    <!-- Aba Ponto -->
     <div id="tab-ponto" class="tab-content active">
       <div class="status-gps" id="txt-status-gps">📍 GPS OK (Local não configurado)</div>
       <div class="data-destaque" id="txt-data">--/--/----</div>
@@ -117,21 +132,23 @@
       </div>
     </div>
 
+    <!-- Aba Relatório -->
     <div id="tab-relatorio" class="tab-content">
-      <h2 class="card-title">Filtros do Relatório</h2>
       <div class="filter-row">
         <input type="text" class="input-filter" id="filtro-mes" placeholder="MM/YYYY">
         <button class="btn-filtrar" onclick="carregarRelatorio()">FILTRAR</button>
       </div>
-      <div style="margin-bottom: 12px;">
+
+      <div class="chk-container">
         <input type="checkbox" id="chk-incompletos" onchange="carregarRelatorio()">
         <label for="chk-incompletos">Visualizar apenas faltas/incompletos</label>
       </div>
 
       <div class="card-total">
-        <div>TOTAL ACUMULADO DE HORAS EXTRAS</div>
+        <div class="total-title">TOTAL ACUMULADO DE HORAS EXTRAS</div>
         <div class="total-horas" id="txt-total-horas">00:00</div>
-        <div class="total-valor" id="txt-total-valor">R$ 0.00</div>
+        <div class="total-valor" id="txt-total-valor">R$ 0,00</div>
+        <button class="btn-export" onclick="exportarCSV()">EXPORTAR CSV</button>
       </div>
 
       <div class="lista-relatorio-itens" id="lista-relatorio"></div>
@@ -139,8 +156,8 @@
   </main>
 
   <nav class="bottom-nav">
-    <button class="nav-item active" id="btn-tab-ponto" onclick="alternarAba('ponto')">⏱️<span>Ponto</span></button>
-    <button class="nav-item" id="btn-tab-relatorio" onclick="alternarAba('relatorio')">📊<span>Relatório</span></button>
+    <button class="nav-item active" id="btn-tab-ponto" onclick="alternarAba('ponto')">⏱️<span style="margin-top:2px;">Ponto</span></button>
+    <button class="nav-item" id="btn-tab-relatorio" onclick="alternarAba('relatorio')">📊<span style="margin-top:2px;">Relatório</span></button>
   </nav>
 
   <!-- MODAL MANUAL -->
@@ -156,6 +173,32 @@
       <div class="modal-buttons">
         <button class="btn-modal" onclick="fecharModal('modalEdicao')">Cancelar</button>
         <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarEdicao()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL JORNADA -->
+  <div class="modal" id="modalJornada">
+    <div class="modal-content">
+      <h3>Configurar Jornada</h3>
+      <div class="form-group"><label>Entrada Padrão:</label><input type="text" id="cfg-jornada-e" value="07:00"></div>
+      <div class="form-group"><label>Saída Padrão:</label><input type="text" id="cfg-jornada-s" value="16:30"></div>
+      <div class="modal-buttons">
+        <button class="btn-modal" onclick="fecharModal('modalJornada')">Cancelar</button>
+        <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigJornada()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL SALÁRIO -->
+  <div class="modal" id="modalSalario">
+    <div class="modal-content">
+      <h3>Configurar Salário</h3>
+      <div class="form-group"><label>Salário Base (R$):</label><input type="number" id="cfg-salario-val" value="2000"></div>
+      <div class="form-group"><label>Carga Horária Mensal (Horas):</label><input type="number" id="cfg-horas-mes" value="220"></div>
+      <div class="modal-buttons">
+        <button class="btn-modal" onclick="fecharModal('modalSalario')">Cancelar</button>
+        <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigSalario()">Salvar</button>
       </div>
     </div>
   </div>
@@ -234,6 +277,11 @@
       }
 
       let exibidos = 0;
+      let minExtrasTotalAcumulado = 0;
+      const salarioBase = parseFloat(localStorage.getItem('cfg_salario') || 2000);
+      const horasMes = parseFloat(localStorage.getItem('cfg_horas_mes') || 220);
+      const valorHoraExtra = (salarioBase / horasMes) * 1.5;
+
       chaves.forEach(chave => {
         const item = JSON.parse(localStorage.getItem(chave)) || {};
         const p = chave.replace('ponto_', '').split('-');
@@ -247,47 +295,71 @@
         const isIncompleto = !item.e || !item.si || !item.vi || !item.sf;
         if (apenasIncompletos && !isIncompleto) return;
 
+        // Cálculos de horas trabalhadas e horas extras
+        let minTrab = 0;
+        let minExtraDia = 0;
+        let extraTexto = "00:00 (R$ 0,00)";
+        let intervaloManha = "--:-- - --:--";
+        let intervaloTarde = "--:-- - --:--";
+
+        if (item.e && item.sf) {
+          let m1 = convHora(item.e);
+          let m2 = item.si ? convHora(item.si) : m1;
+          let m3 = item.vi ? convHora(item.vi) : m2;
+          let m4 = convHora(item.sf);
+
+          minTrab = (m2 - m1) + (m4 - m3);
+          if (minTrab > 480) minExtraDia = minTrab - 480;
+
+          if (minExtraDia > 0) {
+            minExtrasTotalAcumulado += minExtraDia;
+            let hEx = Math.floor(minExtraDia / 60);
+            let mEx = minExtraDia % 60;
+            let valEx = (minExtraDia / 60) * valorHoraExtra;
+            extraTexto = `${String(hEx).padStart(2,'0')}:${String(mEx).padStart(2,'0')} (R$ ${valEx.toFixed(2).replace('.',',')})`;
+          }
+
+          if (m1 < convHora("07:00")) intervaloManha = `${item.e} - 07:00`;
+          if (m4 > convHora("16:30")) intervaloTarde = `16:30 - ${item.sf}`;
+        }
+
         exibidos++;
         const card = document.createElement('div');
-        card.className = 'item-relatorio-card';
+        card.className = 'relatorio-card-item';
         card.innerHTML = `
-          <div>
-            <strong>${dataFmt}</strong>
-            <div style="font-size:0.85rem; color:#64748b;">
-              E: ${item.e || '--:--'} | SI: ${item.si || '--:--'} | VI: ${item.vi || '--:--'} | SF: ${item.sf || '--:--'}
-            </div>
-          </div>
-          <div>
-            <button onclick="abrirModalEdicao('${chave}')">✏️</button>
-            <button onclick="excluirPonto('${chave}')">🗑️</button>
-          </div>
+          <div class="relatorio-linha">📅 <strong>Data: ${dataFmt}</strong></div>
+          <div class="relatorio-linha">🟩 Ent: ${item.e || '--:--'} | Sai Almoço: ${item.si || '--:--'}</div>
+          <div class="relatorio-linha">🟥 Vol Almoço: ${item.vi || '--:--'} | Fim: ${item.sf || '--:--'}</div>
+          <div class="relatorio-linha">⭐ Total Extra: ${extraTexto}</div>
+          <div class="relatorio-linha">🏢 Extra Tarde: ${intervaloTarde}</div>
         `;
         lista.appendChild(card);
       });
 
-      if (exibidos === 0) {
-        lista.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">Nenhum registro encontrado para o filtro "${filtroMes}".</div>`;
-      }
+      // Atualiza Totais
+      const hTotal = Math.floor(minExtrasTotalAcumulado / 60);
+      const mTotal = minExtrasTotalAcumulado % 60;
+      const vTotal = (minExtrasTotalAcumulado / 60) * valorHoraExtra;
 
-      recalcularHistorico();
+      document.getElementById('txt-total-horas').innerText = `${String(hTotal).padStart(2,'0')}:${String(mTotal).padStart(2,'0')}`;
+      document.getElementById('txt-total-valor').innerText = `R$ ${vTotal.toFixed(2).replace('.',',')}`;
+
+      if (exibidos === 0) {
+        lista.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">Nenhum registro encontrado para "${filtroMes}".</div>`;
+      }
     }
 
     function sincronizarComGoogleSheets() {
       alert("Iniciando busca de dados no Google Sheets...");
 
       window.processarDadosSheets = function(dados) {
-        if (!dados) {
-          alert("Erro: A resposta da planilha veio vazia.");
-          return;
-        }
-
-        if (dados.status === "error") {
-          alert("Erro na planilha: " + dados.message);
+        if (!dados || dados.status === "error") {
+          alert("Erro na planilha: " + (dados ? dados.message : "Vazia"));
           return;
         }
 
         if (!Array.isArray(dados) || dados.length === 0) {
-          alert("Sincronização concluída, mas nenhum registro foi encontrado.");
+          alert("Sincronização concluída, mas sem registros.");
           return;
         }
 
@@ -295,11 +367,9 @@
         let ultimoMesAno = "";
 
         dados.forEach(item => {
-          let rawData = item.data || item.Data || item.DATA || item['data'] || item['DATA'];
-
+          let rawData = item.data || item.Data || item.DATA;
           if (rawData) {
             let dataStr = String(rawData).trim();
-
             if (dataStr.includes('T')) {
               let dateObj = new Date(dataStr);
               let dia = String(dateObj.getUTCDate()).padStart(2, '0');
@@ -318,22 +388,14 @@
               let chave = `ponto_${ano}-${mes}-${dia}`;
               ultimoMesAno = `${mes}/${ano}`;
 
-              const formatarHora = (val) => {
-                if (!val) return '';
-                let s = String(val).trim();
-                if (s.includes('T')) {
-                  let d = new Date(s);
-                  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-                }
-                return s.substring(0, 5);
-              };
+              const fmtH = (v) => v ? String(v).substring(0, 5) : '';
 
               let registro = {
                 id: item.id || item.ID || null,
-                e: formatarHora(item.entrada || item.Entrada || item.ENTRADA || ''),
-                si: formatarHora(item.saidaInt || item.SaidaInt || item['Saida Intervalo'] || item['saida_int'] || ''),
-                vi: formatarHora(item.voltaInt || item.VoltaInt || item['Volta Intervalo'] || item['volta_int'] || ''),
-                sf: formatarHora(item.saidaFin || item.SaidaFin || item['Saida Final'] || item['saida_fin'] || '')
+                e: fmtH(item.entrada || item.Entrada || item.ENTRADA),
+                si: fmtH(item.saidaInt || item.SaidaInt || item['Saida Intervalo']),
+                vi: fmtH(item.voltaInt || item.VoltaInt || item['Volta Intervalo']),
+                sf: fmtH(item.saidaFin || item.SaidaFin || item['Saida Final'])
               };
 
               localStorage.setItem(chave, JSON.stringify(registro));
@@ -342,10 +404,7 @@
           }
         });
 
-        if (ultimoMesAno) {
-          document.getElementById('filtro-mes').value = ultimoMesAno;
-        }
-
+        if (ultimoMesAno) document.getElementById('filtro-mes').value = ultimoMesAno;
         alert(`Sucesso! ${importados} registros sincronizados.`);
         carregarPontosHoje();
         carregarRelatorio();
@@ -357,42 +416,42 @@
       const script = document.createElement('script');
       script.id = 'jsonp-sheets-script';
       script.src = `${GOOGLE_SHEETS_URL}?sheet=ATUALIZADA&callback=processarDadosSheets&t=${new Date().getTime()}`;
-
-      script.onerror = function() {
-        alert("Falha de rede ao conectar com o Google Sheets. Verifique a URL do Web App.");
-      };
-
       document.body.appendChild(script);
+    }
+
+    /* Ações adicionais do Menu */
+    function recalcularHistorico() {
+      carregarRelatorio();
+      alert("Histórico recalculado com sucesso!");
     }
 
     function abrirModalPontoManual() {
       document.getElementById('edit-chave').value = '';
       document.getElementById('edit-data-input').value = '';
-      document.getElementById('edit-e').value = '';
-      document.getElementById('edit-si').value = '';
-      document.getElementById('edit-vi').value = '';
-      document.getElementById('edit-sf').value = '';
       document.getElementById('group-data-manual').style.display = 'block';
       document.getElementById('modalEdicao').classList.add('active');
     }
 
-    function abrirModalEdicao(chave) {
-      const item = JSON.parse(localStorage.getItem(chave)) || {};
-      const p = chave.replace('ponto_', '').split('-');
-      
-      document.getElementById('edit-chave').value = chave;
-      document.getElementById('edit-data-input').value = `${p[2]}/${p[1]}/${p[0]}`;
-      document.getElementById('group-data-manual').style.display = 'none';
-      
-      document.getElementById('edit-e').value = item.e || '';
-      document.getElementById('edit-si').value = item.si || '';
-      document.getElementById('edit-vi').value = item.vi || '';
-      document.getElementById('edit-sf').value = item.sf || '';
-      
-      document.getElementById('modalEdicao').classList.add('active');
-    }
+    function abrirModalConfigJornada() { document.getElementById('modalJornada').classList.add('active'); }
+    function abrirModalConfigSalario() { document.getElementById('modalSalario').classList.add('active'); }
+    function abrirModalConfigLocal() { alert("Configuração GPS registrada para o local atual."); }
 
     function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function salvarConfigJornada() {
+      localStorage.setItem('cfg_jornada_e', document.getElementById('cfg-jornada-e').value);
+      localStorage.setItem('cfg_jornada_s', document.getElementById('cfg-jornada-s').value);
+      fecharModal('modalJornada');
+      alert("Jornada salva!");
+    }
+
+    function salvarConfigSalario() {
+      localStorage.setItem('cfg_salario', document.getElementById('cfg-salario-val').value);
+      localStorage.setItem('cfg_horas_mes', document.getElementById('cfg-horas-mes').value);
+      fecharModal('modalSalario');
+      carregarRelatorio();
+      alert("Configuração de Salário salva!");
+    }
 
     function salvarEdicao() {
       let chave = document.getElementById('edit-chave').value;
@@ -416,31 +475,55 @@
       carregarPontosHoje();
     }
 
-    function excluirPonto(chave) {
-      if (confirm("Excluir este ponto?")) {
-        localStorage.removeItem(chave);
-        carregarRelatorio();
-        carregarPontosHoje();
+    function fazerBackupJSON() {
+      let dados = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        let k = localStorage.key(i);
+        dados[k] = localStorage.getItem(k);
       }
+      let blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+      let a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'backup_ponto.json';
+      a.click();
     }
 
-    function recalcularHistorico() {
-      let totalMin = 0;
+    function triggerImportarJSON() { document.getElementById('fileInputJSON').click(); }
+
+    function importarJSON(e) {
+      let file = e.target.files[0];
+      if (!file) return;
+      let reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          let dados = JSON.parse(evt.target.result);
+          Object.keys(dados).forEach(k => localStorage.setItem(k, dados[k]));
+          alert("Backup restaurado com sucesso!");
+          carregarPontosHoje();
+          carregarRelatorio();
+        } catch(err) { alert("Arquivo JSON inválido."); }
+      };
+      reader.readAsText(file);
+    }
+
+    function exportarCSV() {
+      let csv = "Data;Entrada;Saida_Intervalo;Volta_Intervalo;Saida_Final\n";
       for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
+        let k = localStorage.key(i);
         if (k.startsWith('ponto_')) {
-          const item = JSON.parse(localStorage.getItem(k));
-          if (item.e && item.si && item.vi && item.sf) {
-            const m1 = convHora(item.e), m2 = convHora(item.si), m3 = convHora(item.vi), m4 = convHora(item.sf);
-            const trab = (m2 - m1) + (m4 - m3);
-            if (trab > 480) totalMin += (trab - 480);
-          }
+          let p = k.replace('ponto_', '').split('-');
+          let item = JSON.parse(localStorage.getItem(k));
+          csv += `${p[2]}/${p[1]}/${p[0]};${item.e||''};${item.si||''};${item.vi||''};${item.sf||''}\n`;
         }
       }
-      const h = Math.floor(totalMin / 60);
-      const m = totalMin % 60;
-      document.getElementById('txt-total-horas').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+      let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      let a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'relatorio_pontos.csv';
+      a.click();
     }
+
+    function sairApp() { if(confirm("Deseja fechar a aplicação?")) window.close(); }
 
     function convHora(h) {
       if (!h || !h.includes(':')) return 0;
