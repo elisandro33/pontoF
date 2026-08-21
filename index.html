@@ -838,7 +838,6 @@ function definirMesAnoAtualFiltro() {
 // --- INTEGRAÇÃO GOOGLE SHEETS ---
 async function sincronizarComGoogleSheets(silencioso = false) {
   try {
-    // Usando redirect: 'follow' para permitir os redirecionamentos do Google
     const response = await fetch(GOOGLE_SHEETS_URL, {
       method: "GET",
       redirect: "follow"
@@ -854,7 +853,6 @@ async function sincronizarComGoogleSheets(silencioso = false) {
       dados.forEach(item => {
         let dataTxt = item.data || item.Data;
         if (dataTxt) {
-          // Trata formatos de data (DD/MM/AAAA)
           let dia, mes, ano;
 
           if (typeof dataTxt === 'string' && dataTxt.includes('T')) {
@@ -891,7 +889,8 @@ async function sincronizarComGoogleSheets(silencioso = false) {
     if (!silencioso) alert("Erro ao sincronizar com Google Sheets. Verifique a conexão e as permissões do Web App.");
   }
 }
-	// --- NAVEGAÇÃO ENTRE ABAS ---
+
+// --- NAVEGAÇÃO ENTRE ABAS ---
 function mudarAba(aba) {
   const abaPonto = document.getElementById('tabPonto');
   const abaRelatorio = document.getElementById('tabRelatorio');
