@@ -836,19 +836,8 @@ function definirMesAnoAtualFiltro() {
 }
 
 // --- INTEGRAÇÃO GOOGLE SHEETS ---
-async function sincronizarComGoogleSheets(silencioso = false) {
-  try {
-    const response = await fetch(GOOGLE_SHEETS_URL, {
-      method: "GET",
-      redirect: "follow"
-    });
-
-    if (!response.ok) {
-      throw new Error(`Erro de rede: ${response.status}`);
-    }
-
-    const dados = await response.json();
-
+function sincronizarComGoogleSheets(silencioso = false) {
+  window.processarDadosSheets = function(dados) {
     if (Array.isArray(dados)) {
       dados.forEach(item => {
         let dataTxt = item.data || item.Data;
@@ -884,12 +873,24 @@ async function sincronizarComGoogleSheets(silencioso = false) {
       carregarRelatorio();
       if (!silencioso) alert("Sincronização com Google Sheets concluída!");
     }
-  } catch (erro) {
-    console.error("Erro ao sincronizar com Google Sheets:", erro);
-    if (!silencioso) alert("Erro ao sincronizar com Google Sheets. Verifique a conexão e as permissões do Web App.");
-  }
-}
+    // Remove o tag script dinâmico criado
+    const scriptTag = document.getElementById('jsonp_script');
+    if (scriptTag) scriptTag.remove();
+  };
 
+  const oldScript = document.getElementById('jsonp_script');
+  if (oldScript) oldScript.remove();
+
+  const script = document.createElement('script');
+  script.id = 'jsonp_script';
+  script.src = `${GOOGLE_SHEETS_URL}?callback=processarDadosSheets&t=${new Date().getTime()}`;
+  
+  script.onerror = function() {
+    if (!silencioso) alert("Erro ao sincronizar com Google Sheets. Verifique a conexão e as permissões do Web App.");
+  };
+
+  document.body.appendChild(script);
+}
 // --- NAVEGAÇÃO ENTRE ABAS ---
 function mudarAba(aba) {
   const abaPonto = document.getElementById('tabPonto');
