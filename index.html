@@ -25,16 +25,24 @@
 
     .header-actions { display: flex; align-items: center; gap: 12px; }
     .btn-sync { background: #50e3c2; border: none; width: 34px; height: 34px; border-radius: 4px; cursor: pointer; font-size: 1.1rem; }
-    .btn-menu { background: none; border: none; color: #fff; font-size: 1.8rem; cursor: pointer; }
+    .btn-menu { background: none; border: none; color: #fff; font-size: 1.8rem; cursor: pointer; padding: 0 4px; line-height: 1; }
 
+    /* MENU DROPDOWN CORRIGIDO */
     .dropdown-menu {
-      display: none; position: absolute; top: 50px; right: 8px;
-      background-color: #ffffff; border: 1px solid var(--border);
-      border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-      z-index: 1000; width: 260px;
+      display: none; 
+      position: fixed; 
+      top: 55px; 
+      right: 12px;
+      background-color: #ffffff; 
+      border: 1px solid var(--border);
+      border-radius: 8px; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      z-index: 99999; 
+      width: 260px;
     }
     .dropdown-menu.active { display: block !important; }
-    .dropdown-item { padding: 10px 14px; color: #000; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; }
+    .dropdown-item { padding: 12px 14px; color: #000; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; }
+    .dropdown-item:hover { background-color: #f8fafc; }
 
     main { padding: 12px; max-width: 500px; margin: 0 auto; }
     .tab-content { display: none; }
@@ -89,19 +97,20 @@
       <button class="btn-sync" onclick="sincronizarComGoogleSheets()" title="Sincronizar">🔄</button>
       <button class="btn-menu" id="btnMenu" onclick="toggleMenu(event)">⋮</button>
     </div>
-
-    <div class="dropdown-menu" id="dropdownMenu">
-      <div class="dropdown-item" onclick="recalcularHistorico(); closeMenu();"><span>🔄</span> Recalcular Histórico</div>
-      <div class="dropdown-item" onclick="abrirModalPontoManual(); closeMenu();"><span>📝</span> Adicionar Ponto Manual</div>
-      <div class="dropdown-item" onclick="abrirModalConfigJornada(); closeMenu();"><span>⚙️</span> Configurar Horário/Jornada</div>
-      <div class="dropdown-item" onclick="abrirModalConfigLocal(); closeMenu();"><span>🛰️</span> Configurar Local</div>
-      <div class="dropdown-item" onclick="abrirModalConfigSalario(); closeMenu();"><span>🤑</span> Configurar salário</div>
-      <div class="dropdown-item" onclick="fazerBackupJSON(); closeMenu();"><span>💾</span> Fazer Backup JSON</div>
-      <div class="dropdown-item" onclick="triggerImportarJSON(); closeMenu();"><span>📁</span> Importar JSON</div>
-      <div class="dropdown-item" onclick="sincronizarComGoogleSheets(); closeMenu();"><span>🔄</span> Sincronizar Tudo</div>
-      <div class="dropdown-item" onclick="sairApp(); closeMenu();"><span>❌</span> Sair</div>
-    </div>
   </header>
+
+  <!-- MENU POSICIONADO FORA DO HEADER -->
+  <div class="dropdown-menu" id="dropdownMenu">
+    <div class="dropdown-item" onclick="recalcularHistorico(); closeMenu();"><span>🔄</span> Recalcular Histórico</div>
+    <div class="dropdown-item" onclick="abrirModalPontoManual(); closeMenu();"><span>📝</span> Adicionar Ponto Manual</div>
+    <div class="dropdown-item" onclick="abrirModalConfigJornada(); closeMenu();"><span>⚙️</span> Configurar Horário/Jornada</div>
+    <div class="dropdown-item" onclick="abrirModalConfigLocal(); closeMenu();"><span>🛰️</span> Configurar Local</div>
+    <div class="dropdown-item" onclick="abrirModalConfigSalario(); closeMenu();"><span>🤑</span> Configurar salário</div>
+    <div class="dropdown-item" onclick="fazerBackupJSON(); closeMenu();"><span>💾</span> Fazer Backup JSON</div>
+    <div class="dropdown-item" onclick="triggerImportarJSON(); closeMenu();"><span>📁</span> Importar JSON</div>
+    <div class="dropdown-item" onclick="sincronizarComGoogleSheets(); closeMenu();"><span>🔄</span> Sincronizar Tudo</div>
+    <div class="dropdown-item" onclick="sairApp(); closeMenu();"><span>❌</span> Sair</div>
+  </div>
 
   <input type="file" id="fileInputJSON" accept=".json" style="display: none;" onchange="importarJSON(event)">
 
@@ -234,7 +243,8 @@
 
   function toggleMenu(e) { 
     if(e) e.stopPropagation(); 
-    document.getElementById('dropdownMenu').classList.toggle('active'); 
+    const menu = document.getElementById('dropdownMenu');
+    menu.classList.toggle('active');
   }
   
   function closeMenu() { 
@@ -248,7 +258,9 @@
   document.addEventListener('click', function(e) {
     const menu = document.getElementById('dropdownMenu');
     const btn = document.getElementById('btnMenu');
-    if (menu && !menu.contains(e.target) && e.target !== btn) closeMenu();
+    if (menu && !menu.contains(e.target) && e.target !== btn) {
+      closeMenu();
+    }
   });
 
   function alternarAba(aba) {
@@ -409,15 +421,11 @@
         let m1 = convHora(item.e);
         let m4 = convHora(item.sf);
 
-        // REGRA DOS 30 MINUTOS NA ENTRADA
         if (m1 < minPrevistoEntrada) {
           let difManha = minPrevistoEntrada - m1;
-          if (difManha >= 30) {
-            minExtraManha = difManha;
-          }
+          if (difManha >= 30) minExtraManha = difManha;
         }
 
-        // REGRA DOS 30 MINUTOS NA SAÍDA
         if (m4 > minPrevistoSaida) {
           let difTarde = m4 - minPrevistoSaida;
           if (difTarde >= 30) {
