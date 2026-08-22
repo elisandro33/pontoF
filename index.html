@@ -411,7 +411,7 @@
     alert("Jornada salva com sucesso!");
   }
 
-  function carregarRelatorio() {
+function carregarRelatorio() {
     const lista = document.getElementById('lista-relatorio');
     lista.innerHTML = '';
     const filtroMes = document.getElementById('filtro-mes').value.trim();
@@ -437,10 +437,13 @@
     const valorHoraNormal = salarioBase / horasMes;
     const valorHoraExtra = valorHoraNormal * 1.5;
 
-    // Configurações de jornada padrão
+    // Configurações de jornada
     const segQuiE = localStorage.getItem('cfg_seg_qui_e') || '07:00';
     const segQuiS = localStorage.getItem('cfg_seg_qui_s') || '17:00';
     const sexS = localStorage.getItem('cfg_sex_s') || '16:00';
+    const sabE = localStorage.getItem('cfg_sab_e') || '07:00';
+    const sabS = localStorage.getItem('cfg_sab_s') || '11:00';
+    const sabAlternado = localStorage.getItem('cfg_sab_alternado') === 'true';
 
     const formatarHora = (valor) => {
       if (!valor || valor === '--:--') return '--:--';
@@ -470,25 +473,52 @@
       const vi_fmt = formatarHora(item.vi);
       const sf_fmt = formatarHora(item.sf);
 
-      const isIncompleto = (e_fmt === '--:--' || si_fmt === '--:--' || vi_fmt === '--:--' || sf_fmt === '--:--');
+      const isIncompleto = (e_fmt === '--:--' || sf_fmt === '--:--');
       if (apenasIncompletos && !isIncompleto) return;
 
-      // Cálculo das horas extras
+      // Identificação do Dia da Semana (0: Dom, 1: Seg, ..., 6: Sáb)
       const dataObj = new Date(ano, mes - 1, dia);
-      const diaSemana = dataObj.getDay(); // 0: Dom, 1: Seg, ..., 5: Sex, 6: Sab
-
-      let minEntradaOficial = convHora(segQuiE);
-      let minSaidaOficial = (diaSemana === 5) ? convHora(sexS) : convHora(segQuiS);
+      const diaSemana = dataObj.getDay();
 
       let minExtraDia = 0;
       let extraTardeStr = "";
 
+      const minInicio = convHora(e_fmt);
       const minFim = convHora(sf_fmt);
-      if (minFim > minSaidaOficial) {
-        minExtraDia += (minFim - minSaidaOficial);
-        
-        const hSaidaOficial = Math.floor(minSaidaOficial / 60).toString().padStart(2, '0') + ":" + (minSaidaOficial % 60).toString().padStart(2, '0');
-        extraTardeStr = `${hSaidaOficial} - ${sf_fmt}`;
+      const minIntervaloSaida = convHora(si_fmt);
+      const minIntervaloVolta = convHora(vi_fmt);
+
+      let tempoIntervalo = 0;
+      if (minIntervaloSaida > 0 && minIntervaloVolta > minIntervaloSaida) {
+        tempoIntervalo = minIntervaloVolta - minIntervaloSaida;
+      }
+
+      if (diaSemana === 6) { // SÁBADO
+        if (minInicio > 0 && minFim > minInicio) {
+          let minTrabalhados = (minFim - minInicio) - tempoIntervalo;
+
+          // Se for sábado e não houver jornada padrão configurada ou se for extra integral:
+          if (!sabAlternado) {
+            // Todo o tempo trabalhado no sábado conta como Extra
+            minExtraDia = minTrabalhados;
+            extraTardeStr = `${e_fmt} - ${sf_fmt}`;
+          } else {
+            // Se tem jornada de sábado configurada, calcula o que exceder a saída do sábado
+            const minSaidaSab = convHora(sabS);
+            if (minFim > minSaidaSab) {
+              minExtraDia = minFim - minSaidaSab;
+              extraTardeStr = `${sabS} - ${sf_fmt}`;
+            }
+          }
+        }
+      } else if (diaSemana >= 1 && diaSemana <= 5) { // SEGUNDA A SEXTA
+        let minSaidaOficial = (diaSemana === 5) ? convHora(sexS) : convHora(segQuiS);
+
+        if (minFim > minSaidaOficial) {
+          minExtraDia += (minFim - minSaidaOficial);
+          const hSaidaOficial = Math.floor(minSaidaOficial / 60).toString().padStart(2, '0') + ":" + String(minSaidaOficial % 60).padStart(2, '0');
+          extraTardeStr = `${hSaidaOficial} - ${sf_fmt}`;
+        }
       }
 
       minExtrasTotalAcumulado += minExtraDia;
@@ -510,7 +540,7 @@
         <div class="relatorio-linha">⭐ Total Extra: ${strExtraDia} (R$ ${valorExtraDia})</div>
       `;
 
-      if (extraTardeStr) {
+      if (extraTardeStr && minExtraDia > 0) {
         htmlContent += `<div class="relatorio-linha">🏢 Extra Tarde: ${extraTardeStr}</div>`;
       }
 
@@ -518,7 +548,7 @@
       lista.appendChild(card);
     });
 
-    // Atualiza o total acumulado do topo
+    // Atualiza o total acumulado no card verde do topo
     const totHoras = Math.floor(minExtrasTotalAcumulado / 60);
     const totMins = minExtrasTotalAcumulado % 60;
     document.getElementById('txt-total-horas').innerText = `${String(totHoras).padStart(2, '0')}:${String(totMins).padStart(2, '0')}`;
@@ -527,8 +557,7 @@
     document.getElementById('txt-total-valor').innerText = `R$ ${valTotalAcc}`;
 
     if (exibidos === 0) lista.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">Nenhum registro encontrado.</div>`;
-  }
-  function sincronizarComGoogleSheets(silencioso = false) {
+  }  function sincronizarComGoogleSheets(silencioso = false) {
     window.processarDadosSheets = function(dados) {
       if (!dados || dados.status === "error") { return; }
       dados.forEach(item => {
