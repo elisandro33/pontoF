@@ -81,9 +81,19 @@
     .modal-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
     .btn-modal { padding: 8px 14px; border-radius: 4px; border: none; cursor: pointer; }
     .modal-actions-right { display: flex; gap: 8px; }
+
+    .toast-msg {
+      position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+      background: #16a34a; color: white; padding: 8px 16px; border-radius: 20px;
+      font-size: 0.85rem; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      z-index: 3000; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
+    }
+    .toast-msg.show { opacity: 1; }
   </style>
 </head>
 <body>
+
+  <div id="toast-aviso" class="toast-msg">Sincronização OK!</div>
 
   <header>
     <h1 style="font-size: 1.3rem;">Ponto Fácil</h1>
@@ -100,7 +110,7 @@
       <div class="dropdown-item" onclick="abrirModalConfigSalario(); closeMenu();"><span>🤑</span> Configurar Salário</div>
       <div class="dropdown-item" onclick="fazerBackupJSON(); closeMenu();"><span>💾</span> Fazer Backup JSON</div>
       <div class="dropdown-item" onclick="triggerImportarJSON(); closeMenu();"><span>📁</span> Importar JSON</div>
-      <div class="dropdown-item" onclick="sincronizarComGoogleSheets(); closeMenu();"><span>🔄</span> Sincronizar Tudo</div>
+      <div class="dropdown-item" onclick="sincronizarComGoogleSheets(false); closeMenu();"><span>🔄</span> Sincronizar Tudo</div>
       <div class="dropdown-item" onclick="sairApp(); closeMenu();"><span>❌</span> Sair</div>
     </div>
   </header>
@@ -249,6 +259,13 @@
     window.location.reload();
   }
 
+  function exibirToast(mensagem) {
+    const toast = document.getElementById('toast-aviso');
+    toast.innerText = mensagem;
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); }, 3000);
+  }
+
   function toggleMenu(e) { if(e) e.stopPropagation(); document.getElementById('dropdownMenu').classList.toggle('active'); }
   function closeMenu() { document.getElementById('dropdownMenu').classList.remove('active'); }
 
@@ -395,7 +412,7 @@
     localStorage.setItem('cfg_seg_qui_s', document.getElementById('cfg-seg-qui-s').value);
     localStorage.setItem('cfg_sex_s', document.getElementById('cfg-sex-s').value);
     localStorage.setItem('cfg_sab_alternado', document.getElementById('cfg-sab-alternado').checked);
-    localStorage.setItem('cfg_sab-e', document.getElementById('cfg-sab-e').value);
+    localStorage.setItem('cfg_sab_e', document.getElementById('cfg-sab-e').value);
     localStorage.setItem('cfg_sab_s', document.getElementById('cfg-sab-s').value);
 
     fecharModal('modalJornada');
@@ -528,17 +545,15 @@
     }
   }
 
-  function sincronizarComGoogleSheets() {
-    alert("Iniciando busca de dados no Google Sheets...");
-
+  function sincronizarComGoogleSheets(silencioso = false) {
     window.processarDadosSheets = function(dados) {
       if (!dados || dados.status === "error") {
-        alert("Erro na planilha: " + (dados ? dados.message : "Vazia"));
+        if (!silencioso) alert("Erro na planilha: " + (dados ? dados.message : "Vazia"));
         return;
       }
 
       if (!Array.isArray(dados) || dados.length === 0) {
-        alert("Sincronização concluída, mas sem registros.");
+        if (!silencioso) alert("Sincronização concluída, mas sem registros.");
         return;
       }
 
@@ -599,9 +614,9 @@
       });
 
       if (ultimoMesAno) document.getElementById('filtro-mes').value = ultimoMesAno;
-      alert(`Sucesso! ${importados} registros sincronizados.`);
       carregarPontosHoje();
       carregarRelatorio();
+      exibirToast("Sincronização OK!");
     };
 
     const oldScript = document.getElementById('jsonp-sheets-script');
@@ -782,6 +797,7 @@
   window.onload = function() {
     carregarPontosHoje();
     carregarRelatorio();
+    sincronizarComGoogleSheets(true);
   };
 </script>
 </body>
