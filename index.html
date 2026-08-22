@@ -430,46 +430,102 @@
     }
 
     let exibidos = 0;
+    let minExtrasTotalAcumulado = 0;
+
+    const salarioBase = parseFloat(localStorage.getItem('cfg_salario') || 2000);
+    const horasMes = parseFloat(localStorage.getItem('cfg_horas_mes') || 220);
+    const valorHoraNormal = salarioBase / horasMes;
+    const valorHoraExtra = valorHoraNormal * 1.5;
+
+    // Configurações de jornada padrão
+    const segQuiE = localStorage.getItem('cfg_seg_qui_e') || '07:00';
+    const segQuiS = localStorage.getItem('cfg_seg_qui_s') || '17:00';
+    const sexS = localStorage.getItem('cfg_sex_s') || '16:00';
+
+    const formatarHora = (valor) => {
+      if (!valor || valor === '--:--') return '--:--';
+      if (typeof valor === 'string' && (valor.includes('GMT') || valor.includes('T'))) {
+        const d = new Date(valor);
+        if (!isNaN(d.getTime())) {
+          return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        }
+      }
+      return valor;
+    };
 
     chaves.forEach(chave => {
       const item = JSON.parse(localStorage.getItem(chave)) || {};
       const p = chave.replace('ponto_', '').split('-');
       if (p.length !== 3) return;
-      const mesAno = `${p[1]}/${p[0]}`;
-      if (filtroMes && mesAno !== filtroMes) return;
       
-      // Função para extrair apenas HH:MM de formatos estranhos ou datas completas
-      const formatarHora = (valor) => {
-        if (!valor || valor === '--:--') return '--:--';
-        // Se for uma data completa (ex: Sat Dec 30...), extrai a hora
-        if (typeof valor === 'string' && valor.includes('GMT')) {
-            const d = new Date(valor);
-            if (!isNaN(d.getTime())) {
-                return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-            }
-        }
-        return valor; // Retorna como está se já estiver no formato correto
-      };
+      const ano = parseInt(p[0], 10);
+      const mes = parseInt(p[1], 10);
+      const dia = parseInt(p[2], 10);
+      const mesAno = `${p[1]}/${p[0]}`;
+      
+      if (filtroMes && mesAno !== filtroMes) return;
 
       const e_fmt = formatarHora(item.e);
       const si_fmt = formatarHora(item.si);
       const vi_fmt = formatarHora(item.vi);
       const sf_fmt = formatarHora(item.sf);
-      
+
       const isIncompleto = (e_fmt === '--:--' || si_fmt === '--:--' || vi_fmt === '--:--' || sf_fmt === '--:--');
       if (apenasIncompletos && !isIncompleto) return;
-      
+
+      // Cálculo das horas extras
+      const dataObj = new Date(ano, mes - 1, dia);
+      const diaSemana = dataObj.getDay(); // 0: Dom, 1: Seg, ..., 5: Sex, 6: Sab
+
+      let minEntradaOficial = convHora(segQuiE);
+      let minSaidaOficial = (diaSemana === 5) ? convHora(sexS) : convHora(segQuiS);
+
+      let minExtraDia = 0;
+      let extraTardeStr = "";
+
+      const minFim = convHora(sf_fmt);
+      if (minFim > minSaidaOficial) {
+        minExtraDia += (minFim - minSaidaOficial);
+        
+        const hSaidaOficial = Math.floor(minSaidaOficial / 60).toString().padStart(2, '0') + ":" + (minSaidaOficial % 60).toString().padStart(2, '0');
+        extraTardeStr = `${hSaidaOficial} - ${sf_fmt}`;
+      }
+
+      minExtrasTotalAcumulado += minExtraDia;
+
+      const horasEx = Math.floor(minExtraDia / 60);
+      const minsEx = minExtraDia % 60;
+      const strExtraDia = `${String(horasEx).padStart(2, '0')}:${String(minsEx).padStart(2, '0')}`;
+      const valorExtraDia = ((minExtraDia / 60) * valorHoraExtra).toFixed(2).replace('.', ',');
+
       exibidos++;
       const card = document.createElement('div');
       card.className = 'relatorio-card-item';
       card.onclick = () => editarPontoExistente(chave, `${p[2]}/${p[1]}/${p[0]}`);
-      card.innerHTML = `
+      
+      let htmlContent = `
         <div class="relatorio-linha">📅 <strong>Data: ${p[2]}/${p[1]}/${p[0]}</strong></div>
-        <div class="relatorio-linha">🟩 Ent: ${e_fmt} | Sai Int: ${si_fmt}</div>
-        <div class="relatorio-linha">🟥 Vol Int: ${vi_fmt} | Fim: ${sf_fmt}</div>
+        <div class="relatorio-linha">🟩 Ent: ${e_fmt} | Sai Almoço: ${si_fmt}</div>
+        <div class="relatorio-linha">🟥 Vol Almoço: ${vi_fmt} | Fim: ${sf_fmt}</div>
+        <div class="relatorio-linha">⭐ Total Extra: ${strExtraDia} (R$ ${valorExtraDia})</div>
       `;
+
+      if (extraTardeStr) {
+        htmlContent += `<div class="relatorio-linha">🏢 Extra Tarde: ${extraTardeStr}</div>`;
+      }
+
+      card.innerHTML = htmlContent;
       lista.appendChild(card);
     });
+
+    // Atualiza o total acumulado do topo
+    const totHoras = Math.floor(minExtrasTotalAcumulado / 60);
+    const totMins = minExtrasTotalAcumulado % 60;
+    document.getElementById('txt-total-horas').innerText = `${String(totHoras).padStart(2, '0')}:${String(totMins).padStart(2, '0')}`;
+    
+    const valTotalAcc = ((minExtrasTotalAcumulado / 60) * valorHoraExtra).toFixed(2).replace('.', ',');
+    document.getElementById('txt-total-valor').innerText = `R$ ${valTotalAcc}`;
+
     if (exibidos === 0) lista.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">Nenhum registro encontrado.</div>`;
   }
   function sincronizarComGoogleSheets(silencioso = false) {
