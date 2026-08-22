@@ -180,19 +180,19 @@
       <h3>Configurar Jornada</h3>
       
       <div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Segunda a Quinta</div>
-      <div class="form-group"><label>Entrada:</label><input type="text" id="cfg-seg-qui-e" value="07:00"></div>
-      <div class="form-group"><label>Saída:</label><input type="text" id="cfg-seg-qui-s" value="17:00"></div>
+      <div class="form-group"><label>Entrada:</label><input type="text" id="cfg-seg-qui-e" value="07:30"></div>
+      <div class="form-group"><label>Saída:</label><input type="text" id="cfg-seg-qui-s" value="17:30"></div>
 
       <div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Sexta-feira</div>
-      <div class="form-group"><label>Saída Sexta:</label><input type="text" id="cfg-sex-s" value="16:00"></div>
+      <div class="form-group"><label>Saída Sexta:</label><input type="text" id="cfg-sex-s" value="16:30"></div>
 
       <div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Sábados</div>
       <div class="chk-container" style="margin-bottom:8px;">
         <input type="checkbox" id="cfg-sab-alternado">
         <label for="cfg-sab-alternado">Trabalha em Sábados Alternados</label>
       </div>
-      <div class="form-group"><label>Entrada Sábado:</label><input type="text" id="cfg-sab-e" value="07:00"></div>
-      <div class="form-group"><label>Saída Sábado:</label><input type="text" id="cfg-sab-s" value="11:00"></div>
+      <div class="form-group"><label>Entrada Sábado:</label><input type="text" id="cfg-sab-e" value="07:30"></div>
+      <div class="form-group"><label>Saída Sábado:</label><input type="text" id="cfg-sab-s" value="11:30"></div>
 
       <div class="modal-buttons">
         <button class="btn-modal" onclick="fecharModal('modalJornada')">Cancelar</button>
@@ -232,8 +232,18 @@
 <script>
   const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzi6lqvkYaP68l3hyxCR46BzUj1CLJH6pPfqljiwAY_81crRpVkG270swYIy-IuE6HZ/exec";
 
-  function toggleMenu(e) { if(e) e.stopPropagation(); document.getElementById('dropdownMenu').classList.toggle('active'); }
-  function closeMenu() { document.getElementById('dropdownMenu').classList.remove('active'); }
+  function toggleMenu(e) { 
+    if(e) e.stopPropagation(); 
+    document.getElementById('dropdownMenu').classList.toggle('active'); 
+  }
+  
+  function closeMenu() { 
+    document.getElementById('dropdownMenu').classList.remove('active'); 
+  }
+
+  function fecharModal(idModal) {
+    document.getElementById(idModal).classList.remove('active');
+  }
 
   document.addEventListener('click', function(e) {
     const menu = document.getElementById('dropdownMenu');
@@ -302,12 +312,12 @@
   }
 
   function abrirModalConfigJornada() {
-    document.getElementById('cfg-seg-qui-e').value = localStorage.getItem('cfg_seg_qui_e') || '07:00';
-    document.getElementById('cfg-seg-qui-s').value = localStorage.getItem('cfg_seg_qui_s') || '17:00';
-    document.getElementById('cfg-sex-s').value = localStorage.getItem('cfg_sex_s') || '16:00';
+    document.getElementById('cfg-seg-qui-e').value = localStorage.getItem('cfg_seg_qui_e') || '07:30';
+    document.getElementById('cfg-seg-qui-s').value = localStorage.getItem('cfg_seg_qui_s') || '17:30';
+    document.getElementById('cfg-sex-s').value = localStorage.getItem('cfg_sex_s') || '16:30';
     document.getElementById('cfg-sab-alternado').checked = localStorage.getItem('cfg_sab_alternado') === 'true';
-    document.getElementById('cfg-sab-e').value = localStorage.getItem('cfg_sab_e') || '07:00';
-    document.getElementById('cfg-sab-s').value = localStorage.getItem('cfg_sab_s') || '11:00';
+    document.getElementById('cfg-sab-e').value = localStorage.getItem('cfg_sab_e') || '07:30';
+    document.getElementById('cfg-sab-s').value = localStorage.getItem('cfg_sab_s') || '11:30';
     
     document.getElementById('modalJornada').classList.add('active');
   }
@@ -332,7 +342,6 @@
     const filtroMes = document.getElementById('filtro-mes').value.trim();
     const apenasIncompletos = document.getElementById('chk-incompletos').checked;
 
-    // Configurações salvas (Padrões ajustados para 07:30)
     const segQuiE = localStorage.getItem('cfg_seg_qui_e') || '07:30';
     const segQuiS = localStorage.getItem('cfg_seg_qui_s') || '17:30';
     const sexS = localStorage.getItem('cfg_sex_s') || '16:30';
@@ -367,7 +376,7 @@
       const mes = parseInt(p[1], 10) - 1;
       const dia = parseInt(p[2], 10);
       const dataObj = new Date(ano, mes, dia);
-      const diaSemana = dataObj.getDay(); // 0: Dom, 1: Seg, ..., 5: Sex, 6: Sab
+      const diaSemana = dataObj.getDay();
 
       const dataFmt = `${p[2]}/${p[1]}/${p[0]}`;
       const mesAno = `${p[1]}/${p[0]}`;
@@ -377,17 +386,14 @@
       const isIncompleto = !item.e || !item.si || !item.vi || !item.sf;
       if (apenasIncompletos && !isIncompleto) return;
 
-      // Define jornada prevista por dia da semana
       let horaEntradaPrevista = segQuiE;
       let horaSaidaPrevista = segQuiS;
-      let exigeIntervalo = true;
 
-      if (diaSemana === 5) { // Sexta
+      if (diaSemana === 5) {
         horaSaidaPrevista = sexS;
-      } else if (diaSemana === 6) { // Sábado
+      } else if (diaSemana === 6) {
         horaEntradaPrevista = sabE;
         horaSaidaPrevista = sabS;
-        exigeIntervalo = false;
       }
 
       const minPrevistoEntrada = convHora(horaEntradaPrevista);
@@ -401,11 +407,9 @@
 
       if (item.e && item.sf) {
         let m1 = convHora(item.e);
-        let m2 = item.si ? convHora(item.si) : m1;
-        let m3 = item.vi ? convHora(item.vi) : m2;
         let m4 = convHora(item.sf);
 
-        // 1. EXTRA DA MANHÃ: Se entrou antes e a diferença for de pelo menos 30 minutos
+        // REGRA DOS 30 MINUTOS NA ENTRADA
         if (m1 < minPrevistoEntrada) {
           let difManha = minPrevistoEntrada - m1;
           if (difManha >= 30) {
@@ -413,7 +417,7 @@
           }
         }
 
-        // 2. EXTRA DA TARDE: Se saiu depois e a diferença for de pelo menos 30 minutos
+        // REGRA DOS 30 MINUTOS NA SAÍDA
         if (m4 > minPrevistoSaida) {
           let difTarde = m4 - minPrevistoSaida;
           if (difTarde >= 30) {
@@ -422,7 +426,6 @@
           }
         }
 
-        // Soma total das horas extras válidas do dia
         minExtraDia = minExtraManha + minExtraTarde;
 
         if (item.hora_extra) {
@@ -433,103 +436,6 @@
           let mEx = minExtraDia % 60;
           let valEx = (minExtraDia / 60) * valorHoraExtra;
           extraTexto = `${String(hEx).padStart(2,'0')}:${String(mEx).padStart(2,'0')} (R$ ${valEx.toFixed(2).replace('.',',')})`;
-        }
-      }
-
-      exibidos++;
-      const card = document.createElement('div');
-      card.className = 'relatorio-card-item';
-      card.innerHTML = `
-        <div class="relatorio-linha">📅 <strong>Data: ${dataFmt}</strong></div>
-        <div class="relatorio-linha">🟩 Ent: ${item.e || '--:--'} | Sai Almoço: ${item.si || '--:--'}</div>
-        <div class="relatorio-linha">🟥 Vol Almoço: ${item.vi || '--:--'} | Fim: ${item.sf || '--:--'}</div>
-        <div class="relatorio-linha">⭐ Total Extra: ${extraTexto}</div>
-        <div class="relatorio-linha">🏢 Extra Tarde: ${intervaloTarde}</div>
-      `;
-      lista.appendChild(card);
-    });
-
-    const hTotal = Math.floor(minExtrasTotalAcumulado / 60);
-    const mTotal = minExtrasTotalAcumulado % 60;
-    const vTotal = (minExtrasTotalAcumulado / 60) * valorHoraExtra;
-
-    document.getElementById('txt-total-horas').innerText = `${String(hTotal).padStart(2,'0')}:${String(mTotal).padStart(2,'0')}`;
-    document.getElementById('txt-total-valor').innerText = `R$ ${vTotal.toFixed(2).replace('.',',')}`;
-
-    if (exibidos === 0) {
-      lista.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">Nenhum registro encontrado para "${filtroMes}".</div>`;
-    }
-  }
-    let exibidos = 0;
-    let minExtrasTotalAcumulado = 0;
-    const salarioBase = parseFloat(localStorage.getItem('cfg_salario') || 2000);
-    const horasMes = parseFloat(localStorage.getItem('cfg_horas_mes') || 220);
-    const valorHoraExtra = (salarioBase / horasMes) * 1.5;
-
-    chaves.forEach(chave => {
-      const item = JSON.parse(localStorage.getItem(chave)) || {};
-      const p = chave.replace('ponto_', '').split('-');
-      if (p.length !== 3) return;
-
-      const ano = parseInt(p[0], 10);
-      const mes = parseInt(p[1], 10) - 1;
-      const dia = parseInt(p[2], 10);
-      const dataObj = new Date(ano, mes, dia);
-      const diaSemana = dataObj.getDay(); // 0: Dom, 1: Seg, ..., 5: Sex, 6: Sab
-
-      const dataFmt = `${p[2]}/${p[1]}/${p[0]}`;
-      const mesAno = `${p[1]}/${p[0]}`;
-
-      if (filtroMes && mesAno !== filtroMes) return;
-
-      const isIncompleto = !item.e || !item.si || !item.vi || !item.sf;
-      if (apenasIncompletos && !isIncompleto) return;
-
-      let horaEntradaPrevista = segQuiE;
-      let horaSaidaPrevista = segQuiS;
-      let exigeIntervalo = true;
-
-      if (diaSemana === 5) {
-        horaSaidaPrevista = sexS;
-      } else if (diaSemana === 6) {
-        horaEntradaPrevista = sabE;
-        horaSaidaPrevista = sabS;
-        exigeIntervalo = false;
-      }
-
-      const minPrevistoEntrada = convHora(horaEntradaPrevista);
-      const minPrevistoSaida = convHora(horaSaidaPrevista);
-      const minJornadaEsperada = (minPrevistoSaida - minPrevistoEntrada) - (exigeIntervalo ? 60 : 0);
-
-      let minTrab = 0;
-      let minExtraDia = 0;
-      let extraTexto = "00:00 (R$ 0,00)";
-      let intervaloTarde = "--:-- - --:--";
-
-      if (item.e && item.sf) {
-        let m1 = convHora(item.e);
-        let m2 = item.si ? convHora(item.si) : m1;
-        let m3 = item.vi ? convHora(item.vi) : m2;
-        let m4 = convHora(item.sf);
-
-        minTrab = (m2 - m1) + (m4 - m3);
-
-        if (minTrab > minJornadaEsperada) {
-          minExtraDia = minTrab - minJornadaEsperada;
-        }
-
-        if (item.hora_extra) {
-          extraTexto = `${item.hora_extra}`;
-        } else if (minExtraDia > 0) {
-          minExtrasTotalAcumulado += minExtraDia;
-          let hEx = Math.floor(minExtraDia / 60);
-          let mEx = minExtraDia % 60;
-          let valEx = (minExtraDia / 60) * valorHoraExtra;
-          extraTexto = `${String(hEx).padStart(2,'0')}:${String(mEx).padStart(2,'0')} (R$ ${valEx.toFixed(2).replace('.',',')})`;
-        }
-
-        if (m4 > minPrevistoSaida) {
-          intervaloTarde = `${horaSaidaPrevista} - ${item.sf}`;
         }
       }
 
@@ -679,6 +585,20 @@
     alert("Local configurado com sucesso!");
   }
 
+  function abrirModalConfigSalario() {
+    document.getElementById('cfg-salario-val').value = localStorage.getItem('cfg_salario') || '2000';
+    document.getElementById('cfg-horas-mes').value = localStorage.getItem('cfg_horas_mes') || '220';
+    document.getElementById('modalSalario').classList.add('active');
+  }
+
+  function salvarConfigSalario() {
+    localStorage.setItem('cfg_salario', document.getElementById('cfg-salario-val').value);
+    localStorage.setItem('cfg_horas_mes', document.getElementById('cfg-horas-mes').value);
+    fecharModal('modalSalario');
+    carregarRelatorio();
+    alert("Configuração de salário salva!");
+  }
+
   function recalcularHistorico() {
     carregarRelatorio();
     alert("Histórico recalculado com sucesso!");
@@ -687,98 +607,101 @@
   function abrirModalPontoManual() {
     document.getElementById('edit-chave').value = '';
     document.getElementById('edit-data-input').value = '';
+    document.getElementById('edit-e').value = '';
+    document.getElementById('edit-si').value = '';
+    document.getElementById('edit-vi').value = '';
+    document.getElementById('edit-sf').value = '';
     document.getElementById('group-data-manual').style.display = 'block';
     document.getElementById('modalEdicao').classList.add('active');
   }
 
-  function abrirModalConfigSalario() { document.getElementById('modalSalario').classList.add('active'); }
-
-  function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
-
-  function salvarConfigSalario() {
-    localStorage.setItem('cfg_salario', document.getElementById('cfg-salario-val').value);
-    localStorage.setItem('cfg_horas_mes', document.getElementById('cfg-horas-mes').value);
-    fecharModal('modalSalario');
-    carregarRelatorio();
-    alert("Configuração de Salário salva!");
-  }
-
   function salvarEdicao() {
-    let chave = document.getElementById('edit-chave').value;
-    if (!chave) {
-      const txt = document.getElementById('edit-data-input').value.trim();
-      const p = txt.split('/');
-      if (p.length !== 3) { alert("Data inválida. Use DD/MM/YYYY"); return; }
-      chave = `ponto_${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+    const dataStr = document.getElementById('edit-data-input').value.trim();
+    const partes = dataStr.split('/');
+    if (partes.length !== 3) {
+      alert("Informe a data no formato DD/MM/YYYY");
+      return;
     }
 
+    const dia = partes[0].padStart(2, '0');
+    const mes = partes[1].padStart(2, '0');
+    const ano = partes[2];
+    const chave = `ponto_${ano}-${mes}-${dia}`;
+
     const reg = {
-      e: document.getElementById('edit-e').value,
-      si: document.getElementById('edit-si').value,
-      vi: document.getElementById('edit-vi').value,
-      sf: document.getElementById('edit-sf').value
+      e: document.getElementById('edit-e').value.trim(),
+      si: document.getElementById('edit-si').value.trim(),
+      vi: document.getElementById('edit-vi').value.trim(),
+      sf: document.getElementById('edit-sf').value.trim()
     };
 
     localStorage.setItem(chave, JSON.stringify(reg));
     fecharModal('modalEdicao');
     carregarRelatorio();
     carregarPontosHoje();
+    alert("Ponto salvo com sucesso!");
   }
 
   function fazerBackupJSON() {
     let dados = {};
     for (let i = 0; i < localStorage.length; i++) {
-      let k = localStorage.key(i);
+      const k = localStorage.key(i);
       dados[k] = localStorage.getItem(k);
     }
-    let blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
-    let a = document.createElement('a');
+    const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'backup_ponto.json';
+    a.download = `backup_ponto_${new Date().toISOString().slice(0,10)}.json`;
     a.click();
   }
 
-  function triggerImportarJSON() { document.getElementById('fileInputJSON').click(); }
+  function triggerImportarJSON() {
+    document.getElementById('fileInputJSON').click();
+  }
 
-  function importarJSON(e) {
-    let file = e.target.files[0];
+  function importarJSON(event) {
+    const file = event.target.files[0];
     if (!file) return;
-    let reader = new FileReader();
-    reader.onload = function(evt) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
       try {
-        let dados = JSON.parse(evt.target.result);
+        const dados = JSON.parse(e.target.result);
         Object.keys(dados).forEach(k => localStorage.setItem(k, dados[k]));
-        alert("Backup restaurado com sucesso!");
+        alert("Backup importado com sucesso!");
         carregarPontosHoje();
         carregarRelatorio();
-      } catch(err) { alert("Arquivo JSON inválido."); }
+      } catch (err) {
+        alert("Erro ao importar arquivo JSON inválido.");
+      }
     };
     reader.readAsText(file);
   }
 
   function exportarCSV() {
-    let csv = "Data;Entrada;Saida_Intervalo;Volta_Intervalo;Saida_Final\n";
+    let csv = "Data,Entrada,Saida Intervalo,Volta Intervalo,Saida Final\n";
     for (let i = 0; i < localStorage.length; i++) {
-      let k = localStorage.key(i);
+      const k = localStorage.key(i);
       if (k.startsWith('ponto_')) {
-        let p = k.replace('ponto_', '').split('-');
-        let item = JSON.parse(localStorage.getItem(k));
-        csv += `${p[2]}/${p[1]}/${p[0]};${item.e||''};${item.si||''};${item.vi||''};${item.sf||''}\n`;
+        const p = k.replace('ponto_', '').split('-');
+        const item = JSON.parse(localStorage.getItem(k));
+        csv += `${p[2]}/${p[1]}/${p[0]},${item.e||''},${item.si||''},${item.vi||''},${item.sf||''}\n`;
       }
     }
-    let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    let a = document.createElement('a');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'relatorio_pontos.csv';
+    a.download = 'relatorio_ponto.csv';
     a.click();
   }
 
-  function sairApp() { if(confirm("Deseja fechar a aplicação?")) window.close(); }
+  function sairApp() {
+    if (confirm("Deseja fechar a aplicação?")) {
+      window.close();
+    }
+  }
 
-  window.onload = function() {
-    carregarPontosHoje();
-    carregarRelatorio();
-  };
+  // Inicialização
+  carregarPontosHoje();
 </script>
 </body>
 </html>
