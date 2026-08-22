@@ -687,8 +687,16 @@
   }
 
   window.onload = function() {
-    carregarPontosHoje();
-  };
+  carregarPontosHoje();
+  
+  // Sincroniza automaticamente assim que a página é carregada
+  sincronizarComGoogleSheets(true);
+
+  // Opcional: Sincroniza automaticamente a cada 5 minutos (300.000 ms)
+  setInterval(() => {
+    sincronizarComGoogleSheets(true);
+  }, 300000);
+};
 </script>
 </body>
 </html>
