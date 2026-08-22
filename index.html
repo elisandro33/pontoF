@@ -332,12 +332,12 @@
     const filtroMes = document.getElementById('filtro-mes').value.trim();
     const apenasIncompletos = document.getElementById('chk-incompletos').checked;
 
-    // Configurações salvas
-    const segQuiE = localStorage.getItem('cfg_seg_qui_e') || '07:00';
-    const segQuiS = localStorage.getItem('cfg_seg_qui_s') || '17:00';
-    const sexS = localStorage.getItem('cfg_sex_s') || '16:00';
-    const sabE = localStorage.getItem('cfg_sab_e') || '07:00';
-    const sabS = localStorage.getItem('cfg_sab_s') || '11:00';
+    // Configurações salvas (Padrões ajustados para 07:30)
+    const segQuiE = localStorage.getItem('cfg_seg_qui_e') || '07:30';
+    const segQuiS = localStorage.getItem('cfg_seg_qui_s') || '17:30';
+    const sexS = localStorage.getItem('cfg_sex_s') || '16:30';
+    const sabE = localStorage.getItem('cfg_sab_e') || '07:30';
+    const sabS = localStorage.getItem('cfg_sab_s') || '11:30';
 
     let chaves = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -352,6 +352,114 @@
       return;
     }
 
+    let exibidos = 0;
+    let minExtrasTotalAcumulado = 0;
+    const salarioBase = parseFloat(localStorage.getItem('cfg_salario') || 2000);
+    const horasMes = parseFloat(localStorage.getItem('cfg_horas_mes') || 220);
+    const valorHoraExtra = (salarioBase / horasMes) * 1.5;
+
+    chaves.forEach(chave => {
+      const item = JSON.parse(localStorage.getItem(chave)) || {};
+      const p = chave.replace('ponto_', '').split('-');
+      if (p.length !== 3) return;
+
+      const ano = parseInt(p[0], 10);
+      const mes = parseInt(p[1], 10) - 1;
+      const dia = parseInt(p[2], 10);
+      const dataObj = new Date(ano, mes, dia);
+      const diaSemana = dataObj.getDay(); // 0: Dom, 1: Seg, ..., 5: Sex, 6: Sab
+
+      const dataFmt = `${p[2]}/${p[1]}/${p[0]}`;
+      const mesAno = `${p[1]}/${p[0]}`;
+
+      if (filtroMes && mesAno !== filtroMes) return;
+
+      const isIncompleto = !item.e || !item.si || !item.vi || !item.sf;
+      if (apenasIncompletos && !isIncompleto) return;
+
+      // Define jornada prevista por dia da semana
+      let horaEntradaPrevista = segQuiE;
+      let horaSaidaPrevista = segQuiS;
+      let exigeIntervalo = true;
+
+      if (diaSemana === 5) { // Sexta
+        horaSaidaPrevista = sexS;
+      } else if (diaSemana === 6) { // Sábado
+        horaEntradaPrevista = sabE;
+        horaSaidaPrevista = sabS;
+        exigeIntervalo = false;
+      }
+
+      const minPrevistoEntrada = convHora(horaEntradaPrevista);
+      const minPrevistoSaida = convHora(horaSaidaPrevista);
+
+      let minExtraManha = 0;
+      let minExtraTarde = 0;
+      let minExtraDia = 0;
+      let extraTexto = "00:00 (R$ 0,00)";
+      let intervaloTarde = "--:-- - --:--";
+
+      if (item.e && item.sf) {
+        let m1 = convHora(item.e);
+        let m2 = item.si ? convHora(item.si) : m1;
+        let m3 = item.vi ? convHora(item.vi) : m2;
+        let m4 = convHora(item.sf);
+
+        // 1. EXTRA DA MANHÃ: Se entrou antes e a diferença for de pelo menos 30 minutos
+        if (m1 < minPrevistoEntrada) {
+          let difManha = minPrevistoEntrada - m1;
+          if (difManha >= 30) {
+            minExtraManha = difManha;
+          }
+        }
+
+        // 2. EXTRA DA TARDE: Se saiu depois e a diferença for de pelo menos 30 minutos
+        if (m4 > minPrevistoSaida) {
+          let difTarde = m4 - minPrevistoSaida;
+          if (difTarde >= 30) {
+            minExtraTarde = difTarde;
+            intervaloTarde = `${horaSaidaPrevista} - ${item.sf}`;
+          }
+        }
+
+        // Soma total das horas extras válidas do dia
+        minExtraDia = minExtraManha + minExtraTarde;
+
+        if (item.hora_extra) {
+          extraTexto = `${item.hora_extra}`;
+        } else if (minExtraDia > 0) {
+          minExtrasTotalAcumulado += minExtraDia;
+          let hEx = Math.floor(minExtraDia / 60);
+          let mEx = minExtraDia % 60;
+          let valEx = (minExtraDia / 60) * valorHoraExtra;
+          extraTexto = `${String(hEx).padStart(2,'0')}:${String(mEx).padStart(2,'0')} (R$ ${valEx.toFixed(2).replace('.',',')})`;
+        }
+      }
+
+      exibidos++;
+      const card = document.createElement('div');
+      card.className = 'relatorio-card-item';
+      card.innerHTML = `
+        <div class="relatorio-linha">📅 <strong>Data: ${dataFmt}</strong></div>
+        <div class="relatorio-linha">🟩 Ent: ${item.e || '--:--'} | Sai Almoço: ${item.si || '--:--'}</div>
+        <div class="relatorio-linha">🟥 Vol Almoço: ${item.vi || '--:--'} | Fim: ${item.sf || '--:--'}</div>
+        <div class="relatorio-linha">⭐ Total Extra: ${extraTexto}</div>
+        <div class="relatorio-linha">🏢 Extra Tarde: ${intervaloTarde}</div>
+      `;
+      lista.appendChild(card);
+    });
+
+    const hTotal = Math.floor(minExtrasTotalAcumulado / 60);
+    const mTotal = minExtrasTotalAcumulado % 60;
+    const vTotal = (minExtrasTotalAcumulado / 60) * valorHoraExtra;
+
+    document.getElementById('txt-total-horas').innerText = `${String(hTotal).padStart(2,'0')}:${String(mTotal).padStart(2,'0')}`;
+    document.getElementById('txt-total-valor').innerText = `R$ ${vTotal.toFixed(2).replace('.',',')}`;
+
+    if (exibidos === 0) {
+      lista.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">Nenhum registro encontrado para "${filtroMes}".</div>`;
+    }
+  }
     let exibidos = 0;
     let minExtrasTotalAcumulado = 0;
     const salarioBase = parseFloat(localStorage.getItem('cfg_salario') || 2000);
