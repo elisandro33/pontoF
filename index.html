@@ -99,7 +99,7 @@
   <header>
     <h1 style="font-size: 1.3rem;">Ponto Fácil</h1>
     <div class="header-actions">
-      <button class="btn-sync" onclick="puxarAtualizacaoGitHub()" title="Atualizar do GitHub">🔄</button>
+      <button class="btn-sync" onclick="sincronizarComGoogleSheets(false)" title="Sincronizar">🔄</button>
       <button class="btn-menu" id="btnMenu" onclick="toggleMenu(event)">⋮</button>
     </div>
    
@@ -111,7 +111,6 @@
       <div class="dropdown-item" onclick="abrirModalConfigSalario(); closeMenu();"><span>🤑</span> Configurar Salário</div>
       <div class="dropdown-item" onclick="fazerBackupJSON(); closeMenu();"><span>💾</span> Fazer Backup JSON</div>
       <div class="dropdown-item" onclick="triggerImportarJSON(); closeMenu();"><span>📁</span> Importar JSON</div>
-      <div class="dropdown-item" onclick="sincronizarComGoogleSheets(false); closeMenu();"><span>🔄</span> Sincronizar Tudo</div>
       <div class="dropdown-item" onclick="sairApp(); closeMenu();"><span>❌</span> Sair</div>
     </div>
   </header>
@@ -119,7 +118,6 @@
   <input type="file" id="fileInputJSON" accept=".json" style="display: none;" onchange="importarJSON(event)">
 
   <main>
-    <!-- Aba Ponto -->
     <div id="tab-ponto" class="tab-content active">
       <div class="status-gps" id="txt-status-gps">📍 Trava GPS ativa: Empresa</div>
       <div class="data-destaque" id="txt-data">--/--/----</div>
@@ -142,7 +140,6 @@
       </div>
     </div>
 
-    <!-- Aba Relatório -->
     <div id="tab-relatorio" class="tab-content">
       <div class="filter-row">
         <input type="text" class="input-filter" id="filtro-mes" placeholder="MM/YYYY">
@@ -170,7 +167,6 @@
     <button class="nav-item" id="btn-tab-relatorio" onclick="alternarAba('relatorio')">📊<span style="margin-top:2px;">Relatório</span></button>
   </nav>
 
-  <!-- MODAL MANUAL / EDIÇÃO -->
   <div class="modal" id="modalEdicao">
     <div class="modal-content">
       <h3 id="modal-title-data">Editar Ponto</h3>
@@ -190,18 +186,14 @@
     </div>
   </div>
 
-  <!-- MODAL JORNADA -->
   <div class="modal" id="modalJornada">
     <div class="modal-content">
       <h3>Configurar Jornada</h3>
-      
       <div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Segunda a Quinta</div>
       <div class="form-group"><label>Entrada:</label><input type="text" id="cfg-seg-qui-e" value="07:00"></div>
       <div class="form-group"><label>Saída:</label><input type="text" id="cfg-seg-qui-s" value="17:00"></div>
-
       <div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Sexta-feira</div>
       <div class="form-group"><label>Saída Sexta:</label><input type="text" id="cfg-sex-s" value="16:00"></div>
-
       <div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Sábados</div>
       <div class="chk-container" style="margin-bottom:8px;">
         <input type="checkbox" id="cfg-sab-alternado">
@@ -209,7 +201,6 @@
       </div>
       <div class="form-group"><label>Entrada Sábado:</label><input type="text" id="cfg-sab-e" value="07:00"></div>
       <div class="form-group"><label>Saída Sábado:</label><input type="text" id="cfg-sab-s" value="11:00"></div>
-
       <div class="modal-buttons">
         <div></div>
         <div class="modal-actions-right">
@@ -220,7 +211,6 @@
     </div>
   </div>
 
-  <!-- MODAL LOCAL GPS -->
   <div class="modal" id="modalLocal">
     <div class="modal-content">
       <h3>Configurar Localização</h3>
@@ -237,7 +227,6 @@
     </div>
   </div>
 
-  <!-- MODAL SALÁRIO -->
   <div class="modal" id="modalSalario">
     <div class="modal-content">
       <h3>Configurar Salário</h3>
@@ -255,18 +244,6 @@
 
 <script>
   const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzi6lqvkYaP68l3hyxCR46BzUj1CLJH6pPfqljiwAY_81crRpVkG270swYIy-IuE6HZ/exec";
-
-  function recarregarPagina() {
-    window.location.reload();
-  }
-
-  function puxarAtualizacaoGitHub() {
-    if (confirm("Deseja buscar a versão mais recente no GitHub? O aplicativo será recarregado.")) {
-      // Substitua com a URL Raw do seu arquivo index.html no repositório GitHub
-      const urlGitHub = "https://raw.githubusercontent.com/elisandro33/pontoF/refs/heads/main/index.html";
-      window.location.href = urlGitHub;
-    }
-  }
 
   function exibirToast(mensagem) {
     const toast = document.getElementById('toast-aviso');
@@ -419,7 +396,6 @@
     document.getElementById('cfg-sab-alternado').checked = localStorage.getItem('cfg_sab_alternado') === 'true';
     document.getElementById('cfg-sab-e').value = localStorage.getItem('cfg_sab_e') || '07:00';
     document.getElementById('cfg-sab-s').value = localStorage.getItem('cfg_sab_s') || '11:00';
-    
     document.getElementById('modalJornada').classList.add('active');
   }
 
@@ -430,7 +406,6 @@
     localStorage.setItem('cfg_sab_alternado', document.getElementById('cfg-sab-alternado').checked);
     localStorage.setItem('cfg_sab_e', document.getElementById('cfg-sab-e').value);
     localStorage.setItem('cfg_sab_s', document.getElementById('cfg-sab-s').value);
-
     fecharModal('modalJornada');
     carregarRelatorio();
     alert("Jornada salva com sucesso!");
@@ -439,22 +414,14 @@
   function carregarRelatorio() {
     const lista = document.getElementById('lista-relatorio');
     lista.innerHTML = '';
-
     const filtroMes = document.getElementById('filtro-mes').value.trim();
     const apenasIncompletos = document.getElementById('chk-incompletos').checked;
-
-    const segQuiE = localStorage.getItem('cfg_seg_qui_e') || '07:00';
-    const segQuiS = localStorage.getItem('cfg_seg_qui_s') || '17:00';
-    const sexS = localStorage.getItem('cfg_sex_s') || '16:00';
-    const sabE = localStorage.getItem('cfg_sab_e') || '07:00';
-    const sabS = localStorage.getItem('cfg_sab_s') || '11:00';
-
+    
     let chaves = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
       if (k.startsWith('ponto_')) chaves.push(k);
     }
-
     chaves.sort().reverse();
 
     if (chaves.length === 0) {
@@ -472,172 +439,46 @@
       const item = JSON.parse(localStorage.getItem(chave)) || {};
       const p = chave.replace('ponto_', '').split('-');
       if (p.length !== 3) return;
-
-      const ano = parseInt(p[0], 10);
-      const mes = parseInt(p[1], 10) - 1;
-      const dia = parseInt(p[2], 10);
-      const dataObj = new Date(ano, mes, dia);
-      const diaSemana = dataObj.getDay();
-
-      const dataFmt = `${p[2]}/${p[1]}/${p[0]}`;
       const mesAno = `${p[1]}/${p[0]}`;
-
       if (filtroMes && mesAno !== filtroMes) return;
-
+      
       const isIncompleto = !item.e || !item.si || !item.vi || !item.sf;
       if (apenasIncompletos && !isIncompleto) return;
-
-      let horaEntradaPrevista = segQuiE;
-      let horaSaidaPrevista = segQuiS;
-      let exigeIntervalo = true;
-
-      if (diaSemana === 5) {
-        horaSaidaPrevista = sexS;
-      } else if (diaSemana === 6) {
-        horaEntradaPrevista = sabE;
-        horaSaidaPrevista = sabS;
-        exigeIntervalo = false;
-      }
-
-      const minPrevistoEntrada = convHora(horaEntradaPrevista);
-      const minPrevistoSaida = convHora(horaSaidaPrevista);
-      const minJornadaEsperada = (minPrevistoSaida - minPrevistoEntrada) - (exigeIntervalo ? 60 : 0);
-
-      let minTrab = 0;
-      let minExtraDia = 0;
-      let extraTexto = "00:00 (R$ 0,00)";
-      let intervaloTarde = "--:-- - --:--";
-
-      if (item.e && item.sf) {
-        let m1 = convHora(item.e);
-        let m2 = item.si ? convHora(item.si) : m1;
-        let m3 = item.vi ? convHora(item.vi) : m2;
-        let m4 = convHora(item.sf);
-
-        minTrab = (m2 - m1) + (m4 - m3);
-
-        if (minTrab > minJornadaEsperada) {
-          minExtraDia = minTrab - minJornadaEsperada;
-        }
-
-        if (item.hora_extra) {
-          extraTexto = `${item.hora_extra}`;
-        } else if (minExtraDia > 0) {
-          minExtrasTotalAcumulado += minExtraDia;
-          let hEx = Math.floor(minExtraDia / 60);
-          let mEx = minExtraDia % 60;
-          let valEx = (minExtraDia / 60) * valorHoraExtra;
-          extraTexto = `${String(hEx).padStart(2,'0')}:${String(mEx).padStart(2,'0')} (R$ ${valEx.toFixed(2).replace('.',',')})`;
-        }
-
-        if (m4 > minPrevistoSaida) {
-          intervaloTarde = `${horaSaidaPrevista} - ${item.sf}`;
-        }
-      }
-
+      
       exibidos++;
       const card = document.createElement('div');
       card.className = 'relatorio-card-item';
-      card.onclick = () => editarPontoExistente(chave, dataFmt);
+      card.onclick = () => editarPontoExistente(chave, `${p[2]}/${p[1]}/${p[0]}`);
       card.innerHTML = `
-        <div class="relatorio-linha">📅 <strong>Data: ${dataFmt}</strong></div>
-        <div class="relatorio-linha">🟩 Ent: ${item.e || '--:--'} | Sai Almoço: ${item.si || '--:--'}</div>
-        <div class="relatorio-linha">🟥 Vol Almoço: ${item.vi || '--:--'} | Fim: ${item.sf || '--:--'}</div>
-        <div class="relatorio-linha">⭐ Total Extra: ${extraTexto}</div>
-        <div class="relatorio-linha">🏢 Extra Tarde: ${intervaloTarde}</div>
+        <div class="relatorio-linha">📅 <strong>Data: ${p[2]}/${p[1]}/${p[0]}</strong></div>
+        <div class="relatorio-linha">🟩 Ent: ${item.e || '--:--'} | Sai Int: ${item.si || '--:--'}</div>
+        <div class="relatorio-linha">🟥 Vol Int: ${item.vi || '--:--'} | Fim: ${item.sf || '--:--'}</div>
       `;
       lista.appendChild(card);
     });
-
-    const hTotal = Math.floor(minExtrasTotalAcumulado / 60);
-    const mTotal = minExtrasTotalAcumulado % 60;
-    const vTotal = (minExtrasTotalAcumulado / 60) * valorHoraExtra;
-
-    document.getElementById('txt-total-horas').innerText = `${String(hTotal).padStart(2,'0')}:${String(mTotal).padStart(2,'0')}`;
-    document.getElementById('txt-total-valor').innerText = `R$ ${vTotal.toFixed(2).replace('.',',')}`;
-
-    if (exibidos === 0) {
-      lista.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">Nenhum registro encontrado para "${filtroMes}".</div>`;
-    }
+    if (exibidos === 0) lista.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">Nenhum registro encontrado.</div>`;
   }
 
   function sincronizarComGoogleSheets(silencioso = false) {
     window.processarDadosSheets = function(dados) {
-      if (!dados || dados.status === "error") {
-        if (!silencioso) alert("Erro na planilha: " + (dados ? dados.message : "Vazia"));
-        return;
-      }
-
-      if (!Array.isArray(dados) || dados.length === 0) {
-        if (!silencioso) alert("Sincronização concluída, mas sem registros.");
-        return;
-      }
-
-      let importados = 0;
-      let ultimoMesAno = "";
-
-      function formatarHoraGoogleSheets(valor) {
-        if (!valor) return '';
-        let str = String(valor).trim();
-        if (/^\d{1,2}:\d{2}/.test(str)) {
-          let partes = str.split(':');
-          return `${partes[0].padStart(2, '0')}:${partes[1].padStart(2, '0')}`;
-        }
-        let dateObj = new Date(valor);
-        if (!isNaN(dateObj.getTime())) {
-          let h = String(dateObj.getHours()).padStart(2, '0');
-          let m = String(dateObj.getMinutes()).padStart(2, '0');
-          return `${h}:${m}`;
-        }
-        return '';
-      }
-
+      if (!dados || dados.status === "error") { return; }
       dados.forEach(item => {
-        let rawData = item.data || item.Data;
+        let rawData = item.data;
         if (rawData) {
-          let dataStr = String(rawData).trim();
-          if (dataStr.includes('T')) {
-            let dateObj = new Date(dataStr);
-            let dia = String(dateObj.getUTCDate()).padStart(2, '0');
-            let mes = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
-            let ano = dateObj.getUTCFullYear();
-            dataStr = `${dia}/${mes}/${ano}`;
-          }
-
-          let partes = dataStr.split('/');
-          if (partes.length === 3) {
-            let dia = partes[0].trim().padStart(2, '0');
-            let mes = partes[1].trim().padStart(2, '0');
-            let ano = partes[2].trim();
-            if (ano.length === 2) ano = `20${ano}`;
-
-            let chave = `ponto_${ano}-${mes}-${dia}`;
-            ultimoMesAno = `${mes}/${ano}`;
-
-            let registro = {
-              e: formatarHoraGoogleSheets(item.entrada),
-              si: formatarHoraGoogleSheets(item.saida_intervalo),
-              vi: formatarHoraGoogleSheets(item.volta_intervalo),
-              sf: formatarHoraGoogleSheets(item.saida_final),
-              hora_extra: item.hora_extra || '',
-              percentual: item.percentual || ''
-            };
-
-            localStorage.setItem(chave, JSON.stringify(registro));
-            importados++;
-          }
+           let dateObj = new Date(rawData);
+           let dia = String(dateObj.getUTCDate()).padStart(2, '0');
+           let mes = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+           let ano = dateObj.getUTCFullYear();
+           let chave = `ponto_${ano}-${mes}-${dia}`;
+           localStorage.setItem(chave, JSON.stringify({e: item.entrada, si: item.saida_intervalo, vi: item.volta_intervalo, sf: item.saida_final}));
         }
       });
-
-      if (ultimoMesAno) document.getElementById('filtro-mes').value = ultimoMesAno;
       carregarPontosHoje();
       carregarRelatorio();
-      exibirToast("Sincronização OK!");
+      exibirToast("Sincronizado!");
     };
-
     const oldScript = document.getElementById('jsonp-sheets-script');
     if (oldScript) oldScript.remove();
-
     const script = document.createElement('script');
     script.id = 'jsonp-sheets-script';
     script.src = `${GOOGLE_SHEETS_URL}?sheet=ATUALIZADA&callback=processarDadosSheets&t=${new Date().getTime()}`;
@@ -653,108 +494,51 @@
 
   function obterGpsAtual() {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const coords = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
-          document.getElementById('cfg-local-coords').value = coords;
+      navigator.geolocation.getCurrentPosition((pos) => {
+          document.getElementById('cfg-local-coords').value = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
           alert("Coordenadas capturadas!");
-        },
-        (err) => { alert("Erro ao obter GPS: " + err.message); },
-        { enableHighAccuracy: true }
-      );
-    } else {
-      alert("Geolocalização não é suportada neste navegador.");
+      }, (err) => alert("Erro ao obter GPS: " + err.message), { enableHighAccuracy: true });
     }
   }
 
   function salvarConfigLocal() {
-    const nome = document.getElementById('cfg-local-nome').value.trim() || 'Sede';
-    const coords = document.getElementById('cfg-local-coords').value.trim();
-    const raio = document.getElementById('cfg-local-raio').value;
-
-    localStorage.setItem('cfg_local_nome', nome);
-    localStorage.setItem('cfg_local_coords', coords);
-    localStorage.setItem('cfg_local_raio', raio);
-
+    localStorage.setItem('cfg_local_nome', document.getElementById('cfg-local-nome').value);
+    localStorage.setItem('cfg_local_coords', document.getElementById('cfg-local-coords').value);
+    localStorage.setItem('cfg_local_raio', document.getElementById('cfg-local-raio').value);
     fecharModal('modalLocal');
     carregarPontosHoje();
-    alert("Local configurado com sucesso!");
   }
 
-  function recalcularHistorico() {
-    carregarRelatorio();
-    alert("Histórico recalculado com sucesso!");
-  }
-
-  function abrirModalPontoManual() {
-    document.getElementById('modal-title-data').innerText = 'Ponto Manual';
-    document.getElementById('edit-chave').value = '';
-    document.getElementById('edit-data-input').value = '';
-    document.getElementById('edit-e').value = '';
-    document.getElementById('edit-si').value = '';
-    document.getElementById('edit-vi').value = '';
-    document.getElementById('edit-sf').value = '';
-    document.getElementById('group-data-manual').style.display = 'block';
-    document.getElementById('btn-excluir-ponto').style.display = 'none';
-    document.getElementById('modalEdicao').classList.add('active');
-  }
-
+  function recalcularHistorico() { carregarRelatorio(); }
+  function abrirModalPontoManual() { document.getElementById('modalEdicao').classList.add('active'); }
   function editarPontoExistente(chave, dataFmt) {
     const reg = JSON.parse(localStorage.getItem(chave)) || {};
-    document.getElementById('modal-title-data').innerText = `Editar Ponto (${dataFmt})`;
     document.getElementById('edit-chave').value = chave;
-    document.getElementById('edit-data-input').value = dataFmt;
-    document.getElementById('group-data-manual').style.display = 'none';
     document.getElementById('edit-e').value = reg.e || '';
     document.getElementById('edit-si').value = reg.si || '';
     document.getElementById('edit-vi').value = reg.vi || '';
     document.getElementById('edit-sf').value = reg.sf || '';
-    document.getElementById('btn-excluir-ponto').style.display = 'inline-block';
     document.getElementById('modalEdicao').classList.add('active');
   }
 
   function excluirPonto() {
-    const chave = document.getElementById('edit-chave').value;
-    if (!chave) return;
-
-    if (confirm("Tem certeza que deseja excluir o ponto desta data?")) {
-      localStorage.removeItem(chave);
-      fecharModal('modalEdicao');
-      carregarRelatorio();
-      carregarPontosHoje();
-      alert("Registro excluído com sucesso!");
-    }
+    localStorage.removeItem(document.getElementById('edit-chave').value);
+    fecharModal('modalEdicao');
+    carregarRelatorio();
+    carregarPontosHoje();
   }
 
   function abrirModalConfigSalario() { document.getElementById('modalSalario').classList.add('active'); }
-
   function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
-
   function salvarConfigSalario() {
     localStorage.setItem('cfg_salario', document.getElementById('cfg-salario-val').value);
     localStorage.setItem('cfg_horas_mes', document.getElementById('cfg-horas-mes').value);
     fecharModal('modalSalario');
-    carregarRelatorio();
-    alert("Configuração de Salário salva!");
   }
 
   function salvarEdicao() {
-    let chave = document.getElementById('edit-chave').value;
-    if (!chave) {
-      const txt = document.getElementById('edit-data-input').value.trim();
-      const p = txt.split('/');
-      if (p.length !== 3) { alert("Data inválida. Use DD/MM/YYYY"); return; }
-      chave = `ponto_${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
-    }
-
-    const reg = {
-      e: document.getElementById('edit-e').value,
-      si: document.getElementById('edit-si').value,
-      vi: document.getElementById('edit-vi').value,
-      sf: document.getElementById('edit-sf').value
-    };
-
-    localStorage.setItem(chave, JSON.stringify(reg));
+    const reg = { e: document.getElementById('edit-e').value, si: document.getElementById('edit-si').value, vi: document.getElementById('edit-vi').value, sf: document.getElementById('edit-sf').value };
+    localStorage.setItem(document.getElementById('edit-chave').value, JSON.stringify(reg));
     fecharModal('modalEdicao');
     carregarRelatorio();
     carregarPontosHoje();
@@ -762,33 +546,19 @@
 
   function fazerBackupJSON() {
     let dados = {};
-    for (let i = 0; i < localStorage.length; i++) {
-      let k = localStorage.key(i);
-      dados[k] = localStorage.getItem(k);
-    }
-    let blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
-    let a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'backup_ponto.json';
-    a.click();
+    for (let i = 0; i < localStorage.length; i++) { let k = localStorage.key(i); dados[k] = localStorage.getItem(k); }
+    let a = document.createElement('a'); a.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(dados)); a.download = 'backup_ponto.json'; a.click();
   }
 
   function triggerImportarJSON() { document.getElementById('fileInputJSON').click(); }
-
   function importarJSON(e) {
-    let file = e.target.files[0];
-    if (!file) return;
     let reader = new FileReader();
     reader.onload = function(evt) {
-      try {
         let dados = JSON.parse(evt.target.result);
         Object.keys(dados).forEach(k => localStorage.setItem(k, dados[k]));
-        alert("Backup restaurado com sucesso!");
-        carregarPontosHoje();
-        carregarRelatorio();
-      } catch(err) { alert("Arquivo JSON inválido."); }
+        location.reload();
     };
-    reader.readAsText(file);
+    reader.readAsText(e.target.files[0]);
   }
 
   function exportarCSV() {
@@ -801,14 +571,10 @@
         csv += `${p[2]}/${p[1]}/${p[0]};${item.e||''};${item.si||''};${item.vi||''};${item.sf||''}\n`;
       }
     }
-    let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    let a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'relatorio_pontos.csv';
-    a.click();
+    let a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'relatorio.csv'; a.click();
   }
 
-  function sairApp() { if(confirm("Deseja fechar a aplicação?")) window.close(); }
+  function sairApp() { if(confirm("Fechar?")) window.close(); }
 
   window.onload = function() {
     carregarPontosHoje();
