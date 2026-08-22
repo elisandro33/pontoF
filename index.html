@@ -41,6 +41,7 @@
     .tab-content.active { display: block !important; }
 
     .status-gps { text-align: center; color: #15803d; font-weight: bold; margin-bottom: 8px; font-size: 0.9rem; }
+    .status-gps-erro { color: #dc2626; font-weight: bold; margin-top: 2px; font-size: 0.85rem; }
     .data-destaque { text-align: center; font-size: 2.1rem; font-weight: 800; }
     .proximo-registro { text-align: center; color: var(--text-secondary); margin-bottom: 20px; }
     .icon-container { display: flex; justify-content: center; margin-bottom: 20px; cursor: pointer; }
@@ -305,6 +306,7 @@
 
   function validarEBatendoPonto() {
     const localCoords = localStorage.getItem('cfg_local_coords');
+    const nomeEmpresa = localStorage.getItem('cfg_local_nome') || 'Empresa';
     const raioPermitido = parseFloat(localStorage.getItem('cfg_local_raio') || '100');
 
     if (!localCoords) {
@@ -326,24 +328,30 @@
     const latEmpresa = parseFloat(partes[0].trim());
     const lonEmpresa = parseFloat(partes[1].trim());
 
-    document.getElementById('txt-status-gps').innerText = "📍 Obtendo sua localização...";
+    document.getElementById('txt-status-gps').innerHTML = `📍 Obtendo sua localização...`;
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const latAtual = pos.coords.latitude;
         const lonAtual = pos.coords.longitude;
-        const distancia = calcularDistanciaEmMetros(latEmpresa, lonEmpresa, latAtual, lonAtual);
+        const distancia = Math.round(calcularDistanciaEmMetros(latEmpresa, lonEmpresa, latAtual, lonAtual));
 
         if (distancia <= raioPermitido) {
-          document.getElementById('txt-status-gps').innerText = `📍 GPS OK (${localStorage.getItem('cfg_local_nome') || 'Empresa'})`;
+          document.getElementById('txt-status-gps').innerHTML = `📍 Trava de GPS: ${nomeEmpresa}`;
           registrarPontoAtual();
         } else {
-          document.getElementById('txt-status-gps').innerText = `❌ Fora do Local (${Math.round(distancia)}m de distância)`;
-          alert(`🚫 Ponto não registrado! Você está a ${Math.round(distancia)} metros do local permitido. Raio máximo: ${raioPermitido}m.`);
+          document.getElementById('txt-status-gps').innerHTML = `
+            📍 Trava de GPS: ${nomeEmpresa}
+            <div class="status-gps-erro">Fora do perímetro (${distancia}m)</div>
+          `;
+          alert(`🚫 Ponto não registrado! Você está a ${distancia} metros do local permitido. Raio máximo: ${raioPermitido}m.`);
         }
       },
       (err) => {
-        document.getElementById('txt-status-gps').innerText = "❌ GPS Desativado/Negado";
+        document.getElementById('txt-status-gps').innerHTML = `
+          📍 Trava de GPS: ${nomeEmpresa}
+          <div class="status-gps-erro">GPS Desativado/Negado</div>
+        `;
         alert("⚠️ Não foi possível obter sua localização. Ative o GPS do aparelho para bater o ponto.");
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -365,9 +373,9 @@
 
     const localCfg = localStorage.getItem('cfg_local_nome');
     if (localCfg) {
-      document.getElementById('txt-status-gps').innerText = `📍 Trava GPS ativa: ${localCfg}`;
+      document.getElementById('txt-status-gps').innerHTML = `📍 Trava de GPS: ${localCfg}`;
     } else {
-      document.getElementById('txt-status-gps').innerText = `⚠️ GPS Não Configurado`;
+      document.getElementById('txt-status-gps').innerHTML = `⚠️ GPS Não Configurado`;
     }
   }
 
