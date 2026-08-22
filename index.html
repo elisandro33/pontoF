@@ -40,8 +40,11 @@
     .tab-content { display: none; }
     .tab-content.active { display: block !important; }
 
-    .status-gps { text-align: center; color: #15803d; font-weight: bold; margin-bottom: 8px; font-size: 0.95rem; line-height: 1.3; }
-    .status-gps-erro { color: #dc2626; font-weight: bold; margin-top: 3px; font-size: 0.9rem; }
+    .status-gps { text-align: center; color: #15803d; font-weight: bold; margin-bottom: 4px; font-size: 0.95rem; line-height: 1.3; }
+    .status-gps-sub { text-align: center; font-size: 0.85rem; font-weight: 600; margin-bottom: 12px; min-height: 18px; }
+    .status-gps-ok { color: #16a34a; }
+    .status-gps-erro { color: #dc2626; }
+    
     .data-destaque { text-align: center; font-size: 2.1rem; font-weight: 800; }
     .proximo-registro { text-align: center; color: var(--text-secondary); margin-bottom: 20px; }
     .icon-container { display: flex; justify-content: center; margin-bottom: 20px; cursor: pointer; }
@@ -102,7 +105,7 @@
       <button class="btn-sync" onclick="sincronizarComGoogleSheets(false)" title="Sincronizar">🔄</button>
       <button class="btn-menu" id="btnMenu" onclick="toggleMenu(event)">⋮</button>
     </div>
-   
+    
     <div class="dropdown-menu" id="dropdownMenu">
       <div class="dropdown-item" onclick="recalcularHistorico(); closeMenu();"><span>🔄</span> Recalcular Histórico</div>
       <div class="dropdown-item" onclick="abrirModalPontoManual(); closeMenu();"><span>📝</span> Adicionar Ponto Manual</div>
@@ -120,6 +123,8 @@
   <main>
     <div id="tab-ponto" class="tab-content active">
       <div class="status-gps" id="txt-status-gps">📍 Trava GPS ativa: Empresa</div>
+      <div class="status-gps-sub" id="txt-sub-gps"></div>
+
       <div class="data-destaque" id="txt-data">--/--/----</div>
       <div class="proximo-registro" id="txt-proximo">Próximo Registro: Entrada</div>
 
@@ -141,6 +146,8 @@
     </div>
 
     <div id="tab-relatorio" class="tab-content">
+      <h2 style="color: #0088ff; margin-bottom: 12px; font-size: 1.3rem;">Filtros do Relatório</h2>
+      
       <div class="filter-row">
         <input type="text" class="input-filter" id="filtro-mes" placeholder="MM/YYYY">
         <button class="btn-filtrar" onclick="carregarRelatorio()">FILTRAR</button>
@@ -289,6 +296,14 @@
     return R * c;
   }
 
+  function convHora(h) {
+    if (!h) return 0;
+    const str = String(h).trim();
+    if (!str.includes(':')) return 0;
+    const p = str.split(':');
+    return (parseInt(p[0], 10) * 60) + parseInt(p[1], 10);
+  }
+
   function carregarPontosHoje() {
     const info = obterDataHojeFormatada();
     document.getElementById('txt-data').innerText = info.exibicao;
@@ -302,6 +317,14 @@
     document.getElementById('val-vi').innerText = reg.vi || '--:--';
     document.getElementById('val-sf').innerText = reg.sf || '--:--';
 
+    // Texto de próxima marcação
+    let proxText = "Próximo Registro: Entrada";
+    if (reg.e && !reg.si) proxText = "Próximo Registro: Saída Intervalo";
+    else if (reg.si && !reg.vi) proxText = "Próximo Registro: Volta Intervalo";
+    else if (reg.vi && !reg.sf) proxText = "Próximo Registro: Saída Final";
+    else if (reg.sf) proxText = "Todos os registros efetuados hoje!";
+    document.getElementById('txt-proximo').innerText = proxText;
+
     atualizarStatusGPSPadrao();
   }
 
@@ -314,6 +337,7 @@
     const localCoords = localStorage.getItem('cfg_local_coords');
     const nomeEmpresa = localStorage.getItem('cfg_local_nome') || 'Empresa';
     const raioPermitido = parseFloat(localStorage.getItem('cfg_local_raio') || '100');
+    const subEl = document.getElementById('txt-sub-gps');
 
     if (!localCoords) {
       alert("⚠️ Lançamento Bloqueado: As coordenadas do local não foram configuradas no menu!");
@@ -334,7 +358,10 @@
     const latEmpresa = parseFloat(partes[0].trim());
     const lonEmpresa = parseFloat(partes[1].trim());
 
-    document.getElementById('txt-status-gps').innerHTML = `📍 Obtendo localização...`;
+    if(subEl) {
+      subEl.className = "status-gps-sub";
+      subEl.innerText = "⏳ Verificando localização...";
+    }
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -343,21 +370,24 @@
         const distancia = Math.round(calcularDistanciaEmMetros(latEmpresa, lonEmpresa, latAtual, lonAtual));
 
         if (distancia <= raioPermitido) {
-          atualizarStatusGPSPadrao();
+          if (subEl) {
+            subEl.className = "status-gps-sub status-gps-ok";
+            subEl.innerText = `✅ Você está no local (${distancia}m da empresa)`;
+          }
           registrarPontoAtual();
         } else {
-          document.getElementById('txt-status-gps').innerHTML = `
-            📍 Trava GPS ativa: ${nomeEmpresa}
-            <div class="status-gps-erro">Fora do perímetro (${distancia}m)</div>
-          `;
+          if (subEl) {
+            subEl.className = "status-gps-sub status-gps-erro";
+            subEl.innerText = `⚠️ Fora do raio permitido (${distancia}m da empresa)`;
+          }
           alert(`🚫 Ponto não registrado! Você está a ${distancia} metros de ${nomeEmpresa}. Raio máximo: ${raioPermitido}m.`);
         }
       },
       (err) => {
-        document.getElementById('txt-status-gps').innerHTML = `
-          📍 Trava GPS ativa: ${nomeEmpresa}
-          <div class="status-gps-erro">GPS Desativado ou Negado</div>
-        `;
+        if (subEl) {
+          subEl.className = "status-gps-sub status-gps-erro";
+          subEl.innerText = "❌ Erro ao obter localização GPS";
+        }
         alert("⚠️ Não foi possível obter sua localização. Ative o GPS do aparelho.");
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -379,14 +409,6 @@
     localStorage.setItem(info.chave, JSON.stringify(reg));
     carregarPontosHoje();
     alert(`Ponto registrado com sucesso às ${hora}!`);
-  }
-
-  function convHora(h) {
-    if (!h) return 0;
-    const str = String(h).trim();
-    if (!str.includes(':')) return 0;
-    const p = str.split(':');
-    return (parseInt(p[0], 10) * 60) + parseInt(p[1], 10);
   }
 
   function abrirModalConfigJornada() {
@@ -411,7 +433,7 @@
     alert("Jornada salva com sucesso!");
   }
 
-function carregarRelatorio() {
+  function carregarRelatorio() {
     const lista = document.getElementById('lista-relatorio');
     lista.innerHTML = '';
     const filtroMes = document.getElementById('filtro-mes').value.trim();
@@ -497,13 +519,12 @@ function carregarRelatorio() {
         if (minInicio > 0 && minFim > minInicio) {
           let minTrabalhados = (minFim - minInicio) - tempoIntervalo;
 
-          // Se for sábado e não houver jornada padrão configurada ou se for extra integral:
           if (!sabAlternado) {
-            // Todo o tempo trabalhado no sábado conta como Extra
+            // Sábado considerado extra total
             minExtraDia = minTrabalhados;
             extraTardeStr = `${e_fmt} - ${sf_fmt}`;
           } else {
-            // Se tem jornada de sábado configurada, calcula o que exceder a saída do sábado
+            // Sábado alternado: o que passar do fim da jornada do sábado
             const minSaidaSab = convHora(sabS);
             if (minFim > minSaidaSab) {
               minExtraDia = minFim - minSaidaSab;
@@ -548,7 +569,7 @@ function carregarRelatorio() {
       lista.appendChild(card);
     });
 
-    // Atualiza o total acumulado no card verde do topo
+    // Atualiza o total acumulado do topo
     const totHoras = Math.floor(minExtrasTotalAcumulado / 60);
     const totMins = minExtrasTotalAcumulado % 60;
     document.getElementById('txt-total-horas').innerText = `${String(totHoras).padStart(2, '0')}:${String(totMins).padStart(2, '0')}`;
@@ -557,7 +578,9 @@ function carregarRelatorio() {
     document.getElementById('txt-total-valor').innerText = `R$ ${valTotalAcc}`;
 
     if (exibidos === 0) lista.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">Nenhum registro encontrado.</div>`;
-  }  function sincronizarComGoogleSheets(silencioso = false) {
+  }
+
+  function sincronizarComGoogleSheets(silencioso = false) {
     window.processarDadosSheets = function(dados) {
       if (!dados || dados.status === "error") { return; }
       dados.forEach(item => {
@@ -607,7 +630,7 @@ function carregarRelatorio() {
     carregarPontosHoje();
   }
 
-  function recalcularHistorico() { carregarRelatorio(); }
+  function recalcularHistorico() { carregarRelatorio(); alert("Histórico recalculado!"); }
   function abrirModalPontoManual() { document.getElementById('modalEdicao').classList.add('active'); }
   function editarPontoExistente(chave, dataFmt) {
     const reg = JSON.parse(localStorage.getItem(chave)) || {};
@@ -626,12 +649,20 @@ function carregarRelatorio() {
     carregarPontosHoje();
   }
 
-  function abrirModalConfigSalario() { document.getElementById('modalSalario').classList.add('active'); }
+  function abrirModalConfigSalario() { 
+    document.getElementById('cfg-salario-val').value = localStorage.getItem('cfg_salario') || 2000;
+    document.getElementById('cfg-horas-mes').value = localStorage.getItem('cfg_horas_mes') || 220;
+    document.getElementById('modalSalario').classList.add('active'); 
+  }
+  
   function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
+  
   function salvarConfigSalario() {
     localStorage.setItem('cfg_salario', document.getElementById('cfg-salario-val').value);
     localStorage.setItem('cfg_horas_mes', document.getElementById('cfg-horas-mes').value);
     fecharModal('modalSalario');
+    carregarRelatorio();
+    alert("Configurações salariais salvas!");
   }
 
   function salvarEdicao() {
@@ -642,42 +673,27 @@ function carregarRelatorio() {
     carregarPontosHoje();
   }
 
-  function fazerBackupJSON() {
-    let dados = {};
-    for (let i = 0; i < localStorage.length; i++) { let k = localStorage.key(i); dados[k] = localStorage.getItem(k); }
-    let a = document.createElement('a'); a.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(dados)); a.download = 'backup_ponto.json'; a.click();
-  }
-
-  function triggerImportarJSON() { document.getElementById('fileInputJSON').click(); }
-  function importarJSON(e) {
-    let reader = new FileReader();
-    reader.onload = function(evt) {
-        let dados = JSON.parse(evt.target.result);
-        Object.keys(dados).forEach(k => localStorage.setItem(k, dados[k]));
-        location.reload();
-    };
-    reader.readAsText(e.target.files[0]);
-  }
-
   function exportarCSV() {
     let csv = "Data;Entrada;Saida_Intervalo;Volta_Intervalo;Saida_Final\n";
     for (let i = 0; i < localStorage.length; i++) {
-      let k = localStorage.key(i);
+      const k = localStorage.key(i);
       if (k.startsWith('ponto_')) {
-        let p = k.replace('ponto_', '').split('-');
-        let item = JSON.parse(localStorage.getItem(k));
+        const item = JSON.parse(localStorage.getItem(k));
+        const p = k.replace('ponto_', '').split('-');
         csv += `${p[2]}/${p[1]}/${p[0]};${item.e||''};${item.si||''};${item.vi||''};${item.sf||''}\n`;
       }
     }
-    let a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'relatorio.csv'; a.click();
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", "relatorio_ponto.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
-
-  function sairApp() { if(confirm("Fechar?")) window.close(); }
 
   window.onload = function() {
     carregarPontosHoje();
-    carregarRelatorio();
-    sincronizarComGoogleSheets(true);
   };
 </script>
 </body>
