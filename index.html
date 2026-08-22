@@ -51,7 +51,6 @@
     .lista-marcacoes { display: flex; flex-direction: column; gap: 10px; }
     .item-marcacao { display: flex; justify-content: space-between; font-size: 1.05rem; }
 
-    /* Filtros da aba Relatório com dimensionamento correto */
     .filter-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
     .input-filter { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 1rem; width: 100%; }
     .btn-filtrar { background: #0088ff; color: white; border: none; padding: 9px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; }
@@ -64,7 +63,6 @@
     .total-valor { font-size: 1.2rem; font-weight: 700; color: #c2410c; margin-bottom: 10px; }
     .btn-export { width: 100%; background: #2e7d32; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
-    /* Estilo dos itens de relatório idênticos à foto */
     .lista-relatorio-itens { display: flex; flex-direction: column; gap: 10px; }
     .relatorio-card-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; font-size: 0.95rem; line-height: 1.4; color: #1e293b; }
     .relatorio-linha { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
@@ -92,7 +90,6 @@
       <button class="btn-menu" id="btnMenu" onclick="toggleMenu(event)">⋮</button>
     </div>
 
-    <!-- Menu 3 Pontinhos da Imagem -->
     <div class="dropdown-menu" id="dropdownMenu">
       <div class="dropdown-item" onclick="recalcularHistorico(); closeMenu();"><span>🔄</span> Recalcular Histórico</div>
       <div class="dropdown-item" onclick="abrirModalPontoManual(); closeMenu();"><span>📝</span> Adicionar Ponto Manual</div>
@@ -190,6 +187,21 @@
     </div>
   </div>
 
+  <!-- MODAL LOCAL GPS (ADICIONADO) -->
+  <div class="modal" id="modalLocal">
+    <div class="modal-content">
+      <h3>Configurar Localização</h3>
+      <div class="form-group"><label>Nome do Local:</label><input type="text" id="cfg-local-nome" placeholder="Ex: Sede"></div>
+      <div class="form-group"><label>Coordenadas (Lat, Long):</label><input type="text" id="cfg-local-coords" placeholder="-23.5505, -46.6333"></div>
+      <div class="form-group"><label>Raio de Tolerância (metros):</label><input type="number" id="cfg-local-raio" value="100"></div>
+      <div class="modal-buttons">
+        <button class="btn-modal" style="background:#64748b; color:#fff;" onclick="obterGpsAtual()">Capturar GPS</button>
+        <button class="btn-modal" onclick="fecharModal('modalLocal')">Cancelar</button>
+        <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigLocal()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL SALÁRIO -->
   <div class="modal" id="modalSalario">
     <div class="modal-content">
@@ -208,6 +220,12 @@
 
   function toggleMenu(e) { if(e) e.stopPropagation(); document.getElementById('dropdownMenu').classList.toggle('active'); }
   function closeMenu() { document.getElementById('dropdownMenu').classList.remove('active'); }
+
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('dropdownMenu');
+    const btn = document.getElementById('btnMenu');
+    if (menu && !menu.contains(e.target) && e.target !== btn) closeMenu();
+  });
 
   function alternarAba(aba) {
     document.getElementById('tab-ponto').classList.toggle('active', aba === 'ponto');
@@ -259,6 +277,14 @@
 
     localStorage.setItem(info.chave, JSON.stringify(reg));
     carregarPontosHoje();
+  }
+
+  function convHora(h) {
+    if (!h) return 0;
+    const str = String(h).trim();
+    if (!str.includes(':')) return 0;
+    const p = str.split(':');
+    return (parseInt(p[0], 10) * 60) + parseInt(p[1], 10);
   }
 
   function carregarRelatorio() {
@@ -352,7 +378,7 @@
     }
   }
 
-function sincronizarComGoogleSheets() {
+  function sincronizarComGoogleSheets() {
     alert("Iniciando busca de dados no Google Sheets...");
 
     window.processarDadosSheets = function(dados) {
@@ -369,25 +395,19 @@ function sincronizarComGoogleSheets() {
       let importados = 0;
       let ultimoMesAno = "";
 
-      // Função para extrair HH:mm corretamente mesmo de objetos Date do Sheets
       function formatarHoraGoogleSheets(valor) {
         if (!valor) return '';
         let str = String(valor).trim();
-        
-        // Se já estiver no formato HH:mm ou HH:mm:ss
         if (/^\d{1,2}:\d{2}/.test(str)) {
           let partes = str.split(':');
           return `${partes[0].padStart(2, '0')}:${partes[1].padStart(2, '0')}`;
         }
-        
-        // Se for um objeto Date convertido em String (ex: Sat Dec 30 1899 07:03:00 GMT...)
         let dateObj = new Date(valor);
         if (!isNaN(dateObj.getTime())) {
           let h = String(dateObj.getHours()).padStart(2, '0');
           let m = String(dateObj.getMinutes()).padStart(2, '0');
           return `${h}:${m}`;
         }
-        
         return '';
       }
 
@@ -442,6 +462,7 @@ function sincronizarComGoogleSheets() {
     script.src = `${GOOGLE_SHEETS_URL}?sheet=ATUALIZADA&callback=processarDadosSheets&t=${new Date().getTime()}`;
     document.body.appendChild(script);
   }
+
   function abrirModalConfigLocal() {
     document.getElementById('cfg-local-nome').value = localStorage.getItem('cfg_local_nome') || '';
     document.getElementById('cfg-local-coords').value = localStorage.getItem('cfg_local_coords') || '';
@@ -581,12 +602,6 @@ function sincronizarComGoogleSheets() {
   }
 
   function sairApp() { if(confirm("Deseja fechar a aplicação?")) window.close(); }
-
-  function convHora(h) {
-    if (!h || !h.includes(':')) return 0;
-    const p = h.split(':');
-    return (parseInt(p[0]) * 60) + parseInt(p[1]);
-  }
 
   window.onload = function() {
     carregarPontosHoje();
