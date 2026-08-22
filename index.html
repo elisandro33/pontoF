@@ -99,14 +99,9 @@
   <header>
     <h1 style="font-size: 1.3rem;">Ponto Fácil</h1>
     <div class="header-actions">
-      <button class="btn-sync" onclick="recarregarPagina()" title="Recarregar Página">🔄</button>
+      <button class="btn-sync" onclick="puxarAtualizacaoGitHub()" title="Atualizar do GitHub">🔄</button>
       <button class="btn-menu" id="btnMenu" onclick="toggleMenu(event)">⋮</button>
     </div>
-
-<div class="header-actions">
-  <button class="btn-sync" onclick="puxarAtualizacaoGitHub()" title="Atualizar do GitHub">🔄</button>
-  <button class="btn-menu" id="btnMenu" onclick="toggleMenu(event)">⋮</button>
-</div>
    
     <div class="dropdown-menu" id="dropdownMenu">
       <div class="dropdown-item" onclick="recalcularHistorico(); closeMenu();"><span>🔄</span> Recalcular Histórico</div>
@@ -263,6 +258,14 @@
 
   function recarregarPagina() {
     window.location.reload();
+  }
+
+  function puxarAtualizacaoGitHub() {
+    if (confirm("Deseja buscar a versão mais recente no GitHub? O aplicativo será recarregado.")) {
+      // Substitua com a URL Raw do seu arquivo index.html no repositório GitHub
+      const urlGitHub = "https://raw.githubusercontent.com/elisandro33/pontoF/refs/heads/main/index.html";
+      window.location.href = urlGitHub;
+    }
   }
 
   function exibirToast(mensagem) {
@@ -804,15 +807,7 @@
     a.download = 'relatorio_pontos.csv';
     a.click();
   }
-function puxarAtualizacaoGitHub() {
-    if (confirm("Deseja buscar a versão mais recente no GitHub? O aplicativo será recarregado.")) {
-      // SUBSTITUA O LINK ABAIXO PELA URL DO SEU ARQUIVO NO GITHUB (Link RAW)
-      const urlGitHub = "https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/index.html";
-      
-      // Abre o link do arquivo para forçar o browser a atualizar
-      window.location.href = urlGitHub;
-    }
-  }
+
   function sairApp() { if(confirm("Deseja fechar a aplicação?")) window.close(); }
 
   window.onload = function() {
