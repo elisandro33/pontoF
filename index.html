@@ -73,7 +73,7 @@
 
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
     .modal.active { display: flex !important; }
-    .modal-content { background: white; padding: 18px; border-radius: 8px; width: 90%; max-width: 380px; }
+    .modal-content { background: white; padding: 18px; border-radius: 8px; width: 90%; max-width: 380px; max-height: 90vh; overflow-y: auto; }
     .form-group { margin-bottom: 10px; }
     .form-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2px; }
     .form-group input { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; }
@@ -178,8 +178,22 @@
   <div class="modal" id="modalJornada">
     <div class="modal-content">
       <h3>Configurar Jornada</h3>
-      <div class="form-group"><label>Entrada Padrão:</label><input type="text" id="cfg-jornada-e" value="07:00"></div>
-      <div class="form-group"><label>Saída Padrão:</label><input type="text" id="cfg-jornada-s" value="16:30"></div>
+      
+      <div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Segunda a Quinta</div>
+      <div class="form-group"><label>Entrada:</label><input type="text" id="cfg-seg-qui-e" value="07:00"></div>
+      <div class="form-group"><label>Saída:</label><input type="text" id="cfg-seg-qui-s" value="17:00"></div>
+
+      <div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Sexta-feira</div>
+      <div class="form-group"><label>Saída Sexta:</label><input type="text" id="cfg-sex-s" value="16:00"></div>
+
+      <div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Sábados</div>
+      <div class="chk-container" style="margin-bottom:8px;">
+        <input type="checkbox" id="cfg-sab-alternado">
+        <label for="cfg-sab-alternado">Trabalha em Sábados Alternados</label>
+      </div>
+      <div class="form-group"><label>Entrada Sábado:</label><input type="text" id="cfg-sab-e" value="07:00"></div>
+      <div class="form-group"><label>Saída Sábado:</label><input type="text" id="cfg-sab-s" value="11:00"></div>
+
       <div class="modal-buttons">
         <button class="btn-modal" onclick="fecharModal('modalJornada')">Cancelar</button>
         <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigJornada()">Salvar</button>
@@ -187,7 +201,7 @@
     </div>
   </div>
 
-  <!-- MODAL LOCAL GPS (ADICIONADO) -->
+  <!-- MODAL LOCAL GPS -->
   <div class="modal" id="modalLocal">
     <div class="modal-content">
       <h3>Configurar Localização</h3>
@@ -287,12 +301,43 @@
     return (parseInt(p[0], 10) * 60) + parseInt(p[1], 10);
   }
 
+  function abrirModalConfigJornada() {
+    document.getElementById('cfg-seg-qui-e').value = localStorage.getItem('cfg_seg_qui_e') || '07:00';
+    document.getElementById('cfg-seg-qui-s').value = localStorage.getItem('cfg_seg_qui_s') || '17:00';
+    document.getElementById('cfg-sex-s').value = localStorage.getItem('cfg_sex_s') || '16:00';
+    document.getElementById('cfg-sab-alternado').checked = localStorage.getItem('cfg_sab_alternado') === 'true';
+    document.getElementById('cfg-sab-e').value = localStorage.getItem('cfg_sab_e') || '07:00';
+    document.getElementById('cfg-sab-s').value = localStorage.getItem('cfg_sab_s') || '11:00';
+    
+    document.getElementById('modalJornada').classList.add('active');
+  }
+
+  function salvarConfigJornada() {
+    localStorage.setItem('cfg_seg_qui_e', document.getElementById('cfg-seg-qui-e').value);
+    localStorage.setItem('cfg_seg_qui_s', document.getElementById('cfg-seg-qui-s').value);
+    localStorage.setItem('cfg_sex_s', document.getElementById('cfg-sex-s').value);
+    localStorage.setItem('cfg_sab_alternado', document.getElementById('cfg-sab-alternado').checked);
+    localStorage.setItem('cfg_sab_e', document.getElementById('cfg-sab-e').value);
+    localStorage.setItem('cfg_sab_s', document.getElementById('cfg-sab-s').value);
+
+    fecharModal('modalJornada');
+    carregarRelatorio();
+    alert("Jornada salva com sucesso!");
+  }
+
   function carregarRelatorio() {
     const lista = document.getElementById('lista-relatorio');
     lista.innerHTML = '';
 
     const filtroMes = document.getElementById('filtro-mes').value.trim();
     const apenasIncompletos = document.getElementById('chk-incompletos').checked;
+
+    // Configurações salvas
+    const segQuiE = localStorage.getItem('cfg_seg_qui_e') || '07:00';
+    const segQuiS = localStorage.getItem('cfg_seg_qui_s') || '17:00';
+    const sexS = localStorage.getItem('cfg_sex_s') || '16:00';
+    const sabE = localStorage.getItem('cfg_sab_e') || '07:00';
+    const sabS = localStorage.getItem('cfg_sab_s') || '11:00';
 
     let chaves = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -318,6 +363,12 @@
       const p = chave.replace('ponto_', '').split('-');
       if (p.length !== 3) return;
 
+      const ano = parseInt(p[0], 10);
+      const mes = parseInt(p[1], 10) - 1;
+      const dia = parseInt(p[2], 10);
+      const dataObj = new Date(ano, mes, dia);
+      const diaSemana = dataObj.getDay(); // 0: Dom, 1: Seg, ..., 5: Sex, 6: Sab
+
       const dataFmt = `${p[2]}/${p[1]}/${p[0]}`;
       const mesAno = `${p[1]}/${p[0]}`;
 
@@ -325,6 +376,22 @@
 
       const isIncompleto = !item.e || !item.si || !item.vi || !item.sf;
       if (apenasIncompletos && !isIncompleto) return;
+
+      let horaEntradaPrevista = segQuiE;
+      let horaSaidaPrevista = segQuiS;
+      let exigeIntervalo = true;
+
+      if (diaSemana === 5) {
+        horaSaidaPrevista = sexS;
+      } else if (diaSemana === 6) {
+        horaEntradaPrevista = sabE;
+        horaSaidaPrevista = sabS;
+        exigeIntervalo = false;
+      }
+
+      const minPrevistoEntrada = convHora(horaEntradaPrevista);
+      const minPrevistoSaida = convHora(horaSaidaPrevista);
+      const minJornadaEsperada = (minPrevistoSaida - minPrevistoEntrada) - (exigeIntervalo ? 60 : 0);
 
       let minTrab = 0;
       let minExtraDia = 0;
@@ -338,7 +405,10 @@
         let m4 = convHora(item.sf);
 
         minTrab = (m2 - m1) + (m4 - m3);
-        if (minTrab > 480) minExtraDia = minTrab - 480;
+
+        if (minTrab > minJornadaEsperada) {
+          minExtraDia = minTrab - minJornadaEsperada;
+        }
 
         if (item.hora_extra) {
           extraTexto = `${item.hora_extra}`;
@@ -350,7 +420,9 @@
           extraTexto = `${String(hEx).padStart(2,'0')}:${String(mEx).padStart(2,'0')} (R$ ${valEx.toFixed(2).replace('.',',')})`;
         }
 
-        if (m4 > convHora("16:30")) intervaloTarde = `16:30 - ${item.sf}`;
+        if (m4 > minPrevistoSaida) {
+          intervaloTarde = `${horaSaidaPrevista} - ${item.sf}`;
+        }
       }
 
       exibidos++;
@@ -511,17 +583,9 @@
     document.getElementById('modalEdicao').classList.add('active');
   }
 
-  function abrirModalConfigJornada() { document.getElementById('modalJornada').classList.add('active'); }
   function abrirModalConfigSalario() { document.getElementById('modalSalario').classList.add('active'); }
 
   function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
-
-  function salvarConfigJornada() {
-    localStorage.setItem('cfg_jornada_e', document.getElementById('cfg-jornada-e').value);
-    localStorage.setItem('cfg_jornada_s', document.getElementById('cfg-jornada-s').value);
-    fecharModal('modalJornada');
-    alert("Jornada salva!");
-  }
 
   function salvarConfigSalario() {
     localStorage.setItem('cfg_salario', document.getElementById('cfg-salario-val').value);
