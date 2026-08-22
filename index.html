@@ -103,6 +103,11 @@
       <button class="btn-menu" id="btnMenu" onclick="toggleMenu(event)">⋮</button>
     </div>
 
+<div class="header-actions">
+  <button class="btn-sync" onclick="puxarAtualizacaoGitHub()" title="Atualizar do GitHub">🔄</button>
+  <button class="btn-menu" id="btnMenu" onclick="toggleMenu(event)">⋮</button>
+</div>
+   
     <div class="dropdown-menu" id="dropdownMenu">
       <div class="dropdown-item" onclick="recalcularHistorico(); closeMenu();"><span>🔄</span> Recalcular Histórico</div>
       <div class="dropdown-item" onclick="abrirModalPontoManual(); closeMenu();"><span>📝</span> Adicionar Ponto Manual</div>
@@ -799,7 +804,15 @@
     a.download = 'relatorio_pontos.csv';
     a.click();
   }
-
+function puxarAtualizacaoGitHub() {
+    if (confirm("Deseja buscar a versão mais recente no GitHub? O aplicativo será recarregado.")) {
+      // SUBSTITUA O LINK ABAIXO PELA URL DO SEU ARQUIVO NO GITHUB (Link RAW)
+      const urlGitHub = "https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/index.html";
+      
+      // Abre o link do arquivo para forçar o browser a atualizar
+      window.location.href = urlGitHub;
+    }
+  }
   function sairApp() { if(confirm("Deseja fechar a aplicação?")) window.close(); }
 
   window.onload = function() {
