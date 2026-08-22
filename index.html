@@ -64,7 +64,8 @@
     .btn-export { width: 100%; background: #2e7d32; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
     .lista-relatorio-itens { display: flex; flex-direction: column; gap: 10px; }
-    .relatorio-card-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; font-size: 0.95rem; line-height: 1.4; color: #1e293b; }
+    .relatorio-card-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; font-size: 0.95rem; line-height: 1.4; color: #1e293b; cursor: pointer; transition: background 0.2s; }
+    .relatorio-card-item:hover { background: #f8fafc; }
     .relatorio-linha { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
 
     nav.bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid var(--border); height: 60px; z-index: 100; }
@@ -77,8 +78,9 @@
     .form-group { margin-bottom: 10px; }
     .form-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2px; }
     .form-group input { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; }
-    .modal-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+    .modal-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
     .btn-modal { padding: 8px 14px; border-radius: 4px; border: none; cursor: pointer; }
+    .modal-actions-right { display: flex; gap: 8px; }
   </style>
 </head>
 <body>
@@ -86,7 +88,6 @@
   <header>
     <h1 style="font-size: 1.3rem;">Ponto Fácil</h1>
     <div class="header-actions">
-      <!-- Botão para recarregar a aplicação -->
       <button class="btn-sync" onclick="recarregarPagina()" title="Recarregar Página">🔄</button>
       <button class="btn-menu" id="btnMenu" onclick="toggleMenu(event)">⋮</button>
     </div>
@@ -158,10 +159,10 @@
     <button class="nav-item" id="btn-tab-relatorio" onclick="alternarAba('relatorio')">📊<span style="margin-top:2px;">Relatório</span></button>
   </nav>
 
-  <!-- MODAL MANUAL -->
+  <!-- MODAL MANUAL / EDIÇÃO -->
   <div class="modal" id="modalEdicao">
     <div class="modal-content">
-      <h3 id="modal-title-data">Ponto Manual</h3>
+      <h3 id="modal-title-data">Editar Ponto</h3>
       <div class="form-group" id="group-data-manual"><label>Data (DD/MM/YYYY):</label><input type="text" id="edit-data-input"></div>
       <input type="hidden" id="edit-chave">
       <div class="form-group"><label>Entrada:</label><input type="text" id="edit-e"></div>
@@ -169,8 +170,11 @@
       <div class="form-group"><label>Volta Int:</label><input type="text" id="edit-vi"></div>
       <div class="form-group"><label>Saída Final:</label><input type="text" id="edit-sf"></div>
       <div class="modal-buttons">
-        <button class="btn-modal" onclick="fecharModal('modalEdicao')">Cancelar</button>
-        <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarEdicao()">Salvar</button>
+        <button class="btn-modal" id="btn-excluir-ponto" style="background:#dc2626; color:#fff;" onclick="excluirPonto()">Excluir</button>
+        <div class="modal-actions-right">
+          <button class="btn-modal" onclick="fecharModal('modalEdicao')">Cancelar</button>
+          <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarEdicao()">Salvar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -196,8 +200,11 @@
       <div class="form-group"><label>Saída Sábado:</label><input type="text" id="cfg-sab-s" value="11:00"></div>
 
       <div class="modal-buttons">
-        <button class="btn-modal" onclick="fecharModal('modalJornada')">Cancelar</button>
-        <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigJornada()">Salvar</button>
+        <div></div>
+        <div class="modal-actions-right">
+          <button class="btn-modal" onclick="fecharModal('modalJornada')">Cancelar</button>
+          <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigJornada()">Salvar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -211,8 +218,10 @@
       <div class="form-group"><label>Raio de Tolerância (metros):</label><input type="number" id="cfg-local-raio" value="100"></div>
       <div class="modal-buttons">
         <button class="btn-modal" style="background:#64748b; color:#fff;" onclick="obterGpsAtual()">Capturar GPS</button>
-        <button class="btn-modal" onclick="fecharModal('modalLocal')">Cancelar</button>
-        <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigLocal()">Salvar</button>
+        <div class="modal-actions-right">
+          <button class="btn-modal" onclick="fecharModal('modalLocal')">Cancelar</button>
+          <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigLocal()">Salvar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -224,8 +233,11 @@
       <div class="form-group"><label>Salário Base (R$):</label><input type="number" id="cfg-salario-val" value="2000"></div>
       <div class="form-group"><label>Carga Horária Mensal (Horas):</label><input type="number" id="cfg-horas-mes" value="220"></div>
       <div class="modal-buttons">
-        <button class="btn-modal" onclick="fecharModal('modalSalario')">Cancelar</button>
-        <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigSalario()">Salvar</button>
+        <div></div>
+        <div class="modal-actions-right">
+          <button class="btn-modal" onclick="fecharModal('modalSalario')">Cancelar</button>
+          <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigSalario()">Salvar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -263,7 +275,6 @@
     return { exibicao: `${dia}/${mes}/${ano}`, chave: `ponto_${ano}-${mes}-${dia}`, mesAno: `${mes}/${ano}` };
   }
 
-  // --- TRAVA DE SEGURANÇA VIA GPS ---
   function calcularDistanciaEmMetros(lat1, lon1, lat2, lon2) {
     const R = 6371000; 
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -494,6 +505,7 @@
       exibidos++;
       const card = document.createElement('div');
       card.className = 'relatorio-card-item';
+      card.onclick = () => editarPontoExistente(chave, dataFmt);
       card.innerHTML = `
         <div class="relatorio-linha">📅 <strong>Data: ${dataFmt}</strong></div>
         <div class="relatorio-linha">🟩 Ent: ${item.e || '--:--'} | Sai Almoço: ${item.si || '--:--'}</div>
@@ -644,10 +656,43 @@
   }
 
   function abrirModalPontoManual() {
+    document.getElementById('modal-title-data').innerText = 'Ponto Manual';
     document.getElementById('edit-chave').value = '';
     document.getElementById('edit-data-input').value = '';
+    document.getElementById('edit-e').value = '';
+    document.getElementById('edit-si').value = '';
+    document.getElementById('edit-vi').value = '';
+    document.getElementById('edit-sf').value = '';
     document.getElementById('group-data-manual').style.display = 'block';
+    document.getElementById('btn-excluir-ponto').style.display = 'none';
     document.getElementById('modalEdicao').classList.add('active');
+  }
+
+  function editarPontoExistente(chave, dataFmt) {
+    const reg = JSON.parse(localStorage.getItem(chave)) || {};
+    document.getElementById('modal-title-data').innerText = `Editar Ponto (${dataFmt})`;
+    document.getElementById('edit-chave').value = chave;
+    document.getElementById('edit-data-input').value = dataFmt;
+    document.getElementById('group-data-manual').style.display = 'none';
+    document.getElementById('edit-e').value = reg.e || '';
+    document.getElementById('edit-si').value = reg.si || '';
+    document.getElementById('edit-vi').value = reg.vi || '';
+    document.getElementById('edit-sf').value = reg.sf || '';
+    document.getElementById('btn-excluir-ponto').style.display = 'inline-block';
+    document.getElementById('modalEdicao').classList.add('active');
+  }
+
+  function excluirPonto() {
+    const chave = document.getElementById('edit-chave').value;
+    if (!chave) return;
+
+    if (confirm("Tem certeza que deseja excluir o ponto desta data?")) {
+      localStorage.removeItem(chave);
+      fecharModal('modalEdicao');
+      carregarRelatorio();
+      carregarPontosHoje();
+      alert("Registro excluído com sucesso!");
+    }
   }
 
   function abrirModalConfigSalario() { document.getElementById('modalSalario').classList.add('active'); }
