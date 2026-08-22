@@ -317,7 +317,6 @@
     document.getElementById('val-vi').innerText = reg.vi || '--:--';
     document.getElementById('val-sf').innerText = reg.sf || '--:--';
 
-    // Texto de próxima marcação
     let proxText = "Próximo Registro: Entrada";
     if (reg.e && !reg.si) proxText = "Próximo Registro: Saída Intervalo";
     else if (reg.si && !reg.vi) proxText = "Próximo Registro: Volta Intervalo";
@@ -459,7 +458,6 @@
     const valorHoraNormal = salarioBase / horasMes;
     const valorHoraExtra = valorHoraNormal * 1.5;
 
-    // Configurações de jornada
     const segQuiE = localStorage.getItem('cfg_seg_qui_e') || '07:00';
     const segQuiS = localStorage.getItem('cfg_seg_qui_s') || '17:00';
     const sexS = localStorage.getItem('cfg_sex_s') || '16:00';
@@ -498,7 +496,6 @@
       const isIncompleto = (e_fmt === '--:--' || sf_fmt === '--:--');
       if (apenasIncompletos && !isIncompleto) return;
 
-      // Identificação do Dia da Semana (0: Dom, 1: Seg, ..., 6: Sáb)
       const dataObj = new Date(ano, mes - 1, dia);
       const diaSemana = dataObj.getDay();
 
@@ -515,16 +512,14 @@
         tempoIntervalo = minIntervaloVolta - minIntervaloSaida;
       }
 
-      if (diaSemana === 6) { // SÁBADO
+      if (diaSemana === 6) { 
         if (minInicio > 0 && minFim > minInicio) {
           let minTrabalhados = (minFim - minInicio) - tempoIntervalo;
 
           if (!sabAlternado) {
-            // Sábado considerado extra total
             minExtraDia = minTrabalhados;
             extraTardeStr = `${e_fmt} - ${sf_fmt}`;
           } else {
-            // Sábado alternado: o que passar do fim da jornada do sábado
             const minSaidaSab = convHora(sabS);
             if (minFim > minSaidaSab) {
               minExtraDia = minFim - minSaidaSab;
@@ -532,7 +527,7 @@
             }
           }
         }
-      } else if (diaSemana >= 1 && diaSemana <= 5) { // SEGUNDA A SEXTA
+      } else if (diaSemana >= 1 && diaSemana <= 5) {
         let minSaidaOficial = (diaSemana === 5) ? convHora(sexS) : convHora(segQuiS);
 
         if (minFim > minSaidaOficial) {
@@ -569,7 +564,6 @@
       lista.appendChild(card);
     });
 
-    // Atualiza o total acumulado do topo
     const totHoras = Math.floor(minExtrasTotalAcumulado / 60);
     const totMins = minExtrasTotalAcumulado % 60;
     document.getElementById('txt-total-horas').innerText = `${String(totHoras).padStart(2, '0')}:${String(totMins).padStart(2, '0')}`;
