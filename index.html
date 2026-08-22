@@ -24,25 +24,17 @@
     }
 
     .header-actions { display: flex; align-items: center; gap: 12px; }
-    .btn-sync { background: #50e3c2; border: none; width: 34px; height: 34px; border-radius: 4px; cursor: pointer; font-size: 1.1rem; }
-    .btn-menu { background: none; border: none; color: #fff; font-size: 1.8rem; cursor: pointer; padding: 0 4px; line-height: 1; }
+    .btn-sync { background: #50e3c2; border: none; width: 34px; height: 34px; border-radius: 4px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
+    .btn-menu { background: none; border: none; color: #fff; font-size: 1.8rem; cursor: pointer; }
 
-    /* MENU DROPDOWN CORRIGIDO */
     .dropdown-menu {
-      display: none; 
-      position: fixed; 
-      top: 55px; 
-      right: 12px;
-      background-color: #ffffff; 
-      border: 1px solid var(--border);
-      border-radius: 8px; 
-      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-      z-index: 99999; 
-      width: 260px;
+      display: none; position: absolute; top: 50px; right: 8px;
+      background-color: #ffffff; border: 1px solid var(--border);
+      border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      z-index: 1000; width: 260px;
     }
     .dropdown-menu.active { display: block !important; }
-    .dropdown-item { padding: 12px 14px; color: #000; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; }
-    .dropdown-item:hover { background-color: #f8fafc; }
+    .dropdown-item { padding: 10px 14px; color: #000; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; }
 
     main { padding: 12px; max-width: 500px; margin: 0 auto; }
     .tab-content { display: none; }
@@ -94,34 +86,34 @@
   <header>
     <h1 style="font-size: 1.3rem;">Ponto Fácil</h1>
     <div class="header-actions">
-      <button class="btn-sync" onclick="sincronizarComGoogleSheets()" title="Sincronizar">🔄</button>
+      <!-- Botão para recarregar a aplicação -->
+      <button class="btn-sync" onclick="recarregarPagina()" title="Recarregar Página">🔄</button>
       <button class="btn-menu" id="btnMenu" onclick="toggleMenu(event)">⋮</button>
     </div>
-  </header>
 
-  <!-- MENU POSICIONADO FORA DO HEADER -->
-  <div class="dropdown-menu" id="dropdownMenu">
-    <div class="dropdown-item" onclick="recalcularHistorico(); closeMenu();"><span>🔄</span> Recalcular Histórico</div>
-    <div class="dropdown-item" onclick="abrirModalPontoManual(); closeMenu();"><span>📝</span> Adicionar Ponto Manual</div>
-    <div class="dropdown-item" onclick="abrirModalConfigJornada(); closeMenu();"><span>⚙️</span> Configurar Horário/Jornada</div>
-    <div class="dropdown-item" onclick="abrirModalConfigLocal(); closeMenu();"><span>🛰️</span> Configurar Local</div>
-    <div class="dropdown-item" onclick="abrirModalConfigSalario(); closeMenu();"><span>🤑</span> Configurar salário</div>
-    <div class="dropdown-item" onclick="fazerBackupJSON(); closeMenu();"><span>💾</span> Fazer Backup JSON</div>
-    <div class="dropdown-item" onclick="triggerImportarJSON(); closeMenu();"><span>📁</span> Importar JSON</div>
-    <div class="dropdown-item" onclick="sincronizarComGoogleSheets(); closeMenu();"><span>🔄</span> Sincronizar Tudo</div>
-    <div class="dropdown-item" onclick="sairApp(); closeMenu();"><span>❌</span> Sair</div>
-  </div>
+    <div class="dropdown-menu" id="dropdownMenu">
+      <div class="dropdown-item" onclick="recalcularHistorico(); closeMenu();"><span>🔄</span> Recalcular Histórico</div>
+      <div class="dropdown-item" onclick="abrirModalPontoManual(); closeMenu();"><span>📝</span> Adicionar Ponto Manual</div>
+      <div class="dropdown-item" onclick="abrirModalConfigJornada(); closeMenu();"><span>⚙️</span> Configurar Horário/Jornada</div>
+      <div class="dropdown-item" onclick="abrirModalConfigLocal(); closeMenu();"><span>🛰️</span> Configurar Local</div>
+      <div class="dropdown-item" onclick="abrirModalConfigSalario(); closeMenu();"><span>🤑</span> Configurar Salário</div>
+      <div class="dropdown-item" onclick="fazerBackupJSON(); closeMenu();"><span>💾</span> Fazer Backup JSON</div>
+      <div class="dropdown-item" onclick="triggerImportarJSON(); closeMenu();"><span>📁</span> Importar JSON</div>
+      <div class="dropdown-item" onclick="sincronizarComGoogleSheets(); closeMenu();"><span>🔄</span> Sincronizar Tudo</div>
+      <div class="dropdown-item" onclick="sairApp(); closeMenu();"><span>❌</span> Sair</div>
+    </div>
+  </header>
 
   <input type="file" id="fileInputJSON" accept=".json" style="display: none;" onchange="importarJSON(event)">
 
   <main>
     <!-- Aba Ponto -->
     <div id="tab-ponto" class="tab-content active">
-      <div class="status-gps" id="txt-status-gps">📍 GPS OK (Local não configurado)</div>
+      <div class="status-gps" id="txt-status-gps">📍 Verificando GPS...</div>
       <div class="data-destaque" id="txt-data">--/--/----</div>
       <div class="proximo-registro" id="txt-proximo">Próximo Registro: Entrada</div>
 
-      <div class="icon-container" onclick="registrarPontoAtual()">
+      <div class="icon-container" onclick="validarEBatendoPonto()">
         <svg class="icon-signal" viewBox="0 0 24 24">
           <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-1.46-1.81-2.35-4.1-2.35-6.4 0-5.52 4.48-10 10-10s10 4.48 10 10c0 2.3-.89 4.59-2.35 6.4l-0.62-1.79C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9zm0 4c-2.76 0-5 2.24-5 5 0 1.15.39 2.21 1.05 3.06l1.5-1.5C9.2 13.1 9 12.57 9 12c0-1.66 1.34-3 3-3s3 1.34 3 3c0 .57-.2 1.1-.55 1.56l1.5 1.5c.66-.85 1.05-1.91 1.05-3.06 0-2.76-2.24-5-5-5zm0 4c-.55 0-1 .45-1 1 0 .28.11.53.29.71l1.42-1.42c-.18-.18-.43-.29-.71-.29z"/>
         </svg>
@@ -189,19 +181,19 @@
       <h3>Configurar Jornada</h3>
       
       <div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Segunda a Quinta</div>
-      <div class="form-group"><label>Entrada:</label><input type="text" id="cfg-seg-qui-e" value="07:30"></div>
-      <div class="form-group"><label>Saída:</label><input type="text" id="cfg-seg-qui-s" value="17:30"></div>
+      <div class="form-group"><label>Entrada:</label><input type="text" id="cfg-seg-qui-e" value="07:00"></div>
+      <div class="form-group"><label>Saída:</label><input type="text" id="cfg-seg-qui-s" value="17:00"></div>
 
       <div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Sexta-feira</div>
-      <div class="form-group"><label>Saída Sexta:</label><input type="text" id="cfg-sex-s" value="16:30"></div>
+      <div class="form-group"><label>Saída Sexta:</label><input type="text" id="cfg-sex-s" value="16:00"></div>
 
       <div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Sábados</div>
       <div class="chk-container" style="margin-bottom:8px;">
         <input type="checkbox" id="cfg-sab-alternado">
         <label for="cfg-sab-alternado">Trabalha em Sábados Alternados</label>
       </div>
-      <div class="form-group"><label>Entrada Sábado:</label><input type="text" id="cfg-sab-e" value="07:30"></div>
-      <div class="form-group"><label>Saída Sábado:</label><input type="text" id="cfg-sab-s" value="11:30"></div>
+      <div class="form-group"><label>Entrada Sábado:</label><input type="text" id="cfg-sab-e" value="07:00"></div>
+      <div class="form-group"><label>Saída Sábado:</label><input type="text" id="cfg-sab-s" value="11:00"></div>
 
       <div class="modal-buttons">
         <button class="btn-modal" onclick="fecharModal('modalJornada')">Cancelar</button>
@@ -214,8 +206,8 @@
   <div class="modal" id="modalLocal">
     <div class="modal-content">
       <h3>Configurar Localização</h3>
-      <div class="form-group"><label>Nome do Local:</label><input type="text" id="cfg-local-nome" placeholder="Ex: Sede"></div>
-      <div class="form-group"><label>Coordenadas (Lat, Long):</label><input type="text" id="cfg-local-coords" placeholder="-23.5505, -46.6333"></div>
+      <div class="form-group"><label>Nome do Local:</label><input type="text" id="cfg-local-nome" placeholder="Ex: Empresa Sede"></div>
+      <div class="form-group"><label>Coordenadas (Lat, Long):</label><input type="text" id="cfg-local-coords" placeholder="-23.550522, -46.633308"></div>
       <div class="form-group"><label>Raio de Tolerância (metros):</label><input type="number" id="cfg-local-raio" value="100"></div>
       <div class="modal-buttons">
         <button class="btn-modal" style="background:#64748b; color:#fff;" onclick="obterGpsAtual()">Capturar GPS</button>
@@ -241,26 +233,17 @@
 <script>
   const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzi6lqvkYaP68l3hyxCR46BzUj1CLJH6pPfqljiwAY_81crRpVkG270swYIy-IuE6HZ/exec";
 
-  function toggleMenu(e) { 
-    if(e) e.stopPropagation(); 
-    const menu = document.getElementById('dropdownMenu');
-    menu.classList.toggle('active');
-  }
-  
-  function closeMenu() { 
-    document.getElementById('dropdownMenu').classList.remove('active'); 
+  function recarregarPagina() {
+    window.location.reload();
   }
 
-  function fecharModal(idModal) {
-    document.getElementById(idModal).classList.remove('active');
-  }
+  function toggleMenu(e) { if(e) e.stopPropagation(); document.getElementById('dropdownMenu').classList.toggle('active'); }
+  function closeMenu() { document.getElementById('dropdownMenu').classList.remove('active'); }
 
   document.addEventListener('click', function(e) {
     const menu = document.getElementById('dropdownMenu');
     const btn = document.getElementById('btnMenu');
-    if (menu && !menu.contains(e.target) && e.target !== btn) {
-      closeMenu();
-    }
+    if (menu && !menu.contains(e.target) && e.target !== btn) closeMenu();
   });
 
   function alternarAba(aba) {
@@ -280,6 +263,65 @@
     return { exibicao: `${dia}/${mes}/${ano}`, chave: `ponto_${ano}-${mes}-${dia}`, mesAno: `${mes}/${ano}` };
   }
 
+  // --- TRAVA DE SEGURANÇA VIA GPS ---
+  function calcularDistanciaEmMetros(lat1, lon1, lat2, lon2) {
+    const R = 6371000; 
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  function validarEBatendoPonto() {
+    const localCoords = localStorage.getItem('cfg_local_coords');
+    const raioPermitido = parseFloat(localStorage.getItem('cfg_local_raio') || '100');
+
+    if (!localCoords) {
+      alert("⚠️ Lançamento Bloqueado: As coordenadas do local não foram configuradas no menu!");
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      alert("⚠️ Geolocalização não é suportada por este dispositivo.");
+      return;
+    }
+
+    const partes = localCoords.split(',');
+    if (partes.length !== 2) {
+      alert("⚠️ As coordenadas configuradas são inválidas.");
+      return;
+    }
+
+    const latEmpresa = parseFloat(partes[0].trim());
+    const lonEmpresa = parseFloat(partes[1].trim());
+
+    document.getElementById('txt-status-gps').innerText = "📍 Obtendo sua localização...";
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const latAtual = pos.coords.latitude;
+        const lonAtual = pos.coords.longitude;
+        const distancia = calcularDistanciaEmMetros(latEmpresa, lonEmpresa, latAtual, lonAtual);
+
+        if (distancia <= raioPermitido) {
+          document.getElementById('txt-status-gps').innerText = `📍 GPS OK (${localStorage.getItem('cfg_local_nome') || 'Empresa'})`;
+          registrarPontoAtual();
+        } else {
+          document.getElementById('txt-status-gps').innerText = `❌ Fora do Local (${Math.round(distancia)}m de distância)`;
+          alert(`🚫 Ponto não registrado! Você está a ${Math.round(distancia)} metros do local permitido. Raio máximo: ${raioPermitido}m.`);
+        }
+      },
+      (err) => {
+        document.getElementById('txt-status-gps').innerText = "❌ GPS Desativado/Negado";
+        alert("⚠️ Não foi possível obter sua localização. Ative o GPS do aparelho para bater o ponto.");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }
+
   function carregarPontosHoje() {
     const info = obterDataHojeFormatada();
     document.getElementById('txt-data').innerText = info.exibicao;
@@ -295,7 +337,9 @@
 
     const localCfg = localStorage.getItem('cfg_local_nome');
     if (localCfg) {
-      document.getElementById('txt-status-gps').innerText = `📍 GPS OK (${localCfg})`;
+      document.getElementById('txt-status-gps').innerText = `📍 Trava GPS ativa: ${localCfg}`;
+    } else {
+      document.getElementById('txt-status-gps').innerText = `⚠️ GPS Não Configurado`;
     }
   }
 
@@ -313,6 +357,7 @@
 
     localStorage.setItem(info.chave, JSON.stringify(reg));
     carregarPontosHoje();
+    alert(`Ponto registrado com sucesso às ${hora}!`);
   }
 
   function convHora(h) {
@@ -324,12 +369,12 @@
   }
 
   function abrirModalConfigJornada() {
-    document.getElementById('cfg-seg-qui-e').value = localStorage.getItem('cfg_seg_qui_e') || '07:30';
-    document.getElementById('cfg-seg-qui-s').value = localStorage.getItem('cfg_seg_qui_s') || '17:30';
-    document.getElementById('cfg-sex-s').value = localStorage.getItem('cfg_sex_s') || '16:30';
+    document.getElementById('cfg-seg-qui-e').value = localStorage.getItem('cfg_seg_qui_e') || '07:00';
+    document.getElementById('cfg-seg-qui-s').value = localStorage.getItem('cfg_seg_qui_s') || '17:00';
+    document.getElementById('cfg-sex-s').value = localStorage.getItem('cfg_sex_s') || '16:00';
     document.getElementById('cfg-sab-alternado').checked = localStorage.getItem('cfg_sab_alternado') === 'true';
-    document.getElementById('cfg-sab-e').value = localStorage.getItem('cfg_sab_e') || '07:30';
-    document.getElementById('cfg-sab-s').value = localStorage.getItem('cfg_sab_s') || '11:30';
+    document.getElementById('cfg-sab-e').value = localStorage.getItem('cfg_sab_e') || '07:00';
+    document.getElementById('cfg-sab-s').value = localStorage.getItem('cfg_sab_s') || '11:00';
     
     document.getElementById('modalJornada').classList.add('active');
   }
@@ -339,7 +384,7 @@
     localStorage.setItem('cfg_seg_qui_s', document.getElementById('cfg-seg-qui-s').value);
     localStorage.setItem('cfg_sex_s', document.getElementById('cfg-sex-s').value);
     localStorage.setItem('cfg_sab_alternado', document.getElementById('cfg-sab-alternado').checked);
-    localStorage.setItem('cfg_sab_e', document.getElementById('cfg-sab-e').value);
+    localStorage.setItem('cfg_sab-e', document.getElementById('cfg-sab-e').value);
     localStorage.setItem('cfg_sab_s', document.getElementById('cfg-sab-s').value);
 
     fecharModal('modalJornada');
@@ -354,11 +399,11 @@
     const filtroMes = document.getElementById('filtro-mes').value.trim();
     const apenasIncompletos = document.getElementById('chk-incompletos').checked;
 
-    const segQuiE = localStorage.getItem('cfg_seg_qui_e') || '07:30';
-    const segQuiS = localStorage.getItem('cfg_seg_qui_s') || '17:30';
-    const sexS = localStorage.getItem('cfg_sex_s') || '16:30';
-    const sabE = localStorage.getItem('cfg_sab_e') || '07:30';
-    const sabS = localStorage.getItem('cfg_sab_s') || '11:30';
+    const segQuiE = localStorage.getItem('cfg_seg_qui_e') || '07:00';
+    const segQuiS = localStorage.getItem('cfg_seg_qui_s') || '17:00';
+    const sexS = localStorage.getItem('cfg_sex_s') || '16:00';
+    const sabE = localStorage.getItem('cfg_sab_e') || '07:00';
+    const sabS = localStorage.getItem('cfg_sab_s') || '11:00';
 
     let chaves = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -400,41 +445,36 @@
 
       let horaEntradaPrevista = segQuiE;
       let horaSaidaPrevista = segQuiS;
+      let exigeIntervalo = true;
 
       if (diaSemana === 5) {
         horaSaidaPrevista = sexS;
       } else if (diaSemana === 6) {
         horaEntradaPrevista = sabE;
         horaSaidaPrevista = sabS;
+        exigeIntervalo = false;
       }
 
       const minPrevistoEntrada = convHora(horaEntradaPrevista);
       const minPrevistoSaida = convHora(horaSaidaPrevista);
+      const minJornadaEsperada = (minPrevistoSaida - minPrevistoEntrada) - (exigeIntervalo ? 60 : 0);
 
-      let minExtraManha = 0;
-      let minExtraTarde = 0;
+      let minTrab = 0;
       let minExtraDia = 0;
       let extraTexto = "00:00 (R$ 0,00)";
       let intervaloTarde = "--:-- - --:--";
 
       if (item.e && item.sf) {
         let m1 = convHora(item.e);
+        let m2 = item.si ? convHora(item.si) : m1;
+        let m3 = item.vi ? convHora(item.vi) : m2;
         let m4 = convHora(item.sf);
 
-        if (m1 < minPrevistoEntrada) {
-          let difManha = minPrevistoEntrada - m1;
-          if (difManha >= 30) minExtraManha = difManha;
-        }
+        minTrab = (m2 - m1) + (m4 - m3);
 
-        if (m4 > minPrevistoSaida) {
-          let difTarde = m4 - minPrevistoSaida;
-          if (difTarde >= 30) {
-            minExtraTarde = difTarde;
-            intervaloTarde = `${horaSaidaPrevista} - ${item.sf}`;
-          }
+        if (minTrab > minJornadaEsperada) {
+          minExtraDia = minTrab - minJornadaEsperada;
         }
-
-        minExtraDia = minExtraManha + minExtraTarde;
 
         if (item.hora_extra) {
           extraTexto = `${item.hora_extra}`;
@@ -444,6 +484,10 @@
           let mEx = minExtraDia % 60;
           let valEx = (minExtraDia / 60) * valorHoraExtra;
           extraTexto = `${String(hEx).padStart(2,'0')}:${String(mEx).padStart(2,'0')} (R$ ${valEx.toFixed(2).replace('.',',')})`;
+        }
+
+        if (m4 > minPrevistoSaida) {
+          intervaloTarde = `${horaSaidaPrevista} - ${item.sf}`;
         }
       }
 
@@ -572,7 +616,8 @@
           document.getElementById('cfg-local-coords').value = coords;
           alert("Coordenadas capturadas!");
         },
-        (err) => { alert("Erro ao obter GPS: " + err.message); }
+        (err) => { alert("Erro ao obter GPS: " + err.message); },
+        { enableHighAccuracy: true }
       );
     } else {
       alert("Geolocalização não é suportada neste navegador.");
@@ -590,21 +635,7 @@
 
     fecharModal('modalLocal');
     carregarPontosHoje();
-    alert("Local configurado com sucesso!");
-  }
-
-  function abrirModalConfigSalario() {
-    document.getElementById('cfg-salario-val').value = localStorage.getItem('cfg_salario') || '2000';
-    document.getElementById('cfg-horas-mes').value = localStorage.getItem('cfg_horas_mes') || '220';
-    document.getElementById('modalSalario').classList.add('active');
-  }
-
-  function salvarConfigSalario() {
-    localStorage.setItem('cfg_salario', document.getElementById('cfg-salario-val').value);
-    localStorage.setItem('cfg_horas_mes', document.getElementById('cfg-horas-mes').value);
-    fecharModal('modalSalario');
-    carregarRelatorio();
-    alert("Configuração de salário salva!");
+    alert("Local configurado com sucesso! A trava GPS está ativa.");
   }
 
   function recalcularHistorico() {
@@ -615,101 +646,98 @@
   function abrirModalPontoManual() {
     document.getElementById('edit-chave').value = '';
     document.getElementById('edit-data-input').value = '';
-    document.getElementById('edit-e').value = '';
-    document.getElementById('edit-si').value = '';
-    document.getElementById('edit-vi').value = '';
-    document.getElementById('edit-sf').value = '';
     document.getElementById('group-data-manual').style.display = 'block';
     document.getElementById('modalEdicao').classList.add('active');
   }
 
+  function abrirModalConfigSalario() { document.getElementById('modalSalario').classList.add('active'); }
+
+  function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
+
+  function salvarConfigSalario() {
+    localStorage.setItem('cfg_salario', document.getElementById('cfg-salario-val').value);
+    localStorage.setItem('cfg_horas_mes', document.getElementById('cfg-horas-mes').value);
+    fecharModal('modalSalario');
+    carregarRelatorio();
+    alert("Configuração de Salário salva!");
+  }
+
   function salvarEdicao() {
-    const dataStr = document.getElementById('edit-data-input').value.trim();
-    const partes = dataStr.split('/');
-    if (partes.length !== 3) {
-      alert("Informe a data no formato DD/MM/YYYY");
-      return;
+    let chave = document.getElementById('edit-chave').value;
+    if (!chave) {
+      const txt = document.getElementById('edit-data-input').value.trim();
+      const p = txt.split('/');
+      if (p.length !== 3) { alert("Data inválida. Use DD/MM/YYYY"); return; }
+      chave = `ponto_${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
     }
 
-    const dia = partes[0].padStart(2, '0');
-    const mes = partes[1].padStart(2, '0');
-    const ano = partes[2];
-    const chave = `ponto_${ano}-${mes}-${dia}`;
-
     const reg = {
-      e: document.getElementById('edit-e').value.trim(),
-      si: document.getElementById('edit-si').value.trim(),
-      vi: document.getElementById('edit-vi').value.trim(),
-      sf: document.getElementById('edit-sf').value.trim()
+      e: document.getElementById('edit-e').value,
+      si: document.getElementById('edit-si').value,
+      vi: document.getElementById('edit-vi').value,
+      sf: document.getElementById('edit-sf').value
     };
 
     localStorage.setItem(chave, JSON.stringify(reg));
     fecharModal('modalEdicao');
     carregarRelatorio();
     carregarPontosHoje();
-    alert("Ponto salvo com sucesso!");
   }
 
   function fazerBackupJSON() {
     let dados = {};
     for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
+      let k = localStorage.key(i);
       dados[k] = localStorage.getItem(k);
     }
-    const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
+    let blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+    let a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `backup_ponto_${new Date().toISOString().slice(0,10)}.json`;
+    a.download = 'backup_ponto.json';
     a.click();
   }
 
-  function triggerImportarJSON() {
-    document.getElementById('fileInputJSON').click();
-  }
+  function triggerImportarJSON() { document.getElementById('fileInputJSON').click(); }
 
-  function importarJSON(event) {
-    const file = event.target.files[0];
+  function importarJSON(e) {
+    let file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
+    let reader = new FileReader();
+    reader.onload = function(evt) {
       try {
-        const dados = JSON.parse(e.target.result);
+        let dados = JSON.parse(evt.target.result);
         Object.keys(dados).forEach(k => localStorage.setItem(k, dados[k]));
-        alert("Backup importado com sucesso!");
+        alert("Backup restaurado com sucesso!");
         carregarPontosHoje();
         carregarRelatorio();
-      } catch (err) {
-        alert("Erro ao importar arquivo JSON inválido.");
-      }
+      } catch(err) { alert("Arquivo JSON inválido."); }
     };
     reader.readAsText(file);
   }
 
   function exportarCSV() {
-    let csv = "Data,Entrada,Saida Intervalo,Volta Intervalo,Saida Final\n";
+    let csv = "Data;Entrada;Saida_Intervalo;Volta_Intervalo;Saida_Final\n";
     for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
+      let k = localStorage.key(i);
       if (k.startsWith('ponto_')) {
-        const p = k.replace('ponto_', '').split('-');
-        const item = JSON.parse(localStorage.getItem(k));
-        csv += `${p[2]}/${p[1]}/${p[0]},${item.e||''},${item.si||''},${item.vi||''},${item.sf||''}\n`;
+        let p = k.replace('ponto_', '').split('-');
+        let item = JSON.parse(localStorage.getItem(k));
+        csv += `${p[2]}/${p[1]}/${p[0]};${item.e||''};${item.si||''};${item.vi||''};${item.sf||''}\n`;
       }
     }
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const a = document.createElement('a');
+    let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    let a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'relatorio_ponto.csv';
+    a.download = 'relatorio_pontos.csv';
     a.click();
   }
 
-  function sairApp() {
-    if (confirm("Deseja fechar a aplicação?")) {
-      window.close();
-    }
-  }
+  function sairApp() { if(confirm("Deseja fechar a aplicação?")) window.close(); }
 
-  // Inicialização
-  carregarPontosHoje();
+  window.onload = function() {
+    carregarPontosHoje();
+    carregarRelatorio();
+  };
 </script>
 </body>
 </html>
