@@ -90,20 +90,48 @@
       z-index: 3000; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
     }
     .toast-msg.show { opacity: 1; }
+  
+  /* Overlay da Tela de Senha */
+.lock-screen {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background-color: var(--bg-color); z-index: 9999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.lock-card {
+  background: white; padding: 24px; border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15); width: 100%; max-width: 320px; text-align: center;
+}
+.lock-card h2 { color: var(--primary); margin-bottom: 8px; font-size: 1.4rem; }
+.lock-card p { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px; }
+.lock-card input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; text-align: center; margin-bottom: 12px; }
+.lock-card button { width: 100%; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
   </style>
 </head>
 <body>
+  
+  <!-- Tela de Acesso por Senha -->
+<div id="lockScreen" class="lock-screen">
+  <div class="lock-card">
+    <h2>🔒 Ponto Fácil</h2>
+    <p>Digite sua senha para acessar o aplicativo</p>
+    <input type="password" id="inputSenhaApp" placeholder="Sua senha" onkeypress="verificarSenhaEnter(event)">
+    <button onclick="validarSenhaApp()">ENTRAR</button>
+  </div>
+</div>
 
   <div id="toast-aviso" class="toast-msg">Sincronização OK!</div>
 
   <header>
-    <h1 style="font-size: 1.3rem;">Ponto Web</h1>
-    <div class="header-actions"/>
+    <h1 style="font-size: 1.3rem;">Ponto Fácil</h1>
+    <div class="header-actions">
       <button class="btn-menu" id="btnMenu" onclick="toggleMenu(event)">⋮</button>
     </div>
 
     <div class="dropdown-menu" id="dropdownMenu">
       <div class="dropdown-item" onclick="recalcularHistorico(); closeMenu();"><span>🔄</span> Recalcular Histórico</div>
+      <div class="dropdown-item" onclick="alterarSenhaApp(); closeMenu();"><span>🔑</span> Alterar Senha de Acesso</div>
       <div class="dropdown-item" onclick="abrirModalPontoManual(); closeMenu();"><span>📝</span> Adicionar Ponto Manual</div>
       <div class="dropdown-item" onclick="abrirModalConfigJornada(); closeMenu();"><span>⚙️</span> Configurar Horário/Jornada</div>
       <div class="dropdown-item" onclick="abrirModalConfigLocal(); closeMenu();"><span>🛰️</span> Configurar Local</div>
@@ -254,6 +282,47 @@
 
 <script>
   const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzi6lqvkYaP68l3hyxCR46BzUj1CLJH6pPfqljiwAY_81crRpVkG270swYIy-IuE6HZ/exec";
+
+  // Senha padrão inicial caso o usuário nunca tenha definido uma
+const SENHA_PADRAO = "1234";
+
+function validarSenhaApp() {
+  const senhaDigitada = document.getElementById('inputSenhaApp').value;
+  const senhaSalva = localStorage.getItem('cfg_senha_app') || SENHA_PADRAO;
+
+  if (senhaDigitada === senhaSalva) {
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('inputSenhaApp').value = '';
+  } else {
+    alert("❌ Senha incorreta!");
+    document.getElementById('inputSenhaApp').value = '';
+  }
+}
+
+function verificarSenhaEnter(event) {
+  if (event.key === 'Enter') {
+    validarSenhaApp();
+  }
+}
+
+function alterarSenhaApp() {
+  const senhaAtualSalva = localStorage.getItem('cfg_senha_app') || SENHA_PADRAO;
+  const atual = prompt("Digite a senha ATUAL:");
+  
+  if (atual === null) return; // Usuário cancelou
+  
+  if (atual === senhaAtualSalva) {
+    const nova = prompt("Digite a NOVA senha:");
+    if (nova && nova.trim() !== "") {
+      localStorage.setItem('cfg_senha_app', nova.trim());
+      alert("✅ Senha alterada com sucesso!");
+    } else {
+      alert("⚠️ A senha não pode ser vazia.");
+    }
+  } else {
+    alert("❌ Senha atual incorreta.");
+  }
+}
 
   function recarregarPagina() {
     window.location.reload();
