@@ -475,7 +475,6 @@
     horaAtualCapturada = `${String(h.getHours()).padStart(2,'0')}:${String(h.getMinutes()).padStart(2,'0')}`;
 
     if (!reg.e) {
-      // 1ª Batida -> Entrada normal
       if (confirm(`Confirmar lançamento de ENTRADA às ${horaAtualCapturada}?`)) {
         reg.e = horaAtualCapturada;
         localStorage.setItem(info.chave, JSON.stringify(reg));
@@ -483,11 +482,9 @@
         alert(`Ponto (ENTRADA) registrado com sucesso às ${horaAtualCapturada}!`);
       }
     } else if (!reg.si && !reg.sf) {
-      // 2ª Batida -> Pergunta se é Saída Intervalo ou Saída Final
       document.getElementById('txt-hora-modal-saida').innerText = horaAtualCapturada;
       document.getElementById('modalTipoSaida').classList.add('active');
     } else if (reg.si && !reg.vi) {
-      // 3ª Batida -> Volta Intervalo
       if (confirm(`Confirmar lançamento de VOLTA INTERVALO às ${horaAtualCapturada}?`)) {
         reg.vi = horaAtualCapturada;
         localStorage.setItem(info.chave, JSON.stringify(reg));
@@ -495,7 +492,6 @@
         alert(`Ponto (VOLTA INTERVALO) registrado com sucesso às ${horaAtualCapturada}!`);
       }
     } else if (!reg.sf) {
-      // 4ª Batida -> Saída Final
       if (confirm(`Confirmar lançamento de SAÍDA FINAL às ${horaAtualCapturada}?`)) {
         reg.sf = horaAtualCapturada;
         localStorage.setItem(info.chave, JSON.stringify(reg));
@@ -580,6 +576,8 @@
 
     if (chaves.length === 0) {
       lista.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;">Nenhum ponto registrado no sistema.</div>';
+      document.getElementById('txt-total-horas').innerText = '00:00';
+      document.getElementById('txt-total-valor').innerText = 'R$ 0,00';
       return;
     }
 
@@ -600,8 +598,8 @@
       const dataObj = new Date(ano, mes, dia);
       const diaSemana = dataObj.getDay();
 
-      const dataFmt = `${p[2]}/${p[1]}/${p[0]}`;
-      const mesAno = `${p[1]}/${p[0]}`;
+      const dataFmt = `${p[2].padStart(2,'0')}/${String(mes + 1).padStart(2,'0')}/${ano}`;
+      const mesAno = `${String(mes + 1).padStart(2,'0')}/${ano}`;
 
       if (filtroMes && mesAno !== filtroMes) return;
 
