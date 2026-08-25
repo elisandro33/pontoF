@@ -526,12 +526,10 @@
   const filtroMes = document.getElementById('filtro-mes').value.trim();
   const apenasIncompletos = document.getElementById('chk-incompletos').checked;
 
-  const segQuiE = localStorage.getItem('cfg_seg_qui_e') || '07:00';
-  const segQuiS = localStorage.getItem('cfg_seg_qui_s') || '17:30';
-  const sexS = localStorage.getItem('cfg_sex_s') || '16:30';
-  const sabAlternado = localStorage.getItem('cfg_sab_alternado') === 'true';
-  const sabE = localStorage.getItem('cfg_sab_e') || '07:00';
-  const sabS = localStorage.getItem('cfg_sab_s') || '11:00';
+  // Horários Oficiais de Segunda a Sexta
+  const horEntradaPadrao = '07:30';
+  const horSaidaSegQui = '17:30';
+  const horSaidaSexta = '16:30';
 
   let chaves = [];
   for (let i = 0; i < localStorage.length; i++) {
@@ -577,53 +575,41 @@
     let minEntradaReal = convHora(item.e);
     let minSaidaReal = convHora(item.sf);
 
-    // --- CÁLCULO PARA FINAL DE SEMANA ---
-    if (diaSemana === 0 || diaSemana === 6) { // Domingo (0) ou Sábado (6)
-      let eSabadoTrabalhadoPrevisto = (diaSemana === 6 && !sabAlternado);
+    // --- SÁBADO, DOMINGO E FOLGAS (Jornada Corrida Sem Almoço) ---
+    if (diaSemana === 0 || diaSemana === 6) {
+      if (minEntradaReal > 0 && minSaidaReal > 0) {
+        // Cálculo direto: Saída - Entrada (Sem desconto de intervalo)
+        minExtraDia = minSaidaReal - minEntradaReal;
+        if (minExtraDia < 0) minExtraDia = 0;
 
-      if (eSabadoTrabalhadoPrevisto) {
-        // Sábado com jornada prevista
-        const minPrevistoEntrada = convHora(sabE);
-        const minPrevistoSaida = convHora(sabS);
-
-        if (minEntradaReal > 0 && (minPrevistoEntrada - minEntradaReal) >= 15) {
-          minExtraDia += (minPrevistoEntrada - minEntradaReal);
-        }
-        if (minSaidaReal > 0 && (minSaidaReal - minPrevistoSaida) >= 15) {
-          minExtraDia += (minSaidaReal - minPrevistoSaida);
-          intervaloTarde = `${sabS} - ${item.sf}`;
-        }
-      } else {
-        // Domingo ou Sábado de Folga -> TUDO É HORA EXTRA (100%)
-        if (minEntradaReal > 0 && minSaidaReal > 0) {
-          let tempoAlmoco = 0;
-          if (item.si && item.vi) {
-            tempoAlmoco = convHora(item.vi) - convHora(item.si);
-          }
-          minExtraDia = (minSaidaReal - minEntradaReal) - tempoAlmoco;
-          if (minExtraDia < 0) minExtraDia = 0;
-          intervaloTarde = `${item.e || '--:--'} - ${item.sf || '--:--'}`;
-        }
+        intervaloTarde = `${item.e || '--:--'} - ${item.sf || '--:--'}`;
       }
     } 
-    // --- CÁLCULO PARA DIAS ÚTEIS (Segunda a Sexta) ---
+    // --- DIAS ÚTEIS (Segunda a Sexta) ---
     else {
-      let horaEntradaPrevista = segQuiE;
-      let horaSaidaPrevista = (diaSemana === 5) ? sexS : segQuiS;
+      const minPrevistoEntrada = convHora(horEntradaPadrao); // 07:30
+      const horaSaidaPrevista = (diaSemana === 5) ? horSaidaSexta : horSaidaSegQui;
+      const minPrevistoSaida = convHora(horaSaidaPrevista); // 17:30 (Seg-Qui) ou 16:30 (Sex)
 
-      const minPrevistoEntrada = convHora(horaEntradaPrevista);
-      const minPrevistoSaida = convHora(horaSaidaPrevista);
-
-      if (minEntradaReal > 0 && (minPrevistoEntrada - minEntradaReal) >= 15) {
-        minExtraDia += (minPrevistoEntrada - minEntradaReal);
+      // Regra Manhã: Gatilho de 30 minutos antecedentes (Entrada <= 07:00)
+      if (minEntradaReal > 0) {
+        let diffManha = minPrevistoEntrada - minEntradaReal;
+        if (diffManha >= 30) {
+          minExtraDia += diffManha;
+        }
       }
-      if (minSaidaReal > 0 && (minSaidaReal - minPrevistoSaida) >= 15) {
-        minExtraDia += (minSaidaReal - minPrevistoSaida);
-        intervaloTarde = `${horaSaidaPrevista} - ${item.sf}`;
+
+      // Regra Tarde: Gatilho de 30 minutos subsequentes (Saída >= 18:00 seg-qui ou >= 17:00 sex)
+      if (minSaidaReal > 0) {
+        let diffTarde = minSaidaReal - minPrevistoSaida;
+        if (diffTarde >= 30) {
+          minExtraDia += diffTarde;
+          intervaloTarde = `${horaSaidaPrevista} - ${item.sf}`;
+        }
       }
     }
 
-    // Formatação do valor e texto da hora extra
+    // --- CÁLCULO FINANCEIRO E FORMATAÇÃO ---
     if (item.hora_extra) {
       extraTexto = `${item.hora_extra}`;
     } else if (minExtraDia > 0) {
@@ -631,7 +617,7 @@
       let hEx = Math.floor(minExtraDia / 60);
       let mEx = minExtraDia % 60;
       
-      // Domingo = 100% (fator 2.0), Outros dias = 50% (fator 1.5)
+      // Domingo = 100% (2.0), Sábado e Dias Úteis = 50% (1.5)
       let multiplicador = (diaSemana === 0) ? 2.0 : 1.5;
       let valEx = (minExtraDia / 60) * (valorHoraNormal * multiplicador);
       
@@ -661,6 +647,7 @@
 
   if (exibidos === 0) lista.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">Nenhum registro encontrado para "${filtroMes}".</div>`;
 }
+
 
 
     function sincronizarComGoogleSheets(silencioso = false) {
