@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Ponto Fácil</title>
-<style>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ponto Fácil</title>
+  <style>
     :root {
       --bg-color: #f4f6fb;
       --card-bg: #ffffff;
@@ -97,200 +97,200 @@
     .lock-card p { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px; }
     .lock-card input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; text-align: center; margin-bottom: 12px; }
     .lock-card button { width: 100%; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-</style>
-  </head>
-  <body>
+  </style>
+</head>
+<body>
 
-	<!-- Tela de Acesso por Senha -->
-	<div id="lockScreen" class="lock-screen">
-	  <div class="lock-card">
-		<h2>🔒 Ponto Fácil</h2>
-		<p>Digite sua senha para acessar o aplicativo</p>
-		<input type="password" id="inputSenhaApp" placeholder="Sua senha" onkeypress="verificarSenhaEnter(event)">
-		<button onclick="validarSenhaApp()">ENTRAR</button>
-	  </div>
-	</div>
+  <!-- Tela de Acesso por Senha -->
+  <div id="lockScreen" class="lock-screen">
+    <div class="lock-card">
+      <h2>🔒 Ponto Fácil</h2>
+      <p>Digite sua senha para acessar o aplicativo</p>
+      <input type="password" id="inputSenhaApp" placeholder="Sua senha" onkeypress="verificarSenhaEnter(event)">
+      <button onclick="validarSenhaApp()">ENTRAR</button>
+    </div>
+  </div>
 
-	<div id="toast-aviso" class="toast-msg">Sincronização OK!</div>
+  <div id="toast-aviso" class="toast-msg">Sincronização OK!</div>
 
-	<header>
-	  <h1 style="font-size: 1.3rem;">Ponto Fácil</h1>
-	  <div class="header-actions">
-		<button class="btn-menu" id="btnMenu" onclick="toggleMenu(event)">⋮</button>
-	  </div>
+  <header>
+    <h1 style="font-size: 1.3rem;">Ponto Fácil</h1>
+    <div class="header-actions">
+      <button class="btn-menu" id="btnMenu" onclick="toggleMenu(event)">⋮</button>
+    </div>
 
-	  <div class="dropdown-menu" id="dropdownMenu">
-		<div class="dropdown-item" onclick="recalcularHistorico(); closeMenu();"><span>🔄</span> Recalcular Histórico</div>
-		<div class="dropdown-item" onclick="alterarSenhaApp(); closeMenu();"><span>🔑</span> Alterar Senha de Acesso</div>
-		<div class="dropdown-item" onclick="abrirModalPontoManual(); closeMenu();"><span>📝</span> Adicionar Ponto Manual</div>
-		<div class="dropdown-item" onclick="abrirModalConfigJornada(); closeMenu();"><span>⚙️</span> Configurar Horário/Jornada</div>
-		<div class="dropdown-item" onclick="abrirModalConfigLocal(); closeMenu();"><span>🛰️</span> Configurar Local</div>
-		<div class="dropdown-item" onclick="abrirModalConfigSalario(); closeMenu();"><span>🤑</span> Configurar Salário</div>
-		<div class="dropdown-item" onclick="fazerBackupJSON(); closeMenu();"><span>💾</span> Fazer Backup JSON</div>
-		<div class="dropdown-item" onclick="triggerImportarJSON(); closeMenu();"><span>📁</span> Importar JSON</div>
-		<div class="dropdown-item" onclick="sincronizarComGoogleSheets(false); closeMenu();"><span>🔄</span> Sincronizar Tudo</div>
-		<div class="dropdown-item" onclick="sairApp(); closeMenu();"><span>❌</span> Sair</div>
-	  </div>
-	</header>
+    <div class="dropdown-menu" id="dropdownMenu">
+      <div class="dropdown-item" onclick="recalcularHistorico(); closeMenu();"><span>🔄</span> Recalcular Histórico</div>
+      <div class="dropdown-item" onclick="alterarSenhaApp(); closeMenu();"><span>🔑</span> Alterar Senha de Acesso</div>
+      <div class="dropdown-item" onclick="abrirModalPontoManual(); closeMenu();"><span>📝</span> Adicionar Ponto Manual</div>
+      <div class="dropdown-item" onclick="abrirModalConfigJornada(); closeMenu();"><span>⚙️</span> Configurar Horário/Jornada</div>
+      <div class="dropdown-item" onclick="abrirModalConfigLocal(); closeMenu();"><span>🛰️</span> Configurar Local</div>
+      <div class="dropdown-item" onclick="abrirModalConfigSalario(); closeMenu();"><span>🤑</span> Configurar Salário</div>
+      <div class="dropdown-item" onclick="fazerBackupJSON(); closeMenu();"><span>💾</span> Fazer Backup JSON</div>
+      <div class="dropdown-item" onclick="triggerImportarJSON(); closeMenu();"><span>📁</span> Importar JSON</div>
+      <div class="dropdown-item" onclick="sincronizarComGoogleSheets(false); closeMenu();"><span>🔄</span> Sincronizar Tudo</div>
+      <div class="dropdown-item" onclick="sairApp(); closeMenu();"><span>❌</span> Sair</div>
+    </div>
+  </header>
 
-	<input type="file" id="fileInputJSON" accept=".json" style="display: none;" onchange="importarJSON(event)">
+  <input type="file" id="fileInputJSON" accept=".json" style="display: none;" onchange="importarJSON(event)">
 
-	<main>
-	  <!-- Aba Ponto -->
-	  <div id="tab-ponto" class="tab-content active">
-		<div class="status-gps" id="txt-status-gps">📍 Verificando GPS...</div>
-		<div class="data-destaque" id="txt-data">--/--/----</div>
-		<div class="proximo-registro" id="txt-proximo">Próximo Registro: Entrada</div>
+  <main>
+    <!-- Aba Ponto -->
+    <div id="tab-ponto" class="tab-content active">
+      <div class="status-gps" id="txt-status-gps">📍 Verificando GPS...</div>
+      <div class="data-destaque" id="txt-data">--/--/----</div>
+      <div class="proximo-registro" id="txt-proximo">Próximo Registro: Entrada</div>
 
-		<div class="icon-container" onclick="validarEBatendoPonto()">
-		  <svg class="icon-signal" viewBox="0 0 24 24">
-			<path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-1.46-1.81-2.35-4.1-2.35-6.4 0-5.52 4.48-10 10-10s10 4.48 10 10c0 2.3-.89 4.59-2.35 6.4l-0.62-1.79C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9zm0 4c-2.76 0-5 2.24-5 5 0 1.15.39 2.21 1.05 3.06l1.5-1.5C9.2 13.1 9 12.57 9 12c0-1.66 1.34-3 3-3s3 1.34 3 3c0 .57-.2 1.1-.55 1.56l1.5 1.5c.66-.85 1.05-1.91 1.05-3.06 0-2.76-2.24-5-5-5zm0 4c-.55 0-1 .45-1 1 0 .28.11.53.29.71l1.42-1.42c-.18-.18-.43-.29-.71-.29z"/>
-		  </svg>
-		</div>
+      <div class="icon-container" onclick="validarEBatendoPonto()">
+        <svg class="icon-signal" viewBox="0 0 24 24">
+          <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-1.46-1.81-2.35-4.1-2.35-6.4 0-5.52 4.48-10 10-10s10 4.48 10 10c0 2.3-.89 4.59-2.35 6.4l-0.62-1.79C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9zm0 4c-2.76 0-5 2.24-5 5 0 1.15.39 2.21 1.05 3.06l1.5-1.5C9.2 13.1 9 12.57 9 12c0-1.66 1.34-3 3-3s3 1.34 3 3c0 .57-.2 1.1-.55 1.56l1.5 1.5c.66-.85 1.05-1.91 1.05-3.06 0-2.76-2.24-5-5-5zm0 4c-.55 0-1 .45-1 1 0 .28.11.53.29.71l1.42-1.42c-.18-.18-.43-.29-.71-.29z"/>
+        </svg>
+      </div>
 
-		<div class="card-marcacoes">
-		  <div class="card-title">Marcações de Hoje</div>
-		  <div class="lista-marcacoes">
-			<div class="item-marcacao"><span>1 Entrada:</span><strong id="val-e">--:--</strong></div>
-			<div class="item-marcacao"><span>2 Saída Intervalo:</span><strong id="val-si">--:--</strong></div>
-			<div class="item-marcacao"><span>3 Volta Intervalo:</span><strong id="val-vi">--:--</strong></div>
-			<div class="item-marcacao"><span>4 Saída Final:</span><strong id="val-sf">--:--</strong></div>
-		  </div>
-		</div>
-	  </div>
+      <div class="card-marcacoes">
+        <div class="card-title">Marcações de Hoje</div>
+        <div class="lista-marcacoes">
+          <div class="item-marcacao"><span>1 Entrada:</span><strong id="val-e">--:--</strong></div>
+          <div class="item-marcacao"><span>2 Saída Intervalo:</span><strong id="val-si">--:--</strong></div>
+          <div class="item-marcacao"><span>3 Volta Intervalo:</span><strong id="val-vi">--:--</strong></div>
+          <div class="item-marcacao"><span>4 Saída Final:</span><strong id="val-sf">--:--</strong></div>
+        </div>
+      </div>
+    </div>
 
-	  <!-- Aba Relatório -->
-	  <div id="tab-relatorio" class="tab-content">
-		<div class="filter-row">
-		  <input type="text" class="input-filter" id="filtro-mes" placeholder="MM/YYYY">
-		  <button class="btn-filtrar" onclick="carregarRelatorio()">FILTRAR</button>
-		</div>
+    <!-- Aba Relatório -->
+    <div id="tab-relatorio" class="tab-content">
+      <div class="filter-row">
+        <input type="text" class="input-filter" id="filtro-mes" placeholder="MM/YYYY">
+        <button class="btn-filtrar" onclick="carregarRelatorio()">FILTRAR</button>
+      </div>
 
-		<div class="chk-container">
-		  <input type="checkbox" id="chk-incompletos" onchange="carregarRelatorio()">
-		  <label for="chk-incompletos">Visualizar apenas faltas/incompletos</label>
-		</div>
+      <div class="chk-container">
+        <input type="checkbox" id="chk-incompletos" onchange="carregarRelatorio()">
+        <label for="chk-incompletos">Visualizar apenas faltas/incompletos</label>
+      </div>
 
-		<div class="card-total">
-		  <div class="total-title">TOTAL ACUMULADO DE HORAS EXTRAS</div>
-		  <div class="total-horas" id="txt-total-horas">00:00</div>
-		  <div class="total-valor" id="txt-total-valor">R$ 0,00</div>
-		  <button class="btn-export" onclick="exportarCSV()">EXPORTAR CSV</button>
-		</div>
+      <div class="card-total">
+        <div class="total-title">TOTAL ACUMULADO DE HORAS EXTRAS</div>
+        <div class="total-horas" id="txt-total-horas">00:00</div>
+        <div class="total-valor" id="txt-total-valor">R$ 0,00</div>
+        <button class="btn-export" onclick="exportarCSV()">EXPORTAR CSV</button>
+      </div>
 
-		<div class="lista-relatorio-itens" id="lista-relatorio"></div>
-	  </div>
-	</main>
+      <div class="lista-relatorio-itens" id="lista-relatorio"></div>
+    </div>
+  </main>
 
-	<nav class="bottom-nav">
-	  <button class="nav-item active" id="btn-tab-ponto" onclick="alternarAba('ponto')">⏱️<span style="margin-top:2px;">Ponto</span></button>
-	  <button class="nav-item" id="btn-tab-relatorio" onclick="alternarAba('relatorio')">📊<span style="margin-top:2px;">Relatório</span></button>
-	</nav>
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="btn-tab-ponto" onclick="alternarAba('ponto')">⏱️<span style="margin-top:2px;">Ponto</span></button>
+    <button class="nav-item" id="btn-tab-relatorio" onclick="alternarAba('relatorio')">📊<span style="margin-top:2px;">Relatório</span></button>
+  </nav>
 
-	<!-- MODAL SELEÇÃO DE TIPO DE SAÍDA -->
-	<div class="modal" id="modalTipoSaida">
-	  <div class="modal-content" style="text-align: center;">
-		<h3>Selecione o Tipo de Registro</h3>
-		<p style="margin: 12px 0; color: var(--text-secondary); font-size: 0.95rem;">
-		  Qual marcação você deseja realizar agora (<strong id="txt-hora-modal-saida">--:--</strong>)?
-		</p>
-		<div style="display: flex; flex-direction: column; gap: 10px; margin-top: 16px;">
-		  <button class="btn-modal" style="background:#2563eb; color:#fff; padding: 12px; font-weight: bold;" onclick="confirmarTipoSaida('si')">
-			☕ SAÍDA INTERVALO
-		  </button>
-		  <button class="btn-modal" style="background:#16a34a; color:#fff; padding: 12px; font-weight: bold;" onclick="confirmarTipoSaida('sf')">
-			🏁 SAÍDA FINAL
-		  </button>
-		  <button class="btn-modal" style="background:#64748b; color:#fff; margin-top: 6px;" onclick="fecharModal('modalTipoSaida')">
-			CANCELAR
-		  </button>
-		</div>
-	  </div>
-	</div>
+  <!-- MODAL SELEÇÃO DE TIPO DE SAÍDA -->
+  <div class="modal" id="modalTipoSaida">
+    <div class="modal-content" style="text-align: center;">
+      <h3>Selecione o Tipo de Registro</h3>
+      <p style="margin: 12px 0; color: var(--text-secondary); font-size: 0.95rem;">
+        Qual marcação você deseja realizar agora (<strong id="txt-hora-modal-saida">--:--</strong>)?
+      </p>
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 16px;">
+        <button class="btn-modal" style="background:#2563eb; color:#fff; padding: 12px; font-weight: bold;" onclick="confirmarTipoSaida('si')">
+          ☕ SAÍDA INTERVALO
+        </button>
+        <button class="btn-modal" style="background:#16a34a; color:#fff; padding: 12px; font-weight: bold;" onclick="confirmarTipoSaida('sf')">
+          🏁 SAÍDA FINAL
+        </button>
+        <button class="btn-modal" style="background:#64748b; color:#fff; margin-top: 6px;" onclick="fecharModal('modalTipoSaida')">
+          CANCELAR
+        </button>
+      </div>
+    </div>
+  </div>
 
-	<!-- MODAL MANUAL / EDIÇÃO -->
-	<div class="modal" id="modalEdicao">
-	  <div class="modal-content">
-		<h3 id="modal-title-data">Editar Ponto</h3>
-		<div class="form-group" id="group-data-manual"><label>Data (DD/MM/YYYY):</label><input type="text" id="edit-data-input"></div>
-		<input type="hidden" id="edit-chave">
-		<div class="form-group"><label>Entrada:</label><input type="text" id="edit-e"></div>
-		<div class="form-group"><label>Saída Int:</label><input type="text" id="edit-si"></div>
-		<div class="form-group"><label>Volta Int:</label><input type="text" id="edit-vi"></div>
-		<div class="form-group"><label>Saída Final:</label><input type="text" id="edit-sf"></div>
-		<div class="modal-buttons">
-		  <button class="btn-modal" id="btn-excluir-ponto" style="background:#dc2626; color:#fff;" onclick="excluirPonto()">Excluir</button>
-		  <div class="modal-actions-right">
-			<button class="btn-modal" onclick="fecharModal('modalEdicao')">Cancelar</button>
-			<button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarEdicao()">Salvar</button>
-		  </div>
-		</div>
-	  </div>
-	</div>
+  <!-- MODAL MANUAL / EDIÇÃO -->
+  <div class="modal" id="modalEdicao">
+    <div class="modal-content">
+      <h3 id="modal-title-data">Editar Ponto</h3>
+      <div class="form-group" id="group-data-manual"><label>Data (DD/MM/YYYY):</label><input type="text" id="edit-data-input"></div>
+      <input type="hidden" id="edit-chave">
+      <div class="form-group"><label>Entrada:</label><input type="text" id="edit-e"></div>
+      <div class="form-group"><label>Saída Int:</label><input type="text" id="edit-si"></div>
+      <div class="form-group"><label>Volta Int:</label><input type="text" id="edit-vi"></div>
+      <div class="form-group"><label>Saída Final:</label><input type="text" id="edit-sf"></div>
+      <div class="modal-buttons">
+        <button class="btn-modal" id="btn-excluir-ponto" style="background:#dc2626; color:#fff;" onclick="excluirPonto()">Excluir</button>
+        <div class="modal-actions-right">
+          <button class="btn-modal" onclick="fecharModal('modalEdicao')">Cancelar</button>
+          <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarEdicao()">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-	<!-- MODAL JORNADA -->
-	<div class="modal" id="modalJornada">
-	  <div class="modal-content">
-		<h3>Configurar Jornada</h3>
-		<div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Segunda a Quinta</div>
-		<div class="form-group"><label>Entrada:</label><input type="text" id="cfg-seg-qui-e" value="07:00"></div>
-		<div class="form-group"><label>Saída:</label><input type="text" id="cfg-seg-qui-s" value="17:00"></div>
+  <!-- MODAL JORNADA -->
+  <div class="modal" id="modalJornada">
+    <div class="modal-content">
+      <h3>Configurar Jornada</h3>
+      <div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Segunda a Quinta</div>
+      <div class="form-group"><label>Entrada:</label><input type="text" id="cfg-seg-qui-e" value="07:00"></div>
+      <div class="form-group"><label>Saída:</label><input type="text" id="cfg-seg-qui-s" value="17:00"></div>
 
-		<div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Sexta-feira</div>
-		<div class="form-group"><label>Saída Sexta:</label><input type="text" id="cfg-sex-s" value="16:00"></div>
+      <div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Sexta-feira</div>
+      <div class="form-group"><label>Saída Sexta:</label><input type="text" id="cfg-sex-s" value="16:00"></div>
 
-		<div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Sábados</div>
-		<div class="chk-container" style="margin-bottom:8px;">
-		  <input type="checkbox" id="cfg-sab-alternado">
-		  <label for="cfg-sab-alternado">Trabalha em Sábados Alternados</label>
-		</div>
-		<div class="form-group"><label>Entrada Sábado:</label><input type="text" id="cfg-sab-e" value="07:00"></div>
-		<div class="form-group"><label>Saída Sábado:</label><input type="text" id="cfg-sab-s" value="11:00"></div>
+      <div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Sábados</div>
+      <div class="chk-container" style="margin-bottom:8px;">
+        <input type="checkbox" id="cfg-sab-alternado">
+        <label for="cfg-sab-alternado">Trabalha em Sábados Alternados</label>
+      </div>
+      <div class="form-group"><label>Entrada Sábado:</label><input type="text" id="cfg-sab-e" value="07:00"></div>
+      <div class="form-group"><label>Saída Sábado:</label><input type="text" id="cfg-sab-s" value="11:00"></div>
 
-		<div class="modal-buttons">
-		  <div></div>
-		  <div class="modal-actions-right">
-			<button class="btn-modal" onclick="fecharModal('modalJornada')">Cancelar</button>
-			<button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigJornada()">Salvar</button>
-		  </div>
-		</div>
-	  </div>
-	</div>
+      <div class="modal-buttons">
+        <div></div>
+        <div class="modal-actions-right">
+          <button class="btn-modal" onclick="fecharModal('modalJornada')">Cancelar</button>
+          <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigJornada()">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-	<!-- MODAL LOCAL GPS -->
-	<div class="modal" id="modalLocal">
-	  <div class="modal-content">
-		<h3>Configurar Localização</h3>
-		<div class="form-group"><label>Nome do Local:</label><input type="text" id="cfg-local-nome" placeholder="Ex: Empresa Sede"></div>
-		<div class="form-group"><label>Coordenadas (Lat, Long):</label><input type="text" id="cfg-local-coords" placeholder="-23.550522, -46.633308"></div>
-		<div class="form-group"><label>Raio de Tolerância (metros):</label><input type="number" id="cfg-local-raio" value="100"></div>
-		<div class="modal-buttons">
-		  <button class="btn-modal" style="background:#64748b; color:#fff;" onclick="obterGpsAtual()">Capturar GPS</button>
-		  <div class="modal-actions-right">
-			<button class="btn-modal" onclick="fecharModal('modalLocal')">Cancelar</button>
-			<button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigLocal()">Salvar</button>
-		  </div>
-		</div>
-	  </div>
-	</div>
+  <!-- MODAL LOCAL GPS -->
+  <div class="modal" id="modalLocal">
+    <div class="modal-content">
+      <h3>Configurar Localização</h3>
+      <div class="form-group"><label>Nome do Local:</label><input type="text" id="cfg-local-nome" placeholder="Ex: Empresa Sede"></div>
+      <div class="form-group"><label>Coordenadas (Lat, Long):</label><input type="text" id="cfg-local-coords" placeholder="-23.550522, -46.633308"></div>
+      <div class="form-group"><label>Raio de Tolerância (metros):</label><input type="number" id="cfg-local-raio" value="100"></div>
+      <div class="modal-buttons">
+        <button class="btn-modal" style="background:#64748b; color:#fff;" onclick="obterGpsAtual()">Capturar GPS</button>
+        <div class="modal-actions-right">
+          <button class="btn-modal" onclick="fecharModal('modalLocal')">Cancelar</button>
+          <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigLocal()">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-	<!-- MODAL SALÁRIO -->
-	<div class="modal" id="modalSalario">
-	  <div class="modal-content">
-		<h3>Configurar Salário</h3>
-		<div class="form-group"><label>Salário Base (R$):</label><input type="number" id="cfg-salario-val" value="2000"></div>
-		<div class="form-group"><label>Carga Horária Mensal (Horas):</label><input type="number" id="cfg-horas-mes" value="220"></div>
-		<div class="modal-buttons">
-		  <div></div>
-		  <div class="modal-actions-right">
-			<button class="btn-modal" onclick="fecharModal('modalSalario')">Cancelar</button>
-			<button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigSalario()">Salvar</button>
-		  </div>
-		</div>
-	  </div>
-	</div>
+  <!-- MODAL SALÁRIO -->
+  <div class="modal" id="modalSalario">
+    <div class="modal-content">
+      <h3>Configurar Salário</h3>
+      <div class="form-group"><label>Salário Base (R$):</label><input type="number" id="cfg-salario-val" value="2000"></div>
+      <div class="form-group"><label>Carga Horária Mensal (Horas):</label><input type="number" id="cfg-horas-mes" value="220"></div>
+      <div class="modal-buttons">
+        <div></div>
+        <div class="modal-actions-right">
+          <button class="btn-modal" onclick="fecharModal('modalSalario')">Cancelar</button>
+          <button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarConfigSalario()">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<script>
+  <script>
     const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzi6lqvkYaP68l3hyxCR46BzUj1CLJH6pPfqljiwAY_81crRpVkG270swYIy-IuE6HZ/exec";
     const SENHA_PADRAO = "1234";
     let horaAtualCapturada = "";
@@ -883,7 +883,6 @@
       carregarRelatorio();
       sincronizarComGoogleSheets(true);
     };
-</script>
-  </body>
+  </script>
+</body>
 </html>
-
