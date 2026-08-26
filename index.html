@@ -476,31 +476,35 @@
       const h = new Date();
       horaAtualCapturada = `${String(h.getHours()).padStart(2,'0')}:${String(h.getMinutes()).padStart(2,'0')}`;
 
+      // 1. Entrada Direta (sem caixa de confirmação)
       if (!reg.e) {
-        if (confirm(`Confirmar lançamento de ENTRADA às ${horaAtualCapturada}?`)) {
-          reg.e = horaAtualCapturada;
-          localStorage.setItem(info.chave, JSON.stringify(reg));
-          carregarPontosHoje();
-          alert(`Ponto (ENTRADA) registrado com sucesso às ${horaAtualCapturada}!`);
-        }
-      } else if (!reg.si && !reg.sf) {
+        reg.e = horaAtualCapturada;
+        localStorage.setItem(info.chave, JSON.stringify(reg));
+        carregarPontosHoje();
+        exibirToast(`✅ Entrada registrada às ${horaAtualCapturada}`);
+      } 
+      // 2. Escolha entre Saída Intervalo ou Saída Final (Abre Modal de Seleção)
+      else if (!reg.si && !reg.sf) {
         document.getElementById('txt-hora-modal-saida').innerText = horaAtualCapturada;
         document.getElementById('modalTipoSaida').classList.add('active');
-      } else if (reg.si && !reg.vi) {
-        if (confirm(`Confirmar lançamento de VOLTA INTERVALO às ${horaAtualCapturada}?`)) {
-          reg.vi = horaAtualCapturada;
-          localStorage.setItem(info.chave, JSON.stringify(reg));
-          carregarPontosHoje();
-          alert(`Ponto (VOLTA INTERVALO) registrado com sucesso às ${horaAtualCapturada}!`);
-        }
-      } else if (!reg.sf) {
-        if (confirm(`Confirmar lançamento de SAÍDA FINAL às ${horaAtualCapturada}?`)) {
-          reg.sf = horaAtualCapturada;
-          localStorage.setItem(info.chave, JSON.stringify(reg));
-          carregarPontosHoje();
-          alert(`Ponto (SAÍDA FINAL) registrado com sucesso às ${horaAtualCapturada}!`);
-        }
-      } else alert("Todas as marcações de hoje foram concluídas!");
+      } 
+      // 3. Volta Intervalo Direta (sem caixa de confirmação)
+      else if (reg.si && !reg.vi) {
+        reg.vi = horaAtualCapturada;
+        localStorage.setItem(info.chave, JSON.stringify(reg));
+        carregarPontosHoje();
+        exibirToast(`✅ Volta do Intervalo registrada às ${horaAtualCapturada}`);
+      } 
+      // 4. Saída Final Direta (caso já tenha retornado do intervalo)
+      else if (!reg.sf) {
+        reg.sf = horaAtualCapturada;
+        localStorage.setItem(info.chave, JSON.stringify(reg));
+        carregarPontosHoje();
+        exibirToast(`✅ Saída Final registrada às ${horaAtualCapturada}`);
+      } 
+      else {
+        alert("Todas as marcações de hoje já foram concluídas!");
+      }
     }
 
     function confirmarTipoSaida(tipo) {
@@ -508,12 +512,16 @@
       const info = obterDataHojeFormatada();
       let reg = JSON.parse(localStorage.getItem(info.chave)) || {};
 
-      if (tipo === 'si') reg.si = horaAtualCapturada;
-      else if (tipo === 'sf') reg.sf = horaAtualCapturada;
+      if (tipo === 'si') {
+        reg.si = horaAtualCapturada;
+        exibirToast(`✅ Saída Intervalo registrada às ${horaAtualCapturada}`);
+      } else if (tipo === 'sf') {
+        reg.sf = horaAtualCapturada;
+        exibirToast(`✅ Saída Final registrada às ${horaAtualCapturada}`);
+      }
 
       localStorage.setItem(info.chave, JSON.stringify(reg));
       carregarPontosHoje();
-      alert(`Ponto registrado com sucesso às ${horaAtualCapturada}!`);
     }
 
     function convHora(h) {
@@ -914,3 +922,4 @@
 </script>
   </body>
 </html>
+
