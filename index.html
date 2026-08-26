@@ -294,6 +294,73 @@
     const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbzi6lqvkYaP68l3hyxCR46BzUj1CLJH6pPfqljiwAY_81crRpVkG270swYIy-IuE6HZ/exec";
     const SENHA_PADRAO = "1234";
     let horaAtualCapturada = "";
+    
+    let posicaoAtualValida = false;
+    let distanciaAtualMetros = null;
+
+    function iniciarMonitoramentoGPS() {
+      const localCoords = localStorage.getItem('cfg_local_coords');
+      const nomeEmpresa = localStorage.getItem('cfg_local_nome') || 'Empresa';
+      const raioPermitido = parseFloat(localStorage.getItem('cfg_local_raio') || '100');
+
+      if (!localCoords) {
+        document.getElementById('txt-status-gps').innerHTML = `⚠️ Local não configurado`;
+        return;
+      }
+
+      if (!navigator.geolocation) {
+        document.getElementById('txt-status-gps').innerHTML = `⚠️ Geolocalização não suportada`;
+        return;
+      }
+
+      const partes = localCoords.split(',');
+      if (partes.length !== 2) return;
+
+      const latEmpresa = parseFloat(partes[0].trim());
+      const lonEmpresa = parseFloat(partes[1].trim());
+
+      document.getElementById('txt-status-gps').innerHTML = `📍 Verificando GPS...`;
+
+      navigator.geolocation.watchPosition(
+        (pos) => {
+          const latAtual = pos.coords.latitude;
+          const lonAtual = pos.coords.longitude;
+          distanciaAtualMetros = Math.round(calcularDistanciaEmMetros(latEmpresa, lonEmpresa, latAtual, lonAtual));
+
+          if (distanciaAtualMetros <= raioPermitido) {
+            posicaoAtualValida = true;
+            document.getElementById('txt-status-gps').innerHTML = `📍 Trava de GPS: ${nomeEmpresa} <br><span style="color:#15803d;">✅ Dentro do perímetro (${distanciaAtualMetros}m)</span>`;
+          } else {
+            posicaoAtualValida = false;
+            document.getElementById('txt-status-gps').innerHTML = `📍 Trava de GPS: ${nomeEmpresa} <div class="status-gps-erro">Fora do perímetro (${distanciaAtualMetros}m)</div>`;
+          }
+        },
+        (err) => {
+          posicaoAtualValida = false;
+          document.getElementById('txt-status-gps').innerHTML = `📍 Trava de GPS: ${nomeEmpresa} <div class="status-gps-erro">GPS Desativado/Buscando...</div>`;
+        },
+        { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+      );
+    }
+
+    function validarEBatendoPonto() {
+      const raioPermitido = parseFloat(localStorage.getItem('cfg_local_raio') || '100');
+
+      if (!localStorage.getItem('cfg_local_coords')) {
+        alert("⚠️ Lançamento Bloqueado: As coordenadas do local não foram configuradas no menu!");
+        return;
+      }
+
+      if (posicaoAtualValida) {
+        registrarPontoAtual();
+      } else {
+        if (distanciaAtualMetros !== null) {
+          alert(`🚫 Ponto não registrado! Você está a ${distanciaAtualMetros} metros do local permitido. Raio máximo: ${raioPermitido}m.`);
+        } else {
+          alert("⚠️ Aguarde a confirmação do GPS antes de bater o ponto.");
+        }
+      }
+    }
 
     function validarSenhaApp() {
       const input = document.getElementById('inputSenhaApp');
@@ -382,50 +449,6 @@
       return R * c;
     }
 
-    function validarEBatendoPonto() {
-      const localCoords = localStorage.getItem('cfg_local_coords');
-      const nomeEmpresa = localStorage.getItem('cfg_local_nome') || 'Empresa';
-      const raioPermitido = parseFloat(localStorage.getItem('cfg_local_raio') || '100');
-
-      if (!localCoords) { alert("⚠️ Lançamento Bloqueado: As coordenadas do local não foram configuradas no menu!"); return; }
-      if (!navigator.geolocation) { alert("⚠️ Geolocalização não é suportada por este dispositivo."); return; }
-
-      const partes = localCoords.split(',');
-      if (partes.length !== 2) { alert("⚠️ As coordenadas configuradas são inválidas."); return; }
-
-      const latEmpresa = parseFloat(partes[0].trim());
-      const lonEmpresa = parseFloat(partes[1].trim());
-
-      document.getElementById('txt-status-gps').innerHTML = `📍 Obtendo sua localização...`;
-
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const latAtual = pos.coords.latitude;
-          const lonAtual = pos.coords.longitude;
-          const distancia = Math.round(calcularDistanciaEmMetros(latEmpresa, lonEmpresa, latAtual, lonAtual));
-
-          if (distancia <= raioPermitido) {
-            document.getElementById('txt-status-gps').innerHTML = `📍 Trava de GPS: ${nomeEmpresa}`;
-            registrarPontoAtual();
-          } else {
-            document.getElementById('txt-status-gps').innerHTML = `
-              📍 Trava de GPS: ${nomeEmpresa}
-              <div class="status-gps-erro">Fora do perímetro (${distancia}m)</div>
-            `;
-            alert(`🚫 Ponto não registrado! Você está a ${distancia} metros do local permitido. Raio máximo: ${raioPermitido}m.`);
-          }
-        },
-        (err) => {
-          document.getElementById('txt-status-gps').innerHTML = `
-            📍 Trava de GPS: ${nomeEmpresa}
-            <div class="status-gps-erro">GPS Desativado/Negado</div>
-          `;
-          alert("⚠️ Não foi possível obter sua localização. Ative o GPS do aparelho para bater o ponto.");
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-    }
-
     function carregarPontosHoje() {
       const info = obterDataHojeFormatada();
       document.getElementById('txt-data').innerText = info.exibicao;
@@ -445,10 +468,6 @@
       else if (reg.vi && !reg.sf) proxText = "Próximo Registro: Saída Final";
       else if (reg.sf) proxText = "Todos os registros efetuados hoje!";
       document.getElementById('txt-proximo').innerText = proxText;
-
-      const localCfg = localStorage.getItem('cfg_local_nome');
-      if (localCfg) document.getElementById('txt-status-gps').innerHTML = `📍 Trava de GPS: ${localCfg}`;
-      else document.getElementById('txt-status-gps').innerHTML = `⚠️ GPS Não Configurado`;
     }
 
     function registrarPontoAtual() {
@@ -754,6 +773,7 @@
       localStorage.setItem('cfg_local_coords', document.getElementById('cfg-local-coords').value.trim());
       localStorage.setItem('cfg_local_raio', document.getElementById('cfg-local-raio').value);
       fecharModal('modalLocal');
+      iniciarMonitoramentoGPS();
       carregarPontosHoje();
       alert("Local configurado com sucesso!");
     }
@@ -888,6 +908,7 @@
     window.onload = function() {
       carregarPontosHoje();
       carregarRelatorio();
+      iniciarMonitoramentoGPS();
       sincronizarComGoogleSheets(true);
     };
 </script>
