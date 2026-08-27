@@ -122,6 +122,7 @@
 	  <div class="dropdown-menu" id="dropdownMenu">
 		<div class="dropdown-item" onclick="recalcularHistorico(); closeMenu();"><span>🔄</span> Recalcular Histórico</div>
 		<div class="dropdown-item" onclick="alterarSenhaApp(); closeMenu();"><span>🔑</span> Alterar Senha de Acesso</div>
+		<div class="dropdown-item" onclick="abrirModalAjusteRelogio(); closeMenu();"><span>⏱️</span> Ajustar Relógio (Minutos)</div>
 		<div class="dropdown-item" onclick="abrirModalPontoManual(); closeMenu();"><span>📝</span> Adicionar Ponto Manual</div>
 		<div class="dropdown-item" onclick="abrirModalConfigJornada(); closeMenu();"><span>⚙️</span> Configurar Horário/Jornada</div>
 		<div class="dropdown-item" onclick="abrirModalConfigLocal(); closeMenu();"><span>🛰️</span> Configurar Local</div>
@@ -187,6 +188,27 @@
 	  <button class="nav-item" id="btn-tab-relatorio" onclick="alternarAba('relatorio')">📊<span style="margin-top:2px;">Relatório</span></button>
 	</nav>
 
+	<!-- MODAL AJUSTE DE RELÓGIO -->
+	<div class="modal" id="modalAjusteRelogio">
+	  <div class="modal-content">
+		<h3>Ajuste do Relógio</h3>
+		<p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px; margin-top: 4px;">
+		  Informe a diferença em minutos em relação ao relógio oficial da empresa (ex: 4 para somar 4 min ou -3 para subtrair).
+		</p>
+		<div class="form-group">
+		  <label>Minutos de Ajuste:</label>
+		  <input type="number" id="cfg-ajuste-minutos" value="0" placeholder="Ex: 4">
+		</div>
+		<div class="modal-buttons">
+		  <div></div>
+		  <div class="modal-actions-right">
+			<button class="btn-modal" onclick="fecharModal('modalAjusteRelogio')">Cancelar</button>
+			<button class="btn-modal" style="background:#2563eb; color:#fff;" onclick="salvarAjusteRelogio()">Salvar</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+
 	<!-- MODAL SELEÇÃO DE TIPO DE SAÍDA -->
 	<div class="modal" id="modalTipoSaida">
 	  <div class="modal-content" style="text-align: center;">
@@ -233,19 +255,19 @@
 	  <div class="modal-content">
 		<h3>Configurar Jornada</h3>
 		<div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Segunda a Quinta</div>
-		<div class="form-group"><label>Entrada:</label><input type="text" id="cfg-seg-qui-e" value="07:00"></div>
-		<div class="form-group"><label>Saída:</label><input type="text" id="cfg-seg-qui-s" value="17:00"></div>
+		<div class="form-group"><label>Entrada:</label><input type="text" id="cfg-seg-qui-e" value="07:30"></div>
+		<div class="form-group"><label>Saída:</label><input type="text" id="cfg-seg-qui-s" value="17:30"></div>
 
 		<div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Sexta-feira</div>
-		<div class="form-group"><label>Saída Sexta:</label><input type="text" id="cfg-sex-s" value="16:00"></div>
+		<div class="form-group"><label>Saída Sexta:</label><input type="text" id="cfg-sex-s" value="16:30"></div>
 
 		<div style="font-weight:bold; margin-top:8px; margin-bottom:4px; color:#2563eb;">Sábados</div>
 		<div class="chk-container" style="margin-bottom:8px;">
 		  <input type="checkbox" id="cfg-sab-alternado">
 		  <label for="cfg-sab-alternado">Trabalha em Sábados Alternados</label>
 		</div>
-		<div class="form-group"><label>Entrada Sábado:</label><input type="text" id="cfg-sab-e" value="07:00"></div>
-		<div class="form-group"><label>Saída Sábado:</label><input type="text" id="cfg-sab-s" value="11:00"></div>
+		<div class="form-group"><label>Entrada Sábado:</label><input type="text" id="cfg-sab-e" value="07:30"></div>
+		<div class="form-group"><label>Saída Sábado:</label><input type="text" id="cfg-sab-s" value="11:30"></div>
 
 		<div class="modal-buttons">
 		  <div></div>
@@ -399,6 +421,18 @@
       } else alert("❌ Senha atual incorreta.");
     }
 
+    function abrirModalAjusteRelogio() {
+      document.getElementById('cfg-ajuste-minutos').value = localStorage.getItem('cfg_ajuste_minutos') || '0';
+      document.getElementById('modalAjusteRelogio').classList.add('active');
+    }
+
+    function salvarAjusteRelogio() {
+      const val = document.getElementById('cfg-ajuste-minutos').value || '0';
+      localStorage.setItem('cfg_ajuste_minutos', parseInt(val, 10) || 0);
+      fecharModal('modalAjusteRelogio');
+      exibirToast("⏱️ Ajuste de relógio salvo!");
+    }
+
     function exibirToast(mensagem) {
       const toast = document.getElementById('toast-aviso');
       toast.innerText = mensagem;
@@ -473,29 +507,34 @@
     function registrarPontoAtual() {
       const info = obterDataHojeFormatada();
       let reg = JSON.parse(localStorage.getItem(info.chave)) || {};
+      
       const h = new Date();
+      const ajusteMin = parseInt(localStorage.getItem('cfg_ajuste_minutos') || '0', 10);
+      if (ajusteMin !== 0) {
+        h.setMinutes(h.getMinutes() + ajusteMin);
+      }
       horaAtualCapturada = `${String(h.getHours()).padStart(2,'0')}:${String(h.getMinutes()).padStart(2,'0')}`;
 
-      // 1. Entrada Direta (sem caixa de confirmação)
+      // 1. Entrada Direta
       if (!reg.e) {
         reg.e = horaAtualCapturada;
         localStorage.setItem(info.chave, JSON.stringify(reg));
         carregarPontosHoje();
         exibirToast(`✅ Entrada registrada às ${horaAtualCapturada}`);
       } 
-      // 2. Escolha entre Saída Intervalo ou Saída Final (Abre Modal de Seleção)
+      // 2. Escolha entre Saída Intervalo ou Saída Final
       else if (!reg.si && !reg.sf) {
         document.getElementById('txt-hora-modal-saida').innerText = horaAtualCapturada;
         document.getElementById('modalTipoSaida').classList.add('active');
       } 
-      // 3. Volta Intervalo Direta (sem caixa de confirmação)
+      // 3. Volta Intervalo Direta
       else if (reg.si && !reg.vi) {
         reg.vi = horaAtualCapturada;
         localStorage.setItem(info.chave, JSON.stringify(reg));
         carregarPontosHoje();
         exibirToast(`✅ Volta do Intervalo registrada às ${horaAtualCapturada}`);
       } 
-      // 4. Saída Final Direta (caso já tenha retornado do intervalo)
+      // 4. Saída Final Direta
       else if (!reg.sf) {
         reg.sf = horaAtualCapturada;
         localStorage.setItem(info.chave, JSON.stringify(reg));
@@ -533,12 +572,12 @@
     }
 
     function abrirModalConfigJornada() {
-      document.getElementById('cfg-seg-qui-e').value = localStorage.getItem('cfg_seg_qui_e') || '07:00';
-      document.getElementById('cfg-seg-qui-s').value = localStorage.getItem('cfg_seg_qui_s') || '17:00';
-      document.getElementById('cfg-sex-s').value = localStorage.getItem('cfg_sex_s') || '16:00';
+      document.getElementById('cfg-seg-qui-e').value = localStorage.getItem('cfg_seg_qui_e') || '07:30';
+      document.getElementById('cfg-seg-qui-s').value = localStorage.getItem('cfg_seg_qui_s') || '17:30';
+      document.getElementById('cfg-sex-s').value = localStorage.getItem('cfg_sex_s') || '16:30';
       document.getElementById('cfg-sab-alternado').checked = localStorage.getItem('cfg_sab_alternado') === 'true';
-      document.getElementById('cfg-sab-e').value = localStorage.getItem('cfg_sab_e') || '07:00';
-      document.getElementById('cfg-sab-s').value = localStorage.getItem('cfg_sab_s') || '11:00';
+      document.getElementById('cfg-sab-e').value = localStorage.getItem('cfg_sab_e') || '07:30';
+      document.getElementById('cfg-sab-s').value = localStorage.getItem('cfg_sab_s') || '11:30';
       document.getElementById('modalJornada').classList.add('active');
     }
 
@@ -561,9 +600,9 @@
       const filtroMes = document.getElementById('filtro-mes').value.trim();
       const apenasIncompletos = document.getElementById('chk-incompletos').checked;
 
-      const horEntradaPadrao = '07:30';
-      const horSaidaSegQui = '17:30';
-      const horSaidaSexta = '16:30';
+      const horEntradaPadrao = localStorage.getItem('cfg_seg_qui_e') || '07:30';
+      const horSaidaSegQui = localStorage.getItem('cfg_seg_qui_s') || '17:30';
+      const horSaidaSexta = localStorage.getItem('cfg_sex_s') || '16:30';
 
       let chaves = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -604,7 +643,7 @@
 
         let minExtraDia = 0;
         let extraTexto = "00:00 (R$ 0,00)";
-        let intervaloTarde = "--:-- - --:--";
+        let listaPeriodosExtra = [];
 
         let minEntradaReal = convHora(item.e);
         let minSaidaReal = convHora(item.sf);
@@ -613,7 +652,7 @@
           if (minEntradaReal > 0 && minSaidaReal > 0) {
             minExtraDia = minSaidaReal - minEntradaReal;
             if (minExtraDia < 0) minExtraDia = 0;
-            intervaloTarde = `${item.e || '--:--'} - ${item.sf || '--:--'}`;
+            listaPeriodosExtra.push(`Extra Fim de Semana: ${item.e || '--:--'} - ${item.sf || '--:--'}`);
           }
         } 
         else {
@@ -623,16 +662,17 @@
 
           if (minEntradaReal > 0) {
             let diffManha = minPrevistoEntrada - minEntradaReal;
-            if (diffManha >= 30) {
+            if (diffManha >= 1) { // calcula extra se entrou antes do horário previsto
               minExtraDia += diffManha;
+              listaPeriodosExtra.push(`Extra Manhã: ${item.e} - ${horEntradaPadrao}`);
             }
           }
 
           if (minSaidaReal > 0) {
             let diffTarde = minSaidaReal - minPrevistoSaida;
-            if (diffTarde >= 30) {
+            if (diffTarde >= 1) { // calcula extra se saiu após o horário previsto
               minExtraDia += diffTarde;
-              intervaloTarde = `${horaSaidaPrevista} - ${item.sf}`;
+              listaPeriodosExtra.push(`Extra Tarde: ${horaSaidaPrevista} - ${item.sf}`);
             }
           }
         }
@@ -650,6 +690,13 @@
           extraTexto = `${String(hEx).padStart(2,'0')}:${String(mEx).padStart(2,'0')} (R$ ${valEx.toFixed(2).replace('.',',')})`;
         }
 
+        let linhasPeriodosHTML = '';
+        if (listaPeriodosExtra.length > 0) {
+          linhasPeriodosHTML = listaPeriodosExtra.map(p => `<div class="relatorio-linha">🏢 ${p}</div>`).join('');
+        } else {
+          linhasPeriodosHTML = `<div class="relatorio-linha">🏢 Extra: --:-- - --:--</div>`;
+        }
+
         exibidos++;
         const card = document.createElement('div');
         card.className = 'relatorio-card-item';
@@ -659,7 +706,7 @@
           <div class="relatorio-linha">🟩 Ent: ${item.e || '--:--'} | Sai Almoço: ${item.si || '--:--'}</div>
           <div class="relatorio-linha">🟥 Vol Almoço: ${item.vi || '--:--'} | Fim: ${item.sf || '--:--'}</div>
           <div class="relatorio-linha">⭐ Total Extra: ${extraTexto}</div>
-          <div class="relatorio-linha">🏢 Extra Tarde: ${intervaloTarde}</div>
+          ${linhasPeriodosHTML}
         `;
         lista.appendChild(card);
       });
