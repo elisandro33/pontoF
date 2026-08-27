@@ -593,7 +593,7 @@
       alert("Jornada salva com sucesso!");
     }
 
-    function carregarRelatorio() {
+        function carregarRelatorio() {
       const lista = document.getElementById('lista-relatorio');
       lista.innerHTML = '';
 
@@ -650,9 +650,11 @@
 
         if (diaSemana === 0 || diaSemana === 6) {
           if (minEntradaReal > 0 && minSaidaReal > 0) {
-            minExtraDia = minSaidaReal - minEntradaReal;
-            if (minExtraDia < 0) minExtraDia = 0;
-            listaPeriodosExtra.push(`Extra Fim de Semana: ${item.e || '--:--'} - ${item.sf || '--:--'}`);
+            let diffFimSemana = minSaidaReal - minEntradaReal;
+            if (diffFimSemana >= 30) {
+              minExtraDia = diffFimSemana;
+              listaPeriodosExtra.push(`Extra Fim de Semana: ${item.e || '--:--'} - ${item.sf || '--:--'}`);
+            }
           }
         } 
         else {
@@ -660,17 +662,19 @@
           const horaSaidaPrevista = (diaSemana === 5) ? horSaidaSexta : horSaidaSegQui;
           const minPrevistoSaida = convHora(horaSaidaPrevista);
 
+          // Extra Manhã: Considera se antecedência for MAIOR OU IGUAL a 30 minutos (>= 30)
           if (minEntradaReal > 0) {
             let diffManha = minPrevistoEntrada - minEntradaReal;
-            if (diffManha >= 1) { // calcula extra se entrou antes do horário previsto
+            if (diffManha >= 30) {
               minExtraDia += diffManha;
               listaPeriodosExtra.push(`Extra Manhã: ${item.e} - ${horEntradaPadrao}`);
             }
           }
 
+          // Extra Tarde: Considera se o excedente for MAIOR OU IGUAL a 30 minutos (>= 30)
           if (minSaidaReal > 0) {
             let diffTarde = minSaidaReal - minPrevistoSaida;
-            if (diffTarde >= 1) { // calcula extra se saiu após o horário previsto
+            if (diffTarde >= 30) {
               minExtraDia += diffTarde;
               listaPeriodosExtra.push(`Extra Tarde: ${horaSaidaPrevista} - ${item.sf}`);
             }
@@ -693,8 +697,6 @@
         let linhasPeriodosHTML = '';
         if (listaPeriodosExtra.length > 0) {
           linhasPeriodosHTML = listaPeriodosExtra.map(p => `<div class="relatorio-linha">🏢 ${p}</div>`).join('');
-        } else {
-          linhasPeriodosHTML = `<div class="relatorio-linha">🏢 Extra: --:-- - --:--</div>`;
         }
 
         exibidos++;
@@ -720,6 +722,7 @@
 
       if (exibidos === 0) lista.innerHTML = `<div style="text-align:center; padding:20px; color:#64748b;">Nenhum registro encontrado para "${filtroMes}".</div>`;
     }
+
 
     function sincronizarComGoogleSheets(silencioso = false) {
       window.processarDadosSheets = function(dados) {
