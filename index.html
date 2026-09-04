@@ -460,8 +460,17 @@
       document.getElementById('tab-relatorio').classList.toggle('active', aba === 'relatorio');
       document.getElementById('btn-tab-ponto').classList.toggle('active', aba === 'ponto');
       document.getElementById('btn-tab-relatorio').classList.toggle('active', aba === 'relatorio');
-      if (aba === 'relatorio') carregarRelatorio();
-      else carregarPontosHoje();
+      
+      if (aba === 'relatorio') {
+        // Define o mês atual caso o campo esteja vazio ao abrir a aba
+        const info = obterDataHojeFormatada();
+        if (!document.getElementById('filtro-mes').value.trim()) {
+          document.getElementById('filtro-mes').value = info.mesAno;
+        }
+        carregarRelatorio();
+      } else {
+        carregarPontosHoje();
+      }
     }
 
     function obterDataHojeFormatada() {
@@ -596,6 +605,13 @@
         function carregarRelatorio() {
       const lista = document.getElementById('lista-relatorio');
       lista.innerHTML = '';
+	  
+	  // Garante o mês/ano atual como padrão
+      const infoHoje = obterDataHojeFormatada();
+      let filtroMesInput = document.getElementById('filtro-mes');
+      if (!filtroMesInput.value.trim()) {
+        filtroMesInput.value = infoHoje.mesAno;
+      }
 
       const filtroMes = document.getElementById('filtro-mes').value.trim();
       const apenasIncompletos = document.getElementById('chk-incompletos').checked;
