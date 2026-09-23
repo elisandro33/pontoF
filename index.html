@@ -1,4 +1,4 @@
-﻿ <!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
       <meta charset="UTF-8">
@@ -95,7 +95,7 @@
  .lock-card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); width: 100%; max-width: 320px; text-align: center; }
  .lock-card h2 { color: var(--primary); margin-bottom: 8px; font-size: 1.4rem; }
  .lock-card p { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px; }
- .lock-card input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; text-align: center; margin-bottom: 12px; }
+ .lock-card input[type="password"] { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; text-align: center; margin-bottom: 12px; }
  .lock-card button { width: 100%; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 </style>
 </head>
@@ -107,6 +107,12 @@
               <h2>🔒 Ponto Fácil</h2>
               <p>Digite sua senha para acessar o aplicativo</p>
               <input type="password" id="inputSenhaApp" placeholder="Sua senha" onkeypress="verificarSenhaEnter(event)">
+              
+              <div class="chk-container" style="justify-content: center; margin-bottom: 16px; font-size: 0.85rem;">
+                <input type="checkbox" id="chk-lembrar-senha" checked>
+                <label for="chk-lembrar-senha">Lembrar senha neste dispositivo</label>
+              </div>
+
               <button id="btnEntrarApp" type="button" onclick="validarSenhaApp()">ENTRAR</button>
         </div>
       </div>
@@ -130,7 +136,7 @@
               <div class="dropdown-item" onclick="fazerBackupJSON(); closeMenu();"><span>💾</span> Fazer Backup JSON</div>
               <div class="dropdown-item" onclick="triggerImportarJSON(); closeMenu();"><span>📁</span> Importar JSON</div>
               <div class="dropdown-item" onclick="sincronizarComGoogleSheets(false); closeMenu();"><span>🔄</span> Sincronizar Tudo</div>
-              <div class="dropdown-item" onclick="sairApp(); closeMenu();"><span>❌</span> Sair</div>
+              <div class="dropdown-item" onclick="sairApp(); closeMenu();"><span>❌</span> Sair / Sair da Conta</div>
         </div>
       </header>
 
@@ -320,6 +326,16 @@
  let posicaoAtualValida = false;
  let distanciaAtualMetros = null;
 
+ function verificarLoginSalvo() {
+   const estaLembrado = localStorage.getItem('cfg_lembrar_senha') === 'true';
+   if (estaLembrado) {
+     const lock = document.getElementById('lockScreen');
+     if (lock) {
+       lock.style.setProperty('display', 'none', 'important');
+     }
+   }
+ }
+
  function iniciarMonitoramentoGPS() {
    const localCoords = localStorage.getItem('cfg_local_coords');
    const nomeEmpresa = localStorage.getItem('cfg_local_nome') || 'Empresa';
@@ -388,8 +404,15 @@
    const input = document.getElementById('inputSenhaApp');
    const senhaDigitada = input ? input.value.trim() : '';
    const senhaSalva = localStorage.getItem('cfg_senha_app') || SENHA_PADRAO;
+   const chkLembrar = document.getElementById('chk-lembrar-senha');
 
    if (senhaDigitada === senhaSalva) {
+     if (chkLembrar && chkLembrar.checked) {
+       localStorage.setItem('cfg_lembrar_senha', 'true');
+     } else {
+       localStorage.removeItem('cfg_lembrar_senha');
+     }
+
      const lock = document.getElementById('lockScreen');
      if (lock) {
        lock.style.setProperty('display', 'none', 'important');
@@ -968,9 +991,16 @@
    a.click();
  }
 
- function sairApp() { if(confirm("Deseja fechar a aplicação?")) window.close(); }
+ function sairApp() { 
+   if(confirm("Deseja fechar a sessão? Isso irá solicitar a senha novamente na próxima abertura.")) {
+     localStorage.removeItem('cfg_lembrar_senha');
+     const lock = document.getElementById('lockScreen');
+     if (lock) lock.style.setProperty('display', 'flex', 'important');
+   } 
+ }
 
  document.addEventListener('DOMContentLoaded', () => {
+   verificarLoginSalvo();
    const filtroMes = document.getElementById('filtro-mes');
    if (filtroMes) {
      filtroMes.value = getMesAnoAtual();
@@ -978,6 +1008,7 @@
  });
 
  window.onload = function() {
+   verificarLoginSalvo();
    const filtroMes = document.getElementById('filtro-mes');
    if (filtroMes) {
      filtroMes.value = getMesAnoAtual();
